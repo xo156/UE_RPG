@@ -14,4 +14,5 @@ class RPG_API AMyGameModeBase : public AGameModeBase
 {
 	GENERATED_BODY()
 	
+
 };

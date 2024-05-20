@@ -11,6 +11,8 @@
  * 
  */
 
+DECLARE_DELEGATE(FComboAttackCount)
+
 class AMyCharacter;
 
 UCLASS()
@@ -35,9 +37,10 @@ protected:
 
 	void Move(const FInputActionValue& Value);
 	void Jump(const FInputActionValue& Value);
-	void Attack(const FInputActionValue& Value);
 	void Look(const FInputActionValue& Value);
+	void Attack(const FInputActionValue& Value);
 	bool bIsPossibleCombo(class UAnimInstance* Anim, int32 CurrentIndex);
+	bool bCheckAttakComboInput(const FInputActionValue& Value);
 
 protected:
 	//ÀÎÇ² ¾×¼Ç
@@ -58,4 +61,6 @@ protected:
 
 private:
 	class AMyCharacter* MyCharacter;
+	FComboAttackCount CheckComboTimerHadle;
+
 };
