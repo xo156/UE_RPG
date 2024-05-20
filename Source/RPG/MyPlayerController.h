@@ -36,8 +36,9 @@ protected:
 	void Jump(const FInputActionValue& Value);
 	void Look(const FInputActionValue& Value);
 	void Attack(const FInputActionValue& Value);
-	bool bIsPossibleCombo(class UAnimInstance* Anim, int32 CurrentIndex);
-	bool bCheckAttakComboInput(const FInputActionValue& Value);
+	void SetMontage();
+	void SetMontageLength();
+	void CheckComboTime();
 
 protected:
 	//ÀÎÇ² ¾×¼Ç
@@ -54,9 +55,18 @@ protected:
 
 	//¸ùÅ¸ÁÖ
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Montage")
-	class UAnimMontage* AttackMontage;
+	class UAnimMontage* AttackMontage1;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Montage")
+	class UAnimMontage* AttackMontage2;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Montage")
+	class UAnimMontage* AttackMontage3;
 
 private:
 	class AMyCharacter* MyCharacter;
+
+	TArray<UAnimMontage> Montages;
+	TArray<float> MontageLength;
+	float ComboTime = 1;
+	FTimerHandle ComboCheck;
 
 };

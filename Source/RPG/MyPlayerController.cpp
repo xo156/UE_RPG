@@ -28,7 +28,8 @@ void AMyPlayerController::BeginPlay() {
 		SubSystem->AddMappingContext(DefaultMappingContext, 0);
 	}
 
-
+	SetMontage();
+	SetMontageLength();
 }
 
 void AMyPlayerController::OnPossess(APawn* InPawn) {
@@ -84,44 +85,33 @@ void AMyPlayerController::Attack(const FInputActionValue& Value) {
 	const float InputValue = Value.Get<float>();
 	if (GetCharacter() != nullptr) {
 		if (UAnimInstance* AnimInstance = GetCharacter()->GetMesh()->GetAnimInstance()) {
-			AnimInstance->Montage_Play(AttackMontage); //1타 모션 출력
+			AnimInstance->Montage_Play(AttackMontage1); //1타 모션 출력
 			//TODO: 추가적인 키 입력이 일정 시간 안으로 있는지
-			if (bCheckAttakComboInput(Value)) {
-				int32 CurrentIndex = 0; //현재 재생중인 몽타주의 섹션 인덱스를 구하기 위함
-				if (bIsPossibleCombo(AnimInstance, CurrentIndex)) { //입력이 있고 인덱스가 충분하면
-					FName NextSectionName = AttackMontage->CompositeSections[++CurrentIndex].SectionName;
-					UE_LOG(LogTemp, Warning, TEXT("NextSectionName: %s"), *NextSectionName.ToString());
-					AnimInstance->Montage_JumpToSection(NextSectionName, AttackMontage);
-					AnimInstance->Montage_Play(AttackMontage);
-				}
-				else {
-					//콤보공격을 할 인덱스가 없으니까
-					AnimInstance->Montage_JumpToSection(AttackMontage->CompositeSections[0].SectionName, AttackMontage);
-					AnimInstance->Montage_Play(AttackMontage);
-				}
-			}
+			GetWorldTimerManager().SetTimer(ComboCheck, this, &AMyPlayerController::CheckComboTime, 1.f, false);
+			AnimInstance->Montage_Play(AttackMontage2);
+			GetWorldTimerManager().SetTimer(ComboCheck, this, &AMyPlayerController::CheckComboTime, 1.f, false);
+			AnimInstance->Montage_Play(AttackMontage3);
 			GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Red, TEXT("Attack"));
 		}
 	}
 }
 
-bool AMyPlayerController::bIsPossibleCombo(UAnimInstance* Anim, int32 CurrentIndex)
+void AMyPlayerController::SetMontage()
 {
-	if ((Anim->GetCurrentActiveMontage()->CompositeSections.Num() > 1) && 
-		(CurrentIndex < Anim->GetCurrentActiveMontage()->CompositeSections.Num())) {
-		return true;
-	}
-	return false;
+	Montages.Emplace(AttackMontage1);
+	Montages.Emplace(AttackMontage2);
+	Montages.Emplace(AttackMontage3);
 }
 
-bool AMyPlayerController::bCheckAttakComboInput(const FInputActionValue& Value)
+void AMyPlayerController::SetMontageLength()
 {
-	float ComboTime = 1.5f;
-	float CurrentTime = GetWorld()->GetTimeSeconds();
-	float CheckTime = CurrentTime - ComboTime;
-	if (IsInputKeyDown(EKeys::E) && (CheckTime <= ComboTime)) {
-		return true;
-	}
-	return false;
+	MontageLength.Emplace(AttackMontage1->GetPlayLength());
+	MontageLength.Emplace(AttackMontage2->GetPlayLength());
+	MontageLength.Emplace(AttackMontage3->GetPlayLength());
+}
+
+void AMyPlayerController::CheckComboTime()
+{
+	ComboTime = FMath::Max(ComboTime + 1, ComboTime);
 }
 
