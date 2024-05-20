@@ -10,9 +10,6 @@
 /**
  * 
  */
-
-DECLARE_DELEGATE(FComboAttackCount)
-
 class AMyCharacter;
 
 UCLASS()
@@ -61,6 +58,5 @@ protected:
 
 private:
 	class AMyCharacter* MyCharacter;
-	FComboAttackCount CheckComboTimerHadle;
 
 };

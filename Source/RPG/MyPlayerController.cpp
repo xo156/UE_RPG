@@ -86,9 +86,7 @@ void AMyPlayerController::Attack(const FInputActionValue& Value) {
 		if (UAnimInstance* AnimInstance = GetCharacter()->GetMesh()->GetAnimInstance()) {
 			AnimInstance->Montage_Play(AttackMontage); //1타 모션 출력
 			//TODO: 추가적인 키 입력이 일정 시간 안으로 있는지
-				//있으면 몽타주 섹션 체크해서 추가 타 모션 출력
-				//없으면 끝
-			//if (GetWorldTimerManager().SetTimer(CheckComboTimerHadle, this, &AMyPlayerController::bCheckAttakComboInput, 1.f, false)) {
+			if (bCheckAttakComboInput(Value)) {
 				int32 CurrentIndex = 0; //현재 재생중인 몽타주의 섹션 인덱스를 구하기 위함
 				if (bIsPossibleCombo(AnimInstance, CurrentIndex)) { //입력이 있고 인덱스가 충분하면
 					FName NextSectionName = AttackMontage->CompositeSections[++CurrentIndex].SectionName;
@@ -118,8 +116,12 @@ bool AMyPlayerController::bIsPossibleCombo(UAnimInstance* Anim, int32 CurrentInd
 
 bool AMyPlayerController::bCheckAttakComboInput(const FInputActionValue& Value)
 {
-	if (IsInputKeyDown(Value.Get<FKey>()))
+	float ComboTime = 1.5f;
+	float CurrentTime = GetWorld()->GetTimeSeconds();
+	float CheckTime = CurrentTime - ComboTime;
+	if (IsInputKeyDown(EKeys::E) && (CheckTime <= ComboTime)) {
 		return true;
+	}
 	return false;
 }
 
