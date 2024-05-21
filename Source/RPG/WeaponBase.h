@@ -27,19 +27,9 @@ protected:
 	void SetMontageLength(); //이거 이러면 필요 한가?
 
 //변수들
-protected:
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon")
-	float WeaponDamage;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon")
-	class USkeletalMeshComponent* WeaponMesh;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon")
-	FText WeaponType;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon")
-	class UBoxComponent* EquipBox;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon")
-	bool bEquip = false;
-
 public:
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Montage")
+	class UAnimMontage* AttackMontage;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Montage")
 	class UAnimMontage* AttackMontage1;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Montage")
@@ -53,4 +43,14 @@ public:
 	int32 CurrentComboCount = 0;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combo")
 	float WaitComboTime = 1.f;
+
+protected:
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon")
+	float WeaponDamage;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon")
+	class USkeletalMeshComponent* WeaponMesh;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon")
+	FText WeaponType;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon")
+	bool bEquip = false;
 };

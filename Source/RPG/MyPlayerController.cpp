@@ -7,6 +7,7 @@
 #include "EnhancedInputSubsystems.h"
 #include "GameFramework/Pawn.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "WeaponBase.h"
 
 AMyPlayerController::AMyPlayerController() {
 
@@ -28,7 +29,7 @@ void AMyPlayerController::BeginPlay() {
 		SubSystem->AddMappingContext(DefaultMappingContext, 0);
 	}
 
-	AWeaponBase Weapon;
+	EquipWeapon();
 }
 
 void AMyPlayerController::OnPossess(APawn* InPawn) {
@@ -81,45 +82,49 @@ void AMyPlayerController::Look(const FInputActionValue& Value) {
 }
 
 void AMyPlayerController::Attack(const FInputActionValue& Value) {
-	const float InputValue = Value.Get<float>();
 	if (GetCharacter() != nullptr) {
-		if (UAnimInstance* AnimInstance = GetCharacter()->GetMesh()->GetAnimInstance()) {
-			if (Weapon == nullptr) {
-				return;
+		if (!bIsAttacking) {
+			bIsAttacking = true;
+			if (UAnimInstance* AnimInstance = GetCharacter()->GetMesh()->GetAnimInstance()) {
+				if (CurrentWeapon == nullptr)
+					return;
+				switch (CurrentWeapon->CurrentComboCount) {
+				case 0:
+					AnimInstance->Montage_Play(CurrentWeapon->AttackMontage1);
+					CurrentWeapon->CurrentComboCount++;
+					break;
+				case 1:
+					AnimInstance->Montage_Play(CurrentWeapon->AttackMontage2);
+					CurrentWeapon->CurrentComboCount++;
+					break;
+				case 2:
+					AnimInstance->Montage_Play(CurrentWeapon->AttackMontage3);
+					CurrentWeapon->CurrentComboCount++;
+					break;
+				default:
+					CurrentWeapon->CurrentComboCount = 0;
+					break;
+				}
+				GetWorld()->GetTimerManager().SetTimer(ComboCheckTimerHandle, this, &AMyPlayerController::ResetAttackCount, WaitComboTime);
+				GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Red, TEXT("Attack"));
 			}
-			switch (Weapon->CurrentComboCount) {
-			case 0:
-				AnimInstance->Montage_Play(Weapon->AttackMontage1);
-				Weapon->CurrentComboCount++;
-				break;
-			case 1:
-				AnimInstance->Montage_Play(Weapon->AttackMontage2);
-				Weapon->CurrentComboCount++;
-				break;
-			case 2:
-				AnimInstance->Montage_Play(Weapon->AttackMontage3);
-				Weapon->CurrentComboCount++;
-				break;
-			default:
-				Weapon->CurrentComboCount = 0;
-				break;
-			}
-
-			FTimerHandle ComboCheckTimerHandle;
-			GetWorld()->GetTimerManager().SetTimer(ComboCheckTimerHandle, this, &AMyPlayerController::CountZero, WaitComboTime);
-			GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Red, TEXT("Attack"));
 		}
+		
 	}
 }
 
-void AMyPlayerController::PickUPItem(const FInputActionValue& Value)
+void AMyPlayerController::EquipWeapon()
 {
-	if (GetCharacter() != nullptr) {
+	if (WeaponClass) {
+		CurrentWeapon = GetWorld()->SpawnActor<AWeaponBase>(WeaponClass);
 	}
 }
 
-void AMyPlayerController::CountZero()
+void AMyPlayerController::ResetAttackCount()
 {
-	Weapon->CurrentComboCount = 0;
+	if (WeaponClass) {
+		CurrentWeapon->CurrentComboCount = 0;
+	}
+	bIsAttacking = false;
 }
 

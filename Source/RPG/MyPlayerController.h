@@ -5,7 +5,6 @@
 #include "CoreMinimal.h"
 #include "GameFramework/PlayerController.h"
 #include "InputActionValue.h"
-#include "WeaponBase.h"
 #include "MyPlayerController.generated.h"
 
 /**
@@ -23,9 +22,6 @@ public:
 
 	AMyCharacter* GetCharacter();
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Combo")
-	TSubclassOf<AWeaponBase> Weapon;
-
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -39,11 +35,18 @@ protected:
 	void Jump(const FInputActionValue& Value);
 	void Look(const FInputActionValue& Value);
 	void Attack(const FInputActionValue& Value);
-	void PickUPItem(const FInputActionValue& Value);
+	void EquipWeapon();
 
-	void CountZero();
+	void ResetAttackCount();
+
+public:
 
 protected:
+	UPROPERTY(EditAnywhere, Category = "Combo")
+	TSubclassOf<class AWeaponBase> WeaponClass;
+
+	class AWeaponBase* CurrentWeapon;
+
 	//ÀÎÇ² ¾×¼Ç
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input", meta = (AllowPrivateAccess = "true"))
 	class UInputMappingContext* DefaultMappingContext;
@@ -56,19 +59,11 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input", meta = (AllowPrivateAccess = "true"))
 	class UInputAction* LookAction;
 
-	//¸ùÅ¸ÁÖ
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Montage")
-	class UAnimMontage* AttackMontage1;
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Montage")
-	class UAnimMontage* AttackMontage2;
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Montage")
-	class UAnimMontage* AttackMontage3;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combo")
-	int32 CurrentComboCount = 0;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combo")
 	float WaitComboTime = 1.f;
 
 private:
+	FTimerHandle ComboCheckTimerHandle;
 	class AMyCharacter* MyCharacter;
+	bool bIsAttacking = false;
 };
