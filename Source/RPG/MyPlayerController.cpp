@@ -84,20 +84,16 @@ void AMyPlayerController::Look(const FInputActionValue& Value) {
 void AMyPlayerController::Attack(const FInputActionValue& Value) {
 	const float InputValue = Value.Get<float>();
 	if (GetCharacter() != nullptr) {
-		if (!MyCharacter->bAttacking) {
-			if (UAnimInstance* AnimInstance = GetCharacter()->GetMesh()->GetAnimInstance()) {
-				MyCharacter->bAttacking = true;
-				AnimInstance->Montage_Play(AttackMontage1); //1타 모션 출력
-				GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Red, TEXT("Attack"));
-			}
+		if (UAnimInstance* AnimInstance = GetCharacter()->GetMesh()->GetAnimInstance()) {
+			AnimInstance->Montage_Play(AttackMontage1); //1타 모션 출력
+			GetWorld()->GetTimerManager().SetTimer(ComboCheck, this, &AMyPlayerController::ComboCount, WaitComboTime);
+			GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Red, TEXT("Attack"));
 		}
-		else {
 			//TODO: 추가적인 키 입력이 일정 시간 안으로 있는지
 			/*GetWorldTimerManager().SetTimer(ComboCheck, this, &AMyPlayerController::CheckComboTime, 1.f, false);
 			AnimInstance->Montage_Play(AttackMontage2);
 			GetWorldTimerManager().SetTimer(ComboCheck, this, &AMyPlayerController::CheckComboTime, 1.f, false);
 			AnimInstance->Montage_Play(AttackMontage3);*/
-		}
 	}
 }
 
@@ -107,5 +103,29 @@ void AMyPlayerController::PickUPItem(const FInputActionValue& Value)
 		//줍는 아이템이 유효한가, 아이템의 종류가 무엇인가
 			//무기이면 캐릭터에 장비 시킨다
 	}
+}
+
+void AMyPlayerController::ComboCount()
+{
+	if (UAnimInstance* AnimInstance = GetCharacter()->GetMesh()->GetAnimInstance()){
+		if (CurrentComboCount < 3) {
+			CurrentComboCount = 1;
+			switch (CurrentComboCount)
+			{
+			case 1:
+				AnimInstance->Montage_Play(AttackMontage2);
+				break;
+			case 2:
+				AnimInstance->Montage_Play(AttackMontage3);
+				break;
+			default:
+				break;
+			}
+		}
+		else {
+			CurrentComboCount = 0;
+		}
+	}
+	
 }
 

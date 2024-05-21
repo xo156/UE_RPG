@@ -10,6 +10,7 @@
 /**
  * 
  */
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FComboCheck);
 class AMyCharacter;
 
 UCLASS()
@@ -22,6 +23,7 @@ public:
 
 	AMyCharacter* GetCharacter();
 
+	FComboCheck ComboCheck;
 
 protected:
 	// Called when the game starts or when spawned
@@ -37,6 +39,8 @@ protected:
 	void Look(const FInputActionValue& Value);
 	void Attack(const FInputActionValue& Value);
 	void PickUPItem(const FInputActionValue& Value);
+
+	void ComboCount();
 
 protected:
 	//ÀÎÇ² ¾×¼Ç
@@ -58,6 +62,11 @@ protected:
 	class UAnimMontage* AttackMontage2;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Montage")
 	class UAnimMontage* AttackMontage3;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combo")
+	int32 CurrentComboCount = 0;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combo")
+	float WaitComboTime = 1.f;
 
 private:
 	class AMyCharacter* MyCharacter;

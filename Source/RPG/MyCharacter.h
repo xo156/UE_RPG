@@ -26,7 +26,6 @@ public:
 	}
 
 	void PlayAirboneMontage();
-	bool bAttacking = false;
 
 protected:
 	// Called when the game starts or when spawned
