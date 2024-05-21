@@ -6,22 +6,6 @@
 #include "GameFramework/Actor.h"
 #include "WeaponBase.generated.h"
 
-USTRUCT(BlueprintType)
-struct FWeaponStruct {
-	GENERATED_BODY()
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon")
-	float WeaponDamage;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon")
-	class USkeletalMeshComponent* WeaponMesh;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon")
-	FText WeaponType;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon")
-	class UBoxComponent* EquipBox;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon")
-	bool bEquip = false;
-};
-
 
 UCLASS()
 class RPG_API AWeaponBase : public AActor
@@ -40,5 +24,33 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
-	virtual void SetMontageLength();
+	void SetMontageLength(); //이거 이러면 필요 한가?
+
+//변수들
+protected:
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon")
+	float WeaponDamage;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon")
+	class USkeletalMeshComponent* WeaponMesh;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon")
+	FText WeaponType;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon")
+	class UBoxComponent* EquipBox;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon")
+	bool bEquip = false;
+
+public:
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Montage")
+	class UAnimMontage* AttackMontage1;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Montage")
+	class UAnimMontage* AttackMontage2;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Montage")
+	class UAnimMontage* AttackMontage3;
+
+	TArray<float> MontageLength;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combo")
+	int32 CurrentComboCount = 0;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combo")
+	float WaitComboTime = 1.f;
 };

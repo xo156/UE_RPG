@@ -28,8 +28,7 @@ void AMyPlayerController::BeginPlay() {
 		SubSystem->AddMappingContext(DefaultMappingContext, 0);
 	}
 
-	/*SetMontage();
-	SetMontageLength();*/
+	AWeaponBase Weapon;
 }
 
 void AMyPlayerController::OnPossess(APawn* InPawn) {
@@ -85,47 +84,42 @@ void AMyPlayerController::Attack(const FInputActionValue& Value) {
 	const float InputValue = Value.Get<float>();
 	if (GetCharacter() != nullptr) {
 		if (UAnimInstance* AnimInstance = GetCharacter()->GetMesh()->GetAnimInstance()) {
-			AnimInstance->Montage_Play(AttackMontage1); //1타 모션 출력
-			GetWorld()->GetTimerManager().SetTimer(ComboCheck, this, &AMyPlayerController::ComboCount, WaitComboTime);
+			if (Weapon == nullptr) {
+				return;
+			}
+			switch (Weapon->CurrentComboCount) {
+			case 0:
+				AnimInstance->Montage_Play(Weapon->AttackMontage1);
+				Weapon->CurrentComboCount++;
+				break;
+			case 1:
+				AnimInstance->Montage_Play(Weapon->AttackMontage2);
+				Weapon->CurrentComboCount++;
+				break;
+			case 2:
+				AnimInstance->Montage_Play(Weapon->AttackMontage3);
+				Weapon->CurrentComboCount++;
+				break;
+			default:
+				Weapon->CurrentComboCount = 0;
+				break;
+			}
+
+			FTimerHandle ComboCheckTimerHandle;
+			GetWorld()->GetTimerManager().SetTimer(ComboCheckTimerHandle, this, &AMyPlayerController::CountZero, WaitComboTime);
 			GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Red, TEXT("Attack"));
 		}
-			//TODO: 추가적인 키 입력이 일정 시간 안으로 있는지
-			/*GetWorldTimerManager().SetTimer(ComboCheck, this, &AMyPlayerController::CheckComboTime, 1.f, false);
-			AnimInstance->Montage_Play(AttackMontage2);
-			GetWorldTimerManager().SetTimer(ComboCheck, this, &AMyPlayerController::CheckComboTime, 1.f, false);
-			AnimInstance->Montage_Play(AttackMontage3);*/
 	}
 }
 
 void AMyPlayerController::PickUPItem(const FInputActionValue& Value)
 {
 	if (GetCharacter() != nullptr) {
-		//줍는 아이템이 유효한가, 아이템의 종류가 무엇인가
-			//무기이면 캐릭터에 장비 시킨다
 	}
 }
 
-void AMyPlayerController::ComboCount()
+void AMyPlayerController::CountZero()
 {
-	if (UAnimInstance* AnimInstance = GetCharacter()->GetMesh()->GetAnimInstance()){
-		if (CurrentComboCount < 3) {
-			CurrentComboCount = 1;
-			switch (CurrentComboCount)
-			{
-			case 1:
-				AnimInstance->Montage_Play(AttackMontage2);
-				break;
-			case 2:
-				AnimInstance->Montage_Play(AttackMontage3);
-				break;
-			default:
-				break;
-			}
-		}
-		else {
-			CurrentComboCount = 0;
-		}
-	}
-	
+	Weapon->CurrentComboCount = 0;
 }
 

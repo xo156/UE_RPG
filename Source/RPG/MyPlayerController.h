@@ -5,12 +5,12 @@
 #include "CoreMinimal.h"
 #include "GameFramework/PlayerController.h"
 #include "InputActionValue.h"
+#include "WeaponBase.h"
 #include "MyPlayerController.generated.h"
 
 /**
  * 
  */
-DECLARE_DYNAMIC_MULTICAST_DELEGATE(FComboCheck);
 class AMyCharacter;
 
 UCLASS()
@@ -23,7 +23,8 @@ public:
 
 	AMyCharacter* GetCharacter();
 
-	FComboCheck ComboCheck;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Combo")
+	TSubclassOf<AWeaponBase> Weapon;
 
 protected:
 	// Called when the game starts or when spawned
@@ -40,7 +41,7 @@ protected:
 	void Attack(const FInputActionValue& Value);
 	void PickUPItem(const FInputActionValue& Value);
 
-	void ComboCount();
+	void CountZero();
 
 protected:
 	//ÀÎÇ² ¾×¼Ç
@@ -70,5 +71,4 @@ protected:
 
 private:
 	class AMyCharacter* MyCharacter;
-	class WeaponBase* Weapon;
 };

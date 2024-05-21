@@ -50,6 +50,6 @@ void AMyCharacter::BeginPlay() {
 // Called every frame
 void AMyCharacter::Tick(float DeltaTime) {
 	Super::Tick(DeltaTime);
-	
+
 }
 
