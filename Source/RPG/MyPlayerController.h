@@ -36,9 +36,7 @@ protected:
 	void Jump(const FInputActionValue& Value);
 	void Look(const FInputActionValue& Value);
 	void Attack(const FInputActionValue& Value);
-	void SetMontage();
-	void SetMontageLength();
-	void CheckComboTime();
+	void PickUPItem(const FInputActionValue& Value);
 
 protected:
 	//ÀÎÇ² ¾×¼Ç
@@ -63,10 +61,5 @@ protected:
 
 private:
 	class AMyCharacter* MyCharacter;
-
-	TArray<UAnimMontage> Montages;
-	TArray<float> MontageLength;
-	float ComboTime = 1;
-	FTimerHandle ComboCheck;
-
+	class WeaponBase* Weapon;
 };

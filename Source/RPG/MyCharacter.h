@@ -26,6 +26,7 @@ public:
 	}
 
 	void PlayAirboneMontage();
+	bool bAttacking = false;
 
 protected:
 	// Called when the game starts or when spawned
@@ -34,9 +35,12 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Montage")
 	class UAnimMontage* JumpingMontage;
 
+
 private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera", meta = (AllowPrivateAccess = "true"))
 	class UCameraComponent* VGCameraComponent;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera", meta = (AllowPrivateAccess = "true"))
 	class USpringArmComponent* CameraBoom;
+	
+
 };
