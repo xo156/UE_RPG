@@ -86,27 +86,53 @@ void AMyPlayerController::Attack(const FInputActionValue& Value) {
 		if (!bIsAttacking) {
 			bIsAttacking = true;
 			if (UAnimInstance* AnimInstance = GetCharacter()->GetMesh()->GetAnimInstance()) {
-				if (CurrentWeapon == nullptr)
+				if (CurrentWeapon == nullptr) {
+					bIsAttacking = false;
 					return;
-				switch (CurrentWeapon->CurrentComboCount) {
+				}
+				GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Red, TEXT("Attack"));
+				/*switch (CurrentWeapon->CurrentComboCount) {
 				case 0:
 					AnimInstance->Montage_Play(CurrentWeapon->AttackMontage1);
 					CurrentWeapon->CurrentComboCount++;
+					bIsAttacking = false;
 					break;
 				case 1:
 					AnimInstance->Montage_Play(CurrentWeapon->AttackMontage2);
 					CurrentWeapon->CurrentComboCount++;
+					bIsAttacking = false;
 					break;
 				case 2:
 					AnimInstance->Montage_Play(CurrentWeapon->AttackMontage3);
 					CurrentWeapon->CurrentComboCount++;
+					bIsAttacking = false;
 					break;
 				default:
 					CurrentWeapon->CurrentComboCount = 0;
+					bIsAttacking = false;
 					break;
+				}*/
+				int32 SectionCount = CurrentWeapon->GetSectionCount(CurrentWeapon->AttackMontage);
+				if (CurrentWeapon->CurrentComboCount < SectionCount) {
+					FString SectionName = "Combo" + FString::FromInt(CurrentWeapon->CurrentComboCount);
+					if (AnimInstance->Montage_IsPlaying(CurrentWeapon->AttackMontage)) {
+						AnimInstance->Montage_JumpToSection(FName(*SectionName), CurrentWeapon->AttackMontage);
+					}
+					else {
+						AnimInstance->Montage_Play(CurrentWeapon->AttackMontage);
+						AnimInstance->Montage_JumpToSection(FName(*SectionName), CurrentWeapon->AttackMontage);
+					}
+					CurrentWeapon->CurrentComboCount++;
 				}
-				GetWorld()->GetTimerManager().SetTimer(ComboCheckTimerHandle, this, &AMyPlayerController::ResetAttackCount, WaitComboTime);
-				GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Red, TEXT("Attack"));
+				else {
+					CurrentWeapon->CurrentComboCount = 0;
+					FString SectionName = "Combo0";
+					AnimInstance->Montage_Play(CurrentWeapon->AttackMontage);
+					AnimInstance->Montage_JumpToSection(FName(*SectionName), CurrentWeapon->AttackMontage);
+				}
+				GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Red, FString::Printf(TEXT("CurrentComboCount: %d"), CurrentWeapon->CurrentComboCount));
+				GetWorld()->GetTimerManager().SetTimer(ComboCheckTimerHandle, this, &AMyPlayerController::ResetAttackCount, CurrentWeapon->WaitComboTime, false);
+				bIsAttacking = false;
 			}
 		}
 		
@@ -122,9 +148,8 @@ void AMyPlayerController::EquipWeapon()
 
 void AMyPlayerController::ResetAttackCount()
 {
-	if (WeaponClass) {
+	if(CurrentWeapon)
 		CurrentWeapon->CurrentComboCount = 0;
-	}
 	bIsAttacking = false;
 }
 

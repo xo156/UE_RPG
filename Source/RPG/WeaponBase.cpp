@@ -10,9 +10,7 @@ AWeaponBase::AWeaponBase()
 	PrimaryActorTick.bCanEverTick = false;
 
 	WeaponMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("Weapon"));
-	RootComponent =WeaponMesh;
-	WeaponDamage = 100;
-	WeaponType = FText::FromString(TEXT("Gauntlet"));
+	RootComponent = WeaponMesh;
 }
 
 // Called every frame
@@ -30,10 +28,9 @@ void AWeaponBase::BeginPlay()
 	
 }
 
-void AWeaponBase::SetMontageLength()
+int AWeaponBase::GetSectionCount(UAnimMontage* Montage)
 {
-	MontageLength.Emplace(AttackMontage1->GetPlayLength());
-	MontageLength.Emplace(AttackMontage2->GetPlayLength());
-	MontageLength.Emplace(AttackMontage3->GetPlayLength());
+	if(Montage)
+		return Montage->CompositeSections.Num();
+	return 0;
 }
-

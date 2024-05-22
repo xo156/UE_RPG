@@ -36,10 +36,7 @@ protected:
 	void Look(const FInputActionValue& Value);
 	void Attack(const FInputActionValue& Value);
 	void EquipWeapon();
-
 	void ResetAttackCount();
-
-public:
 
 protected:
 	UPROPERTY(EditAnywhere, Category = "Combo")
@@ -59,11 +56,8 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input", meta = (AllowPrivateAccess = "true"))
 	class UInputAction* LookAction;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combo")
-	float WaitComboTime = 1.f;
-
 private:
 	FTimerHandle ComboCheckTimerHandle;
 	class AMyCharacter* MyCharacter;
-	bool bIsAttacking = false;
+	bool bIsAttacking;
 };
