@@ -6,6 +6,8 @@
 #include "GameFramework/Character.h"
 #include "MyCharacter.generated.h"
 
+
+
 UCLASS()
 class RPG_API AMyCharacter : public ACharacter
 {
@@ -32,7 +34,7 @@ protected:
 	virtual void BeginPlay() override;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Montage")
-	class UAnimMontage* JumpingMontage;
+	class UAnimMontage* AirboneMontage;
 
 
 private:
@@ -40,6 +42,5 @@ private:
 	class UCameraComponent* VGCameraComponent;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera", meta = (AllowPrivateAccess = "true"))
 	class USpringArmComponent* CameraBoom;
-	
 
 };

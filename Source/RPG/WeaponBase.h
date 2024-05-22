@@ -33,12 +33,11 @@ public:
 
 	TArray<float> MontageLength;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon")
+	class USkeletalMeshComponent* WeaponMesh;
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combo")
 	int32 CurrentComboCount = 0;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combo")
 	float WaitComboTime = 1.7f;
-
-protected:
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon")
-	class USkeletalMeshComponent* WeaponMesh;
 };

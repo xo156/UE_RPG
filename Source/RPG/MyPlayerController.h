@@ -35,8 +35,10 @@ protected:
 	void Jump(const FInputActionValue& Value);
 	void Look(const FInputActionValue& Value);
 	void Attack(const FInputActionValue& Value);
-	void EquipWeapon();
 	void ResetAttackCount();
+
+public:
+	bool bIsAttacking;
 
 protected:
 	UPROPERTY(EditAnywhere, Category = "Combo")
@@ -59,5 +61,4 @@ protected:
 private:
 	FTimerHandle ComboCheckTimerHandle;
 	class AMyCharacter* MyCharacter;
-	bool bIsAttacking;
 };

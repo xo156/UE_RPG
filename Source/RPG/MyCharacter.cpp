@@ -6,6 +6,7 @@
 #include "Camera/CameraComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/SpringArmComponent.h"
+#include "WeaponBase.h"
 
 // Sets default values
 AMyCharacter::AMyCharacter() {
@@ -31,12 +32,14 @@ AMyCharacter::AMyCharacter() {
 
 	VGCameraComponent = CreateDefaultSubobject<UCameraComponent>(TEXT("VGCamera"));
 	VGCameraComponent->SetupAttachment(CameraBoom, USpringArmComponent::SocketName);
+
+
 }
 
 void AMyCharacter::PlayAirboneMontage()
 {
 	if (GetCharacterMovement()->IsFalling()) {
-		PlayAnimMontage(JumpingMontage);
+		PlayAnimMontage(AirboneMontage);
 		GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Red, TEXT("IsFalling()"));
 	}
 }

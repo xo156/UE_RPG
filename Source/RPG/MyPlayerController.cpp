@@ -29,7 +29,9 @@ void AMyPlayerController::BeginPlay() {
 		SubSystem->AddMappingContext(DefaultMappingContext, 0);
 	}
 
-	EquipWeapon();
+	if (WeaponClass) {
+		CurrentWeapon = GetWorld()->SpawnActor<AWeaponBase>(WeaponClass);
+	}
 }
 
 void AMyPlayerController::OnPossess(APawn* InPawn) {
@@ -53,13 +55,15 @@ void AMyPlayerController::Move(const FInputActionValue& Value)
 {
 	const FVector2D InputValue = Value.Get<FVector2D>();
 	if (GetCharacter() != nullptr) {
-		const FRotator YawRotation(0.f, GetCharacter()->GetControlRotation().Yaw, 0.f);
-		const FVector ForwardDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);
-		const FVector RightDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
+		if (!bIsAttacking) {
+			const FRotator YawRotation(0.f, GetCharacter()->GetControlRotation().Yaw, 0.f);
+			const FVector ForwardDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);
+			const FVector RightDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
 
-		GetCharacter()->AddMovementInput(ForwardDirection, InputValue.Y);
-		GetCharacter()->AddMovementInput(RightDirection, InputValue.X);
-		GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Red, TEXT("Move"));
+			GetCharacter()->AddMovementInput(ForwardDirection, InputValue.Y);
+			GetCharacter()->AddMovementInput(RightDirection, InputValue.X);
+			GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Red, TEXT("Move"));
+		}
 	}
 }
 
@@ -91,27 +95,6 @@ void AMyPlayerController::Attack(const FInputActionValue& Value) {
 					return;
 				}
 				GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Red, TEXT("Attack"));
-				/*switch (CurrentWeapon->CurrentComboCount) {
-				case 0:
-					AnimInstance->Montage_Play(CurrentWeapon->AttackMontage1);
-					CurrentWeapon->CurrentComboCount++;
-					bIsAttacking = false;
-					break;
-				case 1:
-					AnimInstance->Montage_Play(CurrentWeapon->AttackMontage2);
-					CurrentWeapon->CurrentComboCount++;
-					bIsAttacking = false;
-					break;
-				case 2:
-					AnimInstance->Montage_Play(CurrentWeapon->AttackMontage3);
-					CurrentWeapon->CurrentComboCount++;
-					bIsAttacking = false;
-					break;
-				default:
-					CurrentWeapon->CurrentComboCount = 0;
-					bIsAttacking = false;
-					break;
-				}*/
 				int32 SectionCount = CurrentWeapon->GetSectionCount(CurrentWeapon->AttackMontage);
 				if (CurrentWeapon->CurrentComboCount < SectionCount) {
 					FString SectionName = "Combo" + FString::FromInt(CurrentWeapon->CurrentComboCount);
@@ -132,17 +115,8 @@ void AMyPlayerController::Attack(const FInputActionValue& Value) {
 				}
 				GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Red, FString::Printf(TEXT("CurrentComboCount: %d"), CurrentWeapon->CurrentComboCount));
 				GetWorld()->GetTimerManager().SetTimer(ComboCheckTimerHandle, this, &AMyPlayerController::ResetAttackCount, CurrentWeapon->WaitComboTime, false);
-				bIsAttacking = false;
 			}
 		}
-		
-	}
-}
-
-void AMyPlayerController::EquipWeapon()
-{
-	if (WeaponClass) {
-		CurrentWeapon = GetWorld()->SpawnActor<AWeaponBase>(WeaponClass);
 	}
 }
 
