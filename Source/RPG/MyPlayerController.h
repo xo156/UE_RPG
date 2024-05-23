@@ -37,6 +37,7 @@ protected:
 	void Attack(const FInputActionValue& Value);
 	void ResetAttackCount();
 
+
 public:
 	bool bIsAttacking;
 

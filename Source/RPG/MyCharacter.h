@@ -29,6 +29,12 @@ public:
 
 	void PlayAirboneMontage();
 
+	class USkeletalMeshComponent* GetSpecificPawnMesh() const;
+	FName GetWeaponAttackPoint() const;
+	void EquipWeapon(class AWeaponBase* Weapon);
+	void AddWeapon(class AWeaponBase* Weapon);
+	void SetCurrentWeapon(class AWeaponBase* NewWeapon, class AWeaponBase* LastWeapon);
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -36,6 +42,11 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Montage")
 	class UAnimMontage* AirboneMontage;
 
+public:
+	UPROPERTY(EditAnywhere, Category = "Inventory")
+	FName WeaponAttachPoint;
+
+	TArray<class AWeaponBase*> Inven;
 
 private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera", meta = (AllowPrivateAccess = "true"))

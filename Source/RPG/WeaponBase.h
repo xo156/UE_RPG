@@ -15,12 +15,16 @@ class RPG_API AWeaponBase : public AActor
 //ÇÔ¼öµé
 public:	
 	// Sets default values for this actor's properties
-	AWeaponBase();
+	AWeaponBase(const class FObjectInitializer& ObjectInitializer);
 
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
 	int GetSectionCount(UAnimMontage* Montage);
+
+	void SetOwnerCharacter(class AMyCharacter* NewCharacter);
+	void AttachMeshToCharacter();
+	void OnEquip(const AWeaponBase* LastWeapon);
 
 protected:
 	// Called when the game starts or when spawned
@@ -34,10 +38,23 @@ public:
 	TArray<float> MontageLength;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon")
-	class USkeletalMeshComponent* WeaponMesh;
+	class USkeletalMeshComponent* WeaponRightHandMesh;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon")
+	class UBoxComponent* WeaponRightCollision;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon")
+	FName WeaponRightAttachPoint;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon")
+	class USkeletalMeshComponent* WeaponLeftHandMesh;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon")
+	class UBoxComponent* WeaponLeftCollision;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon")
+	FName WeaponLeftAttachPoint;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combo")
 	int32 CurrentComboCount = 0;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combo")
 	float WaitComboTime = 1.7f;
+
+	class AMyCharacter* MyCharacter;
 };

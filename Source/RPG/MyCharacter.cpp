@@ -44,6 +44,21 @@ void AMyCharacter::PlayAirboneMontage()
 	}
 }
 
+USkeletalMeshComponent* AMyCharacter::GetSpecificPawnMesh() const
+{
+	return GetMesh();
+}
+
+FName AMyCharacter::GetWeaponAttackPoint() const
+{
+	return WeaponAttachPoint;
+}
+
+void AMyCharacter::EquipWeapon(AWeaponBase* Weapon)
+{
+
+}
+
 // Called when the game starts or when spawned
 void AMyCharacter::BeginPlay() {
 	Super::BeginPlay();

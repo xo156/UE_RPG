@@ -2,15 +2,35 @@
 
 
 #include "WeaponBase.h"
+#include "Components/SkeletalMeshComponent.h"
+#include "Components/BoxComponent.h"
 
 // Sets default values
-AWeaponBase::AWeaponBase()
+AWeaponBase::AWeaponBase(const class FObjectInitializer& ObjectInitializer):Super(ObjectInitializer)
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = false;
 
-	WeaponMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("Weapon"));
-	RootComponent = WeaponMesh;
+    // RootComponent를 따로 만들어서 여기로 붙여버리기
+    USceneComponent* Root = ObjectInitializer.CreateDefaultSubobject<USceneComponent>(this, TEXT("Root"));
+    RootComponent = Root;
+
+    //오른손
+    WeaponRightHandMesh = ObjectInitializer.CreateDefaultSubobject<USkeletalMeshComponent>(this, TEXT("WeaponRightHandMesh"));
+    WeaponRightHandMesh->SetupAttachment(RootComponent);
+    WeaponRightHandMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+    WeaponRightCollision = CreateDefaultSubobject<UBoxComponent>(TEXT("WeaponRightCollision"));
+    WeaponRightCollision->SetBoxExtent(FVector(3.f, 3.f, 3.f));
+    WeaponRightCollision->AttachToComponent(WeaponRightHandMesh, FAttachmentTransformRules::SnapToTargetIncludingScale, "Socket_R");
+
+    // Create left hand weapon mesh and attach it to the root
+    WeaponLeftHandMesh = ObjectInitializer.CreateDefaultSubobject<USkeletalMeshComponent>(this, TEXT("WeaponLeftHandMesh"));
+    WeaponLeftHandMesh->SetupAttachment(RootComponent);
+    WeaponLeftHandMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+    WeaponLeftCollision = CreateDefaultSubobject<UBoxComponent>(TEXT("WeaponLeftCollision"));
+    WeaponLeftCollision->SetBoxExtent(FVector(3.f, 3.f, 3.f));
+    WeaponLeftCollision->AttachToComponent(WeaponRightHandMesh, FAttachmentTransformRules::SnapToTargetIncludingScale, "Socket_L");
+
 }
 
 // Called every frame
@@ -33,4 +53,21 @@ int AWeaponBase::GetSectionCount(UAnimMontage* Montage)
 	if(Montage)
 		return Montage->CompositeSections.Num();
 	return 0;
+}
+
+void AWeaponBase::SetOwnerCharacter(AMyCharacter* NewCharacter)
+{
+    if (MyCharacter != NewCharacter)
+        MyCharacter = NewCharacter;
+}
+
+void AWeaponBase::AttachMeshToCharacter()
+{
+    if (MyCharacter) {
+
+    }
+}
+
+void AWeaponBase::OnEquip(const AWeaponBase* LastWeapon)
+{
 }
