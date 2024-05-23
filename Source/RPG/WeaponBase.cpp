@@ -3,6 +3,7 @@
 
 #include "WeaponBase.h"
 #include "MyCharacter.h"
+#include "MyPlayerController.h"
 #include "Components/SkeletalMeshComponent.h"
 #include "Components/BoxComponent.h"
 
@@ -12,26 +13,27 @@ AWeaponBase::AWeaponBase(const class FObjectInitializer& ObjectInitializer):Supe
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = false;
 
-    // RootComponent를 따로 만들어서 여기로 붙여버리기
+    // RootComponent 설정
     USceneComponent* Root = ObjectInitializer.CreateDefaultSubobject<USceneComponent>(this, TEXT("Root"));
     RootComponent = Root;
 
-    //오른손
+    //오른손 실제로 붙이기
     WeaponRightHandMesh = ObjectInitializer.CreateDefaultSubobject<USkeletalMeshComponent>(this, TEXT("WeaponRightHandMesh"));
-    WeaponRightHandMesh->SetupAttachment(RootComponent);
+    WeaponRightHandMesh->SetupAttachment(Root, "Socket_R");
     WeaponRightHandMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+
     WeaponRightCollision = CreateDefaultSubobject<UBoxComponent>(TEXT("WeaponRightCollision"));
     WeaponRightCollision->SetBoxExtent(FVector(3.f, 3.f, 3.f));
-    WeaponRightCollision->AttachToComponent(WeaponRightHandMesh, FAttachmentTransformRules::SnapToTargetIncludingScale, "Socket_R");
+    WeaponRightCollision->SetupAttachment(WeaponRightHandMesh, "Socket_R");
 
-    //왼손
+    //왼손 실제로 붙이기
     WeaponLeftHandMesh = ObjectInitializer.CreateDefaultSubobject<USkeletalMeshComponent>(this, TEXT("WeaponLeftHandMesh"));
-    WeaponLeftHandMesh->SetupAttachment(RootComponent);
+    WeaponLeftHandMesh->SetupAttachment(Root, "Socket_L");
     WeaponLeftHandMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+
     WeaponLeftCollision = CreateDefaultSubobject<UBoxComponent>(TEXT("WeaponLeftCollision"));
     WeaponLeftCollision->SetBoxExtent(FVector(3.f, 3.f, 3.f));
-    WeaponLeftCollision->AttachToComponent(WeaponRightHandMesh, FAttachmentTransformRules::SnapToTargetIncludingScale, "Socket_L");
-
+    WeaponLeftCollision->SetupAttachment(WeaponLeftHandMesh, "Socket_L");
 }
 
 // Called every frame
@@ -58,19 +60,35 @@ int AWeaponBase::GetSectionCount(UAnimMontage* Montage)
 
 void AWeaponBase::SetOwnerCharacter(AMyCharacter* NewOwner)
 {
-    if (MyCharacter != NewOwner)
+    //캐릭터는 하나니까
+    if (MyCharacter != NewOwner) {
         MyCharacter = NewOwner;
+        AttachMeshToCharacter();
+    }
 }
 
 void AWeaponBase::AttachMeshToCharacter()
 {
     if (MyCharacter) {
-        USkeletalMeshComponent* CharacterMesh = MyCharacter->GetSpecificMesh();
-        FName AttachPoint = MyCharacter->GetWeaponAttachPoint();
-        //WeaponLeftHandMesh->AttachToComponent()
-    }
-}
+        USkeletalMeshComponent* CharacterMesh = MyCharacter->GetMesh();
+        if (CharacterMesh) {
+            WeaponRightHandMesh->AttachToComponent(CharacterMesh, FAttachmentTransformRules::SnapToTargetIncludingScale, TEXT("Socket_R"));
+            WeaponLeftHandMesh->AttachToComponent(CharacterMesh, FAttachmentTransformRules::SnapToTargetIncludingScale, TEXT("Socket_L"));
 
-void AWeaponBase::OnEquip(const AWeaponBase* LastWeapon)
-{
+            //잘 붙는지 확인용
+            if (WeaponRightHandMesh->GetAttachParent() == CharacterMesh) {
+                GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, TEXT("RightHandMesh successfully attached to Socket_R"));
+            }
+            else  {
+                GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("Failed to attach RightHandMesh to Socket_R"));
+            }
+
+            if (WeaponLeftHandMesh->GetAttachParent() == CharacterMesh) {
+                GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, TEXT("LeftHandMesh successfully attached to Socket_L"));
+            }
+            else  {
+                GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("Failed to attach LeftHandMesh to Socket_L"));
+            }
+        }
+    }
 }

@@ -6,8 +6,6 @@
 #include "GameFramework/Character.h"
 #include "MyCharacter.generated.h"
 
-
-
 UCLASS()
 class RPG_API AMyCharacter : public ACharacter
 {
@@ -29,14 +27,8 @@ public:
 
 	void PlayAirboneMontage();
 
-	class USkeletalMeshComponent* GetSpecificMesh() const;
-	FName GetWeaponAttachPoint() const;
-	void EquipWeapon(class AWeaponBase* Weapon);
-
-	void AddWeapon(class AWeaponBase* Weapon);
-
-	//Àåºñ ½ºÀ§Äª
-	void SetCurrentWeapon(class AWeaponBase* NewWeapon, class AWeaponBase* LastWeapon);
+	UFUNCTION(BlueprintCallable, Category = "Weapon")
+	void EquipWeapon(TSubclassOf<class AWeaponBase> WeaponClass);
 
 protected:
 	// Called when the game starts or when spawned
@@ -45,16 +37,15 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Montage")
 	class UAnimMontage* AirboneMontage;
 
-public:
-	UPROPERTY(EditAnywhere, Category = "Inventory")
-	FName WeaponAttachPoint;
-
-	TArray<class AWeaponBase*> Inven;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Weapon")
+	TSubclassOf<class AWeaponBase> BareHand;
 
 private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera", meta = (AllowPrivateAccess = "true"))
 	class UCameraComponent* VGCameraComponent;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera", meta = (AllowPrivateAccess = "true"))
 	class USpringArmComponent* CameraBoom;
+
+	class AWeaponBase* CurrentWeapon;
 
 };

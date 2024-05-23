@@ -24,7 +24,6 @@ public:
 
 	void SetOwnerCharacter(class AMyCharacter* NewOwner);
 	void AttachMeshToCharacter();
-	void OnEquip(const AWeaponBase* LastWeapon);
 
 protected:
 	// Called when the game starts or when spawned
@@ -40,16 +39,12 @@ public:
 	class USkeletalMeshComponent* WeaponRightHandMesh;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon")
 	class UBoxComponent* WeaponRightCollision;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon")
-	FName WeaponRightAttachPoint;
 
 	//¿Þ¼Õ
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon")
 	class USkeletalMeshComponent* WeaponLeftHandMesh;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon")
 	class UBoxComponent* WeaponLeftCollision;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon")
-	FName WeaponLeftAttachPoint;
 
 	//°ø°Ý
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combo")

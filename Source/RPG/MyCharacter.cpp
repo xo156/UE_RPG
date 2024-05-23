@@ -33,8 +33,7 @@ AMyCharacter::AMyCharacter() {
 
 	VGCameraComponent = CreateDefaultSubobject<UCameraComponent>(TEXT("VGCamera"));
 	VGCameraComponent->SetupAttachment(CameraBoom, USpringArmComponent::SocketName);
-
-
+	CameraBoom->bUsePawnControlRotation = false;
 }
 
 void AMyCharacter::PlayAirboneMontage()
@@ -45,47 +44,30 @@ void AMyCharacter::PlayAirboneMontage()
 	}
 }
 
-USkeletalMeshComponent* AMyCharacter::GetSpecificMesh() const
+void AMyCharacter::EquipWeapon(TSubclassOf<class AWeaponBase> WeaponClass)
 {
-	return GetMesh();
-}
-
-FName AMyCharacter::GetWeaponAttachPoint() const
-{
-	return WeaponAttachPoint;
-}
-
-void AMyCharacter::EquipWeapon(AWeaponBase* Weapon)
-{
-	AMyPlayerController* MyController = Cast<AMyPlayerController>(GetController());
-	if (Weapon) {
-		SetCurrentWeapon(Weapon, MyController->CurrentWeapon);
+	if (WeaponClass) {
+		CurrentWeapon = GetWorld()->SpawnActor<AWeaponBase>(WeaponClass);
+		if (CurrentWeapon) {
+			CurrentWeapon->SetOwnerCharacter(this);
+			//아래는 잘 붙는지 확인용
+			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, FString::Printf(TEXT("Equipped Weapon: %s"), *CurrentWeapon->GetName()));
+		}
+		else {
+			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("Failed to spawn weapon"));
+		}
 	}
-}
-
-void AMyCharacter::AddWeapon(AWeaponBase* Weapon)
-{
-	if (Weapon)
-		Inven.AddUnique(Weapon);
-}
-
-void AMyCharacter::SetCurrentWeapon(AWeaponBase* NewWeapon, AWeaponBase* LastWeapon)
-{
-	if (AWeaponBase* LocalLastWeapon = NULL) {
-		LocalLastWeapon = LastWeapon;
+	else {
+		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("WeaponClass is not set"));
 	}
-
-	if (NewWeapon) {
-		NewWeapon->SetOwnerCharacter(this);
-		NewWeapon->OnEquip(LastWeapon);
-	}
-
 }
 
 // Called when the game starts or when spawned
 void AMyCharacter::BeginPlay() {
 	Super::BeginPlay();
 
+	if (BareHand)
+		EquipWeapon(BareHand);
 }
 
 // Called every frame
