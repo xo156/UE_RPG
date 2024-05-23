@@ -22,7 +22,7 @@ public:
 
 	int GetSectionCount(UAnimMontage* Montage);
 
-	void SetOwnerCharacter(class AMyCharacter* NewCharacter);
+	void SetOwnerCharacter(class AMyCharacter* NewOwner);
 	void AttachMeshToCharacter();
 	void OnEquip(const AWeaponBase* LastWeapon);
 
@@ -35,8 +35,7 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Montage")
 	class UAnimMontage* AttackMontage;
 
-	TArray<float> MontageLength;
-
+	//오른손
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon")
 	class USkeletalMeshComponent* WeaponRightHandMesh;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon")
@@ -44,6 +43,7 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon")
 	FName WeaponRightAttachPoint;
 
+	//왼손
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon")
 	class USkeletalMeshComponent* WeaponLeftHandMesh;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon")
@@ -51,6 +51,7 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon")
 	FName WeaponLeftAttachPoint;
 
+	//공격
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combo")
 	int32 CurrentComboCount = 0;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combo")

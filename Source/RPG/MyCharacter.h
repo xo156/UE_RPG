@@ -29,10 +29,13 @@ public:
 
 	void PlayAirboneMontage();
 
-	class USkeletalMeshComponent* GetSpecificPawnMesh() const;
-	FName GetWeaponAttackPoint() const;
+	class USkeletalMeshComponent* GetSpecificMesh() const;
+	FName GetWeaponAttachPoint() const;
 	void EquipWeapon(class AWeaponBase* Weapon);
+
 	void AddWeapon(class AWeaponBase* Weapon);
+
+	//Àåºñ ½ºÀ§Äª
 	void SetCurrentWeapon(class AWeaponBase* NewWeapon, class AWeaponBase* LastWeapon);
 
 protected:

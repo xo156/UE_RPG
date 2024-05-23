@@ -7,6 +7,7 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "WeaponBase.h"
+#include "MyPlayerController.h"
 
 // Sets default values
 AMyCharacter::AMyCharacter() {
@@ -44,18 +45,40 @@ void AMyCharacter::PlayAirboneMontage()
 	}
 }
 
-USkeletalMeshComponent* AMyCharacter::GetSpecificPawnMesh() const
+USkeletalMeshComponent* AMyCharacter::GetSpecificMesh() const
 {
 	return GetMesh();
 }
 
-FName AMyCharacter::GetWeaponAttackPoint() const
+FName AMyCharacter::GetWeaponAttachPoint() const
 {
 	return WeaponAttachPoint;
 }
 
 void AMyCharacter::EquipWeapon(AWeaponBase* Weapon)
 {
+	AMyPlayerController* MyController = Cast<AMyPlayerController>(GetController());
+	if (Weapon) {
+		SetCurrentWeapon(Weapon, MyController->CurrentWeapon);
+	}
+}
+
+void AMyCharacter::AddWeapon(AWeaponBase* Weapon)
+{
+	if (Weapon)
+		Inven.AddUnique(Weapon);
+}
+
+void AMyCharacter::SetCurrentWeapon(AWeaponBase* NewWeapon, AWeaponBase* LastWeapon)
+{
+	if (AWeaponBase* LocalLastWeapon = NULL) {
+		LocalLastWeapon = LastWeapon;
+	}
+
+	if (NewWeapon) {
+		NewWeapon->SetOwnerCharacter(this);
+		NewWeapon->OnEquip(LastWeapon);
+	}
 
 }
 

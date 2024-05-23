@@ -2,6 +2,7 @@
 
 
 #include "WeaponBase.h"
+#include "MyCharacter.h"
 #include "Components/SkeletalMeshComponent.h"
 #include "Components/BoxComponent.h"
 
@@ -23,7 +24,7 @@ AWeaponBase::AWeaponBase(const class FObjectInitializer& ObjectInitializer):Supe
     WeaponRightCollision->SetBoxExtent(FVector(3.f, 3.f, 3.f));
     WeaponRightCollision->AttachToComponent(WeaponRightHandMesh, FAttachmentTransformRules::SnapToTargetIncludingScale, "Socket_R");
 
-    // Create left hand weapon mesh and attach it to the root
+    //¿Þ¼Õ
     WeaponLeftHandMesh = ObjectInitializer.CreateDefaultSubobject<USkeletalMeshComponent>(this, TEXT("WeaponLeftHandMesh"));
     WeaponLeftHandMesh->SetupAttachment(RootComponent);
     WeaponLeftHandMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
@@ -55,16 +56,18 @@ int AWeaponBase::GetSectionCount(UAnimMontage* Montage)
 	return 0;
 }
 
-void AWeaponBase::SetOwnerCharacter(AMyCharacter* NewCharacter)
+void AWeaponBase::SetOwnerCharacter(AMyCharacter* NewOwner)
 {
-    if (MyCharacter != NewCharacter)
-        MyCharacter = NewCharacter;
+    if (MyCharacter != NewOwner)
+        MyCharacter = NewOwner;
 }
 
 void AWeaponBase::AttachMeshToCharacter()
 {
     if (MyCharacter) {
-
+        USkeletalMeshComponent* CharacterMesh = MyCharacter->GetSpecificMesh();
+        FName AttachPoint = MyCharacter->GetWeaponAttachPoint();
+        //WeaponLeftHandMesh->AttachToComponent()
     }
 }
 

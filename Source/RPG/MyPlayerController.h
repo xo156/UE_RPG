@@ -41,12 +41,12 @@ protected:
 public:
 	bool bIsAttacking;
 
-protected:
 	UPROPERTY(EditAnywhere, Category = "Combo")
 	TSubclassOf<class AWeaponBase> WeaponClass;
 
 	class AWeaponBase* CurrentWeapon;
 
+protected:
 	//ÀÎÇ² ¾×¼Ç
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input", meta = (AllowPrivateAccess = "true"))
 	class UInputMappingContext* DefaultMappingContext;
