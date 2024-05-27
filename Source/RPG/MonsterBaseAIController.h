@@ -28,6 +28,10 @@ public:
 	// 타겟을 설정하는 메서드
 	void SetTarget(AActor* NewTarget);
 
+protected:
+	// Called when the game starts or when spawned
+	virtual void BeginPlay() override;
+
 public:
 	// 퍼셉션 시스템을 위한 구성 요소
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "AI")

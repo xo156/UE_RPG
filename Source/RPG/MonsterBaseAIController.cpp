@@ -69,6 +69,18 @@ void AMonsterBaseAIController::SetTarget(AActor* NewTarget)
 	TargetActor = NewTarget;
 }
 
+void AMonsterBaseAIController::BeginPlay()
+{
+	//게임 시작하면 ai를 monster에게 할당하기
+	if (AMonsterBase* Monster = Cast<AMonsterBase>(GetPawn())) {
+		if (AMonsterBaseAIController* AIController = Cast<AMonsterBaseAIController>(Monster->GetController())) {
+			if (AMonsterBaseAIController* NewAIController = GetWorld()->SpawnActor<AMonsterBaseAIController>()) {
+				Monster->PossessedBy(NewAIController);
+			}
+		}
+	}
+}
+
 void AMonsterBaseAIController::OnTargetPerceptionUpdated(AActor* Actor, const FAIStimulus Stimulus)
 {
 	if (Stimulus.WasSuccessfullySensed())
