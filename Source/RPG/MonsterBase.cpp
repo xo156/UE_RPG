@@ -2,6 +2,7 @@
 
 
 #include "MonsterBase.h"
+#include "MonsterBaseAIController.h"
 #include "Components/CapsuleComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "AIPerceptionComponent.generated.h"
@@ -12,12 +13,15 @@ AMonsterBase::AMonsterBase()
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
+	AIControllerClass = AMonsterBaseAIController::StaticClass();
+
 	GetCapsuleComponent()->InitCapsuleSize(42.f, 96.f);
 	bUseControllerRotationPitch = false;
 	bUseControllerRotationYaw = false;
 	bUseControllerRotationRoll = false;
 
 	GetCharacterMovement()->bOrientRotationToMovement = true; //이동하는 방향으로 캐릭터를 회전
+
 }
 
 // Called when the game starts or when spawned
@@ -25,7 +29,8 @@ void AMonsterBase::BeginPlay()
 {
 	Super::BeginPlay();
 	
-	MonsterStartPosition = GetActorLocation(); //게임 시작되면 몬스터의 스폰 포지션으로
+	MonsterCurrentHealth = MonsterMaxHealth;
+	MonsterStartPosition = GetActorLocation();
 }
 
 void AMonsterBase::Die()
@@ -46,6 +51,6 @@ void AMonsterBase::Tick(float DeltaTime)
 
 FVector AMonsterBase::MonsterPosition()
 {
-	return MonsterCurrentPosition = GetActorLocation();
+	return GetActorLocation();
 }
 

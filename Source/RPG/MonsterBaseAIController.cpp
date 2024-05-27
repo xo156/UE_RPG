@@ -4,6 +4,7 @@
 #include "MonsterBaseAIController.h"
 #include "Perception/AIPerceptionComponent.h"
 #include "Perception/AISenseConfig_Sight.h"
+#include "Perception/AISenseConfig_Hearing.h"
 #include "Perception/AIPerceptionSystem.h"
 #include "MonsterBase.h"
 
@@ -18,8 +19,15 @@ AMonsterBaseAIController::AMonsterBaseAIController()
 	MonsterSightConfig->PeripheralVisionAngleDegrees = 30.f; //시야각
 	MonsterSightConfig->DetectionByAffiliation.bDetectEnemies = true; //이게 맞나?
 
+	//몬스터 청각 설정
+	MonsterHearingConfig = CreateDefaultSubobject<UAISenseConfig_Hearing>(TEXT("MonsterHearingConfig"));
+	MonsterHearingConfig->HearingRange = 700.0f;
+	MonsterHearingConfig->SetMaxAge(5.0f);
+	MonsterSightConfig->DetectionByAffiliation.bDetectEnemies = true;
+
 	MonsterPerceptionComponent->ConfigureSense(*MonsterSightConfig);
-	MonsterPerceptionComponent->SetDominantSense(MonsterSightConfig->GetSenseImplementation());
+	MonsterPerceptionComponent->ConfigureSense(*MonsterHearingConfig);
+	MonsterPerceptionComponent->SetDominantSense(UAISense_Sight::StaticClass());
 
 	//바인딩
 	MonsterPerceptionComponent->OnTargetPerceptionUpdated.AddDynamic(this, &AMonsterBaseAIController::OnTargetPerceptionUpdated);
@@ -30,36 +38,38 @@ void AMonsterBaseAIController::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	if (AMonsterBase* Monster = Cast<AMonsterBase>(GetPawn())) {
-		if (CheckDist(Monster) <= 600.f) {
-			TracePlayer();
-		}
-	}
+	TracePlayer();
 }
 
 void AMonsterBaseAIController::TracePlayer()
 {
-	if (TargetActor) {
-		MoveToActor(TargetActor, 10.f);
-		if (AMonsterBase* Monster = Cast<AMonsterBase>(GetPawn())) {
-			if (CheckDist(Monster) <= 50.f) {
-				MonsterAttack();
-			}
+	AMonsterBase* Monster = GetMonsterPawn();
+	if (Monster && TargetActor)	{
+		float DistanceToTarget = MonsterToPlayerDist(Monster);
+		if (DistanceToTarget <= 50.0f) {
+			MonsterAttack();
+		}
+		else if (DistanceToTarget <= 500.0f) {
+			MoveToActor(TargetActor, 10.0f);
 		}
 	}
 }
 
-float AMonsterBaseAIController::CheckDist(AMonsterBase* Monster)
+float AMonsterBaseAIController::MonsterToPlayerDist(AMonsterBase* Monster)
 {
-	return FVector::Dist(Monster->MonsterPosition(), TargetActor->GetTargetLocation());
+	if (Monster && TargetActor) {
+		return FVector::Dist(Monster->GetActorLocation(), TargetActor->GetActorLocation());
+	}
+	return 0.0f;
 }
 
 void AMonsterBaseAIController::MonsterAttack()
 {
 	if (TargetActor) {
-		if (AMonsterBase* Monster = Cast<AMonsterBase>(GetPawn())) {
-			//일단 기본 어택 몽타주
-			Monster->PlayAnimMontage(Monster->MonsterAttackMontage);
+		if (AMonsterBase* Monster = GetMonsterPawn()) {
+			if (UAnimInstance* AnimInstance = Monster->GetMesh()->GetAnimInstance()) {
+				AnimInstance->Montage_Play(Monster->MonsterAttackMontage);
+			}
 		}
 	}
 }
@@ -71,14 +81,7 @@ void AMonsterBaseAIController::SetTarget(AActor* NewTarget)
 
 void AMonsterBaseAIController::BeginPlay()
 {
-	//게임 시작하면 ai를 monster에게 할당하기
-	if (AMonsterBase* Monster = Cast<AMonsterBase>(GetPawn())) {
-		if (AMonsterBaseAIController* AIController = Cast<AMonsterBaseAIController>(Monster->GetController())) {
-			if (AMonsterBaseAIController* NewAIController = GetWorld()->SpawnActor<AMonsterBaseAIController>()) {
-				Monster->PossessedBy(NewAIController);
-			}
-		}
-	}
+	Super::BeginPlay();
 }
 
 void AMonsterBaseAIController::OnTargetPerceptionUpdated(AActor* Actor, const FAIStimulus Stimulus)
@@ -87,4 +90,9 @@ void AMonsterBaseAIController::OnTargetPerceptionUpdated(AActor* Actor, const FA
 		SetTarget(Actor);
 	else
 		SetTarget(nullptr);
+}
+
+AMonsterBase* AMonsterBaseAIController::GetMonsterPawn() const
+{
+	return Cast<AMonsterBase>(GetPawn());
 }

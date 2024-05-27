@@ -29,6 +29,7 @@ protected:
 	virtual void BeginPlay() override;
 
 public:
+
 	UPROPERTY(EditAnywhere, Category = "Monster")
 	class UAnimMontage* MonsterAttackMontage;
 
