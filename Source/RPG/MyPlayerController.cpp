@@ -7,7 +7,7 @@
 #include "EnhancedInputSubsystems.h"
 #include "GameFramework/Pawn.h"
 #include "GameFramework/CharacterMovementComponent.h"
-#include "WeaponBase.h"
+#include "WeaponBaseComponent.h"
 
 AMyPlayerController::AMyPlayerController() {
 
@@ -30,7 +30,7 @@ void AMyPlayerController::BeginPlay() {
 	}
 
 	if (WeaponClass) {
-		CurrentWeapon = GetWorld()->SpawnActor<AWeaponBase>(WeaponClass);
+		CurrentWeapon = GetWorld()->SpawnActor<UWeaponBaseComponent>(WeaponClass);
 	}
 }
 

@@ -3,25 +3,24 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "GameFramework/Actor.h"
-#include "WeaponBase.generated.h"
+#include "Components/ActorComponent.h"
+#include "WeaponBaseComponent.generated.h"
 
 
-UCLASS()
-class RPG_API AWeaponBase : public AActor
+UCLASS(Blueprintable, ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))
+class RPG_API UWeaponBaseComponent : public UActorComponent
 {
 	GENERATED_BODY()
 	
 //ÇÔ¼öµé
 public:	
 	// Sets default values for this actor's properties
-	AWeaponBase(const class FObjectInitializer& ObjectInitializer);
+	//UWeaponBaseComponent();
 
 	// Called every frame
-	virtual void Tick(float DeltaTime) override;
+	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
 	int GetSectionCount(UAnimMontage* Montage);
-
 	void SetOwnerCharacter(class AMyCharacter* NewOwner);
 	void AttachMeshToCharacter();
 
@@ -53,4 +52,6 @@ public:
 	float WaitComboTime = 1.7f;
 
 	class AMyCharacter* MyCharacter;
+
+	
 };

@@ -21,7 +21,7 @@ public:
 	void PlayAirboneMontage();
 
 	UFUNCTION(BlueprintCallable, Category = "Weapon")
-	void EquipWeapon(TSubclassOf<class AWeaponBase> WeaponClass);
+	void EquipWeapon(TSubclassOf<class UWeaponBaseComponent> WeaponClass);
 
 protected:
 	// Called when the game starts or when spawned
@@ -31,7 +31,7 @@ protected:
 	class UAnimMontage* AirboneMontage;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Weapon")
-	TSubclassOf<class AWeaponBase> BareHand;
+	TSubclassOf<class UWeaponBaseComponent> BareHand;
 
 private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera", meta = (AllowPrivateAccess = "true"))
@@ -39,6 +39,6 @@ private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera", meta = (AllowPrivateAccess = "true"))
 	class USpringArmComponent* CameraBoom;
 
-	class AWeaponBase* CurrentWeapon;
+	class UWeaponBaseComponent* CurrentWeapon;
 
 };

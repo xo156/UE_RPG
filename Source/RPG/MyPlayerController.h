@@ -42,9 +42,9 @@ public:
 	bool bIsAttacking;
 
 	UPROPERTY(EditAnywhere, Category = "Combo")
-	TSubclassOf<class AWeaponBase> WeaponClass;
+	TSubclassOf<class UWeaponBaseComponent> WeaponClass;
 
-	class AWeaponBase* CurrentWeapon;
+	class UWeaponBaseComponent* CurrentWeapon;
 
 protected:
 	//ÀÎÇ² ¾×¼Ç

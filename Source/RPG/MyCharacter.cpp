@@ -6,7 +6,7 @@
 #include "Camera/CameraComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/SpringArmComponent.h"
-#include "WeaponBase.h"
+#include "WeaponBaseComponent.h"
 #include "MyPlayerController.h"
 
 // Sets default values
@@ -44,10 +44,10 @@ void AMyCharacter::PlayAirboneMontage()
 	}
 }
 
-void AMyCharacter::EquipWeapon(TSubclassOf<class AWeaponBase> WeaponClass)
+void AMyCharacter::EquipWeapon(TSubclassOf<class UWeaponBaseComponent> WeaponClass)
 {
 	if (WeaponClass) {
-		CurrentWeapon = GetWorld()->SpawnActor<AWeaponBase>(WeaponClass);
+		CurrentWeapon = CreateDefaultSubobject<UWeaponBaseComponent>(TEXT("Weapon"));
 		if (CurrentWeapon) {
 			CurrentWeapon->SetOwnerCharacter(this);
 			//아래는 잘 붙는지 확인용

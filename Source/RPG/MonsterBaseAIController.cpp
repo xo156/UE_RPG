@@ -30,7 +30,7 @@ AMonsterBaseAIController::AMonsterBaseAIController()
 	MonsterPerceptionComponent->SetDominantSense(UAISense_Sight::StaticClass());
 
 	//¹ÙÀÎµù
-	MonsterPerceptionComponent->OnTargetPerceptionUpdated.AddDynamic(this, &AMonsterBaseAIController::OnTargetPerceptionUpdated);
+	//MonsterPerceptionComponent->OnTargetPerceptionUpdated.AddDynamic(this, &AMonsterBaseAIController::OnTargetPerceptionUpdated);
 
 }
 
