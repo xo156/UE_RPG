@@ -18,13 +18,6 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
-	FORCEINLINE class UCameraComponent* GetVGCameraComponent() const {
-		return VGCameraComponent;
-	}
-	FORCEINLINE class USpringArmComponent* GetCameraBoom() const {
-		return CameraBoom;
-	}
-
 	void PlayAirboneMontage();
 
 	UFUNCTION(BlueprintCallable, Category = "Weapon")

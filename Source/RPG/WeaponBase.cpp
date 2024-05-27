@@ -1,6 +1,5 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
-
 #include "WeaponBase.h"
 #include "MyCharacter.h"
 #include "MyPlayerController.h"
@@ -70,8 +69,7 @@ void AWeaponBase::SetOwnerCharacter(AMyCharacter* NewOwner)
 void AWeaponBase::AttachMeshToCharacter()
 {
     if (MyCharacter) {
-        USkeletalMeshComponent* CharacterMesh = MyCharacter->GetMesh();
-        if (CharacterMesh) {
+        if (USkeletalMeshComponent* CharacterMesh = MyCharacter->GetMesh()) {
             WeaponRightHandMesh->AttachToComponent(CharacterMesh, FAttachmentTransformRules::SnapToTargetIncludingScale, TEXT("Socket_R"));
             WeaponLeftHandMesh->AttachToComponent(CharacterMesh, FAttachmentTransformRules::SnapToTargetIncludingScale, TEXT("Socket_L"));
 
