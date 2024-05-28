@@ -44,14 +44,76 @@ void AMyCharacter::PlayAirboneMontage()
 	}
 }
 
+void AMyCharacter::Move(FVector2D InputValue)
+{
+	const FRotator YawRotation(0.f, GetControlRotation().Yaw, 0.f);
+	const FVector ForwardDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);
+	const FVector RightDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
+
+	AddMovementInput(ForwardDirection, InputValue.Y);
+	AddMovementInput(RightDirection, InputValue.X);
+	GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Red, TEXT("Move"));
+}
+
+void AMyCharacter::Look(FVector2D InputValue)
+{
+	AddControllerPitchInput(InputValue.Y);
+	AddControllerYawInput(InputValue.X);
+	GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Red, TEXT("Look"));
+}
+
+void AMyCharacter::Attack()
+{
+	GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Red, TEXT("attack call"));
+	if (!bIsAttacking) {
+		GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Red, TEXT("Attack1"));
+		bIsAttacking = true;
+		if (UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance()) {
+			GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Red, TEXT("Attack2"));
+			if (CurrentWeapon == nullptr) {
+				GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Red, TEXT("Attack3"));
+				bIsAttacking = false;
+				return;
+			}
+			GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Red, TEXT("Attack4"));
+			int32 SectionCount = CurrentWeapon->GetSectionCount(CurrentWeapon->AttackMontage);
+			if (CurrentWeapon->CurrentComboCount < SectionCount) {
+				FString SectionName = "Combo" + FString::FromInt(CurrentWeapon->CurrentComboCount);
+				if (AnimInstance->Montage_IsPlaying(CurrentWeapon->AttackMontage)) {
+					AnimInstance->Montage_JumpToSection(FName(*SectionName), CurrentWeapon->AttackMontage);
+				}
+				else {
+					AnimInstance->Montage_Play(CurrentWeapon->AttackMontage);
+					AnimInstance->Montage_JumpToSection(FName(*SectionName), CurrentWeapon->AttackMontage);
+				}
+				CurrentWeapon->CurrentComboCount++;
+			}
+			else {
+				CurrentWeapon->CurrentComboCount = 0;
+				FString SectionName = "Combo0";
+				AnimInstance->Montage_Play(CurrentWeapon->AttackMontage);
+				AnimInstance->Montage_JumpToSection(FName(*SectionName), CurrentWeapon->AttackMontage);
+			}
+			GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Red, FString::Printf(TEXT("CurrentComboCount: %d"), CurrentWeapon->CurrentComboCount));
+			GetWorld()->GetTimerManager().SetTimer(ComboCheckTimerHandle, this, &AMyCharacter::ResetAttackCount, CurrentWeapon->WaitComboTime, false);
+		}
+	}
+}
+
+void AMyCharacter::ResetAttackCount()
+{
+	if (CurrentWeapon)
+		CurrentWeapon->CurrentComboCount = 0;
+	bIsAttacking = false;
+}
+
 void AMyCharacter::EquipWeapon(TSubclassOf<class UWeaponBaseComponent> WeaponClass)
 {
 	if (WeaponClass) {
-		CurrentWeapon = CreateDefaultSubobject<UWeaponBaseComponent>(TEXT("Weapon"));
+		CurrentWeapon = NewObject<UWeaponBaseComponent>(this, WeaponClass);
 		if (CurrentWeapon) {
 			CurrentWeapon->SetOwnerCharacter(this);
-			//아래는 잘 붙는지 확인용
-			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, FString::Printf(TEXT("Equipped Weapon: %s"), *CurrentWeapon->GetName()));
+			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, FString::Printf(TEXT("Now EquipWeapon : %s"), *CurrentWeapon->GetName()));
 		}
 		else {
 			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("Failed to spawn weapon"));
@@ -66,8 +128,10 @@ void AMyCharacter::EquipWeapon(TSubclassOf<class UWeaponBaseComponent> WeaponCla
 void AMyCharacter::BeginPlay() {
 	Super::BeginPlay();
 
-	if (BareHand)
+	if (BareHand) {
+		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("BareHand set"));
 		EquipWeapon(BareHand);
+	}
 }
 
 // Called every frame

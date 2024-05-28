@@ -35,16 +35,14 @@ protected:
 	void Jump(const FInputActionValue& Value);
 	void Look(const FInputActionValue& Value);
 	void Attack(const FInputActionValue& Value);
-	void ResetAttackCount();
 
 
 public:
-	bool bIsAttacking;
 
-	UPROPERTY(EditAnywhere, Category = "Combo")
+	/*UPROPERTY(EditAnywhere, Category = "Combo")
 	TSubclassOf<class UWeaponBaseComponent> WeaponClass;
 
-	class UWeaponBaseComponent* CurrentWeapon;
+	class UWeaponBaseComponent* CurrentWeapon;*/
 
 protected:
 	//ÀÎÇ² ¾×¼Ç
@@ -60,6 +58,5 @@ protected:
 	class UInputAction* LookAction;
 
 private:
-	FTimerHandle ComboCheckTimerHandle;
 	class AMyCharacter* MyCharacter;
 };

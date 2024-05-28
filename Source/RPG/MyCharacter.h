@@ -20,8 +20,15 @@ public:
 
 	void PlayAirboneMontage();
 
+	void Move(FVector2D InputValue);
+	void Look(FVector2D InputValue);
+	void Attack();
+	void ResetAttackCount();
+
 	UFUNCTION(BlueprintCallable, Category = "Weapon")
 	void EquipWeapon(TSubclassOf<class UWeaponBaseComponent> WeaponClass);
+
+	bool bIsAttacking;
 
 protected:
 	// Called when the game starts or when spawned
@@ -40,5 +47,7 @@ private:
 	class USpringArmComponent* CameraBoom;
 
 	class UWeaponBaseComponent* CurrentWeapon;
+
+	FTimerHandle ComboCheckTimerHandle;
 
 };
