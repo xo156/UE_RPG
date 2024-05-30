@@ -24,10 +24,7 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 //변수들
-public:
-	//https://forums.unrealengine.com/t/setting-skeletal-mesh-through-c/31585
-	//이거 보고 잘 생각 프로젝트를 기준으로 하는거라 경로는 상관 없음
-
+public:	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon")
 	class USkeletalMeshComponent* WeaponMesh;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon")

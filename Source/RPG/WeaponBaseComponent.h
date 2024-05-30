@@ -40,8 +40,8 @@ public:
 	float WaitComboTime = 1.7f;
 
 	class AMyCharacter* MyCharacter;
-	class AWeapon* Weapon;
 
+	class AWeapon* Weapon;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon")
 	TSubclassOf<class AWeapon> RightHandWeapon;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon")

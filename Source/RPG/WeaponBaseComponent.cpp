@@ -49,14 +49,16 @@ void UWeaponBaseComponent::AttachToCharacter()
 {
     if (MyCharacter) {
         if (RightHandWeapon) {
-            Weapon = GetWorld()->SpawnActor<AWeapon>(RightHandWeapon);
-            Weapon->AttachToComponent(MyCharacter->GetMesh(), FAttachmentTransformRules::SnapToTargetIncludingScale, FName(TEXT("Socket_R")));
-            GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Black, TEXT("RightWeaponAttach"));
+            if (Weapon = GetWorld()->SpawnActor<AWeapon>(RightHandWeapon)) {
+                Weapon->AttachToComponent(MyCharacter->GetMesh(), FAttachmentTransformRules::SnapToTargetIncludingScale, FName(TEXT("Socket_R")));
+                GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Black, TEXT("RightWeaponAttach"));
+            }
         }
         if (LeftHandWeapon) {
-            Weapon = GetWorld()->SpawnActor<AWeapon>(LeftHandWeapon);
-            Weapon->AttachToComponent(MyCharacter->GetMesh(), FAttachmentTransformRules::SnapToTargetIncludingScale, FName(TEXT("Socket_L")));
-            GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Black, TEXT("LeftWeaponAttach"));
+            if (Weapon = GetWorld()->SpawnActor<AWeapon>(LeftHandWeapon)) {
+                Weapon->AttachToComponent(MyCharacter->GetMesh(), FAttachmentTransformRules::SnapToTargetIncludingScale, FName(TEXT("Socket_L")));
+                GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Black, TEXT("LeftWeaponAttach"));
+            }
         }
     }
 }
