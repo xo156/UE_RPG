@@ -7,7 +7,9 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "WeaponBaseComponent.h"
+#include "Weapon.h"
 #include "MyPlayerController.h"
+#include "Components/BoxComponent.h"
 
 // Sets default values
 AMyCharacter::AMyCharacter() {
@@ -52,30 +54,32 @@ void AMyCharacter::Move(FVector2D InputValue)
 
 	AddMovementInput(ForwardDirection, InputValue.Y);
 	AddMovementInput(RightDirection, InputValue.X);
-	GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Red, TEXT("Move"));
 }
 
 void AMyCharacter::Look(FVector2D InputValue)
 {
 	AddControllerPitchInput(InputValue.Y);
 	AddControllerYawInput(InputValue.X);
-	GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Red, TEXT("Look"));
 }
 
 void AMyCharacter::Attack()
 {
-	GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Red, TEXT("attack call"));
 	if (!bIsAttacking) {
-		GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Red, TEXT("Attack1"));
 		bIsAttacking = true;
 		if (UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance()) {
-			GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Red, TEXT("Attack2"));
 			if (CurrentWeapon == nullptr) {
-				GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Red, TEXT("Attack3"));
 				bIsAttacking = false;
 				return;
 			}
-			GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Red, TEXT("Attack4"));
+			//TODO: 함수로 따로 묶어놓자
+			CurrentWeapon->RightHandWeaponInstance->WeaponCollision->SetCollisionProfileName("Weapon");
+			CurrentWeapon->RightHandWeaponInstance->WeaponCollision->SetNotifyRigidBodyCollision(true);
+			CurrentWeapon->RightHandWeaponInstance->bHasHit = false;
+			CurrentWeapon->LeftHandWeaponInstance->WeaponCollision->SetCollisionProfileName("Weapon");
+			CurrentWeapon->LeftHandWeaponInstance->WeaponCollision->SetNotifyRigidBodyCollision(true);
+			CurrentWeapon->LeftHandWeaponInstance->bHasHit = false;
+
+			GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Red, TEXT("Attack"));
 			int32 SectionCount = CurrentWeapon->GetSectionCount(CurrentWeapon->AttackMontage);
 			if (CurrentWeapon->CurrentComboCount < SectionCount) {
 				FString SectionName = "Combo" + FString::FromInt(CurrentWeapon->CurrentComboCount);
@@ -105,6 +109,11 @@ void AMyCharacter::ResetAttackCount()
 	if (CurrentWeapon)
 		CurrentWeapon->CurrentComboCount = 0;
 	bIsAttacking = false;
+	CurrentWeapon->RightHandWeaponInstance->WeaponCollision->SetCollisionProfileName("NoCollision");
+	CurrentWeapon->RightHandWeaponInstance->WeaponCollision->SetNotifyRigidBodyCollision(false);
+
+	CurrentWeapon->LeftHandWeaponInstance->WeaponCollision->SetCollisionProfileName("NoCollision");
+	CurrentWeapon->LeftHandWeaponInstance->WeaponCollision->SetNotifyRigidBodyCollision(false);
 }
 
 void AMyCharacter::EquipWeapon(TSubclassOf<class UWeaponBaseComponent> WeaponClass)
@@ -128,6 +137,7 @@ void AMyCharacter::EquipWeapon(TSubclassOf<class UWeaponBaseComponent> WeaponCla
 void AMyCharacter::BeginPlay() {
 	Super::BeginPlay();
 
+	//TODO: 지금은 시작할때 장착하지만 나중에는 바꿔보자
 	if (BareHand) {
 		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("BareHand set"));
 		EquipWeapon(BareHand);

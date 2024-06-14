@@ -22,12 +22,18 @@ AWeapon::AWeapon()
 
 	WeaponCollision->SetHiddenInGame(false);
 	WeaponCollision->SetVisibility(true);
+	WeaponCollision->SetCollisionProfileName("NoCollision");
+	WeaponCollision->SetNotifyRigidBodyCollision(false);
+
+	// 충돌 이벤트 바인딩
+	WeaponCollision->OnComponentHit.AddDynamic(this, &AWeapon::OnWeaponAttackHit);
 }
 
 // Called when the game starts or when spawned
 void AWeapon::BeginPlay()
 {
 	Super::BeginPlay();
+
 	
 }
 
@@ -36,5 +42,14 @@ void AWeapon::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+}
+
+void AWeapon::OnWeaponAttackHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
+{
+	if (OtherActor && (OtherActor != this) && OtherComp && !bHasHit) {
+		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("Weapon collided with: %s"), *Hit.GetActor()->GetName()));
+		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("Weapon collided with: %s"), bHasHit));
+	}
+	bHasHit = true;
 }
 

@@ -12,7 +12,7 @@ UWeaponBaseComponent::UWeaponBaseComponent()
 {
     // Set this component to be initialized when the game starts, and to be ticked every frame.  You can turn these features
     // off to improve performance if you don't need them.    PrimaryComponentTick.bCanEverTick = false;
-
+    PrimaryComponentTick.bCanEverTick = false;
 }
 
 // Called every frame
@@ -39,24 +39,24 @@ int UWeaponBaseComponent::GetSectionCount(UAnimMontage* Montage)
 void UWeaponBaseComponent::SetOwnerCharacter(AMyCharacter* NewOwner)
 {
     //캐릭터는 하나니까
-    if (MyCharacter != NewOwner) {
-        MyCharacter = NewOwner;
+    if (OwnerCharacter != NewOwner) {
+        OwnerCharacter = NewOwner;
         AttachToCharacter();
     }
 }
 
 void UWeaponBaseComponent::AttachToCharacter()
 {
-    if (MyCharacter) {
+    if (OwnerCharacter) {
         if (RightHandWeapon) {
-            if (Weapon = GetWorld()->SpawnActor<AWeapon>(RightHandWeapon)) {
-                Weapon->AttachToComponent(MyCharacter->GetMesh(), FAttachmentTransformRules::SnapToTargetIncludingScale, FName(TEXT("Socket_R")));
+            if (RightHandWeaponInstance = GetWorld()->SpawnActor<AWeapon>(RightHandWeapon)) {
+                RightHandWeaponInstance->AttachToComponent(OwnerCharacter->GetMesh(), FAttachmentTransformRules::SnapToTargetIncludingScale, FName(TEXT("Socket_R")));
                 GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Black, TEXT("RightWeaponAttach"));
             }
         }
         if (LeftHandWeapon) {
-            if (Weapon = GetWorld()->SpawnActor<AWeapon>(LeftHandWeapon)) {
-                Weapon->AttachToComponent(MyCharacter->GetMesh(), FAttachmentTransformRules::SnapToTargetIncludingScale, FName(TEXT("Socket_L")));
+            if (LeftHandWeaponInstance = GetWorld()->SpawnActor<AWeapon>(LeftHandWeapon)) {
+                LeftHandWeaponInstance->AttachToComponent(OwnerCharacter->GetMesh(), FAttachmentTransformRules::SnapToTargetIncludingScale, FName(TEXT("Socket_L")));
                 GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Black, TEXT("LeftWeaponAttach"));
             }
         }

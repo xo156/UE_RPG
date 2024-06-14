@@ -24,6 +24,8 @@ public:
 	void SetOwnerCharacter(class AMyCharacter* NewOwner);
 	void AttachToCharacter();
 
+	//무기 콜리전을 특정한 타이밍에만 검출하기
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -37,15 +39,16 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combo")
 	int32 CurrentComboCount = 0;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combo")
-	float WaitComboTime = 1.7f;
+	float WaitComboTime = 1.f;
 
-	class AMyCharacter* MyCharacter;
+	class AMyCharacter* OwnerCharacter;
 
-	class AWeapon* Weapon;
+	//무기
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon")
 	TSubclassOf<class AWeapon> RightHandWeapon;
+	class AWeapon* RightHandWeaponInstance;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon")
 	TSubclassOf<class AWeapon> LeftHandWeapon;
-
-	//무기 콜리전을 특정한 타이밍에만 검출하기
+	class AWeapon* LeftHandWeaponInstance;
+	
 };

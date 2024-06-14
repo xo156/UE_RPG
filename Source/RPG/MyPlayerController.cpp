@@ -53,13 +53,6 @@ void AMyPlayerController::Move(const FInputActionValue& Value)
 	if (GetCharacter() != nullptr) {
 		if (!GetCharacter()->bIsAttacking) {
 			GetCharacter()->Move(InputValue);
-			/*const FRotator YawRotation(0.f, GetCharacter()->GetControlRotation().Yaw, 0.f);
-			const FVector ForwardDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);
-			const FVector RightDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
-
-			GetCharacter()->AddMovementInput(ForwardDirection, InputValue.Y);
-			GetCharacter()->AddMovementInput(RightDirection, InputValue.X);
-			GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Red, TEXT("Move"));*/
 		}
 	}
 }
@@ -77,49 +70,11 @@ void AMyPlayerController::Look(const FInputActionValue& Value) {
 	const FVector2D InputValue = Value.Get<FVector2D>();
 	if (GetCharacter() != nullptr) {
 		GetCharacter()->Look(InputValue);
-		/*GetCharacter()->AddControllerPitchInput(InputValue.Y);
-		GetCharacter()->AddControllerYawInput(InputValue.X);
-		GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Red, TEXT("Look"));*/
 	}
 }
 
 void AMyPlayerController::Attack(const FInputActionValue& Value) {
-	GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Red, TEXT("attack call"));
 	if (GetCharacter() != nullptr) {
 		GetCharacter()->Attack();
-		/*GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Red, TEXT("character null"));
-		if (!bIsAttacking) {
-			GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Red, TEXT("Attack1"));
-			bIsAttacking = true;
-			if (UAnimInstance* AnimInstance = GetCharacter()->GetMesh()->GetAnimInstance()) {
-				GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Red, TEXT("Attack2"));
-				if (CurrentWeapon == nullptr) {
-					GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Red, TEXT("Attack3"));
-					bIsAttacking = false;
-					return;
-				}
-				GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Red, TEXT("Attack4"));
-				int32 SectionCount = CurrentWeapon->GetSectionCount(CurrentWeapon->AttackMontage);
-				if (CurrentWeapon->CurrentComboCount < SectionCount) {
-					FString SectionName = "Combo" + FString::FromInt(CurrentWeapon->CurrentComboCount);
-					if (AnimInstance->Montage_IsPlaying(CurrentWeapon->AttackMontage)) {
-						AnimInstance->Montage_JumpToSection(FName(*SectionName), CurrentWeapon->AttackMontage);
-					}
-					else {
-						AnimInstance->Montage_Play(CurrentWeapon->AttackMontage);
-						AnimInstance->Montage_JumpToSection(FName(*SectionName), CurrentWeapon->AttackMontage);
-					}
-					CurrentWeapon->CurrentComboCount++;
-				}
-				else {
-					CurrentWeapon->CurrentComboCount = 0;
-					FString SectionName = "Combo0";
-					AnimInstance->Montage_Play(CurrentWeapon->AttackMontage);
-					AnimInstance->Montage_JumpToSection(FName(*SectionName), CurrentWeapon->AttackMontage);
-				}
-				GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Red, FString::Printf(TEXT("CurrentComboCount: %d"), CurrentWeapon->CurrentComboCount));
-				GetWorld()->GetTimerManager().SetTimer(ComboCheckTimerHandle, this, &AMyPlayerController::ResetAttackCount, CurrentWeapon->WaitComboTime, false);
-			}
-		}*/
 	}
 }
