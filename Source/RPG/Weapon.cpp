@@ -4,6 +4,7 @@
 #include "Weapon.h"
 #include "MyCharacter.h"
 #include "Components/BoxComponent.h"
+#include "NormalMonster.h"
 
 // Sets default values
 AWeapon::AWeapon()
@@ -50,10 +51,13 @@ void AWeapon::OnWeaponAttackHit(UPrimitiveComponent* HitComponent, AActor* Other
 		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("OtherActor, Weapon collided with: %s"), *OtherActor->GetName()));
 		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("HitComponent, Weapon collided with: %s"), *HitComponent->GetName()));
 	
-		HitMonsters.Add(OtherActor);
-		if (HitMonsters.Num() > 0) { //공격이 닿으면 리스트에 추가
-			AActor* LastMonster = HitMonsters.Last();
-			UE_LOG(LogTemp, Error, TEXT("ADD, Last Hit Monster: %s"), *LastMonster->GetName());
+		HitMonsters.Add(OtherActor); //공격이 닿으면 리스트에 추가
+		for (AActor* HitMonster : HitMonsters) {
+			//TODO: 플레이어의 공격을 맞은 몬스터들이 일정시간동안 경직되도록
+			auto* StunnedMonster = Cast<ANormalMonster>(HitMonster);
+			/*if (!StunnedMonster->GetbIsStunned()) {
+				StunnedMonster->UpdateStun(GetWorld()->GetDeltaSeconds());
+			}*/
 		}
 	}
 	bHasHit = true;

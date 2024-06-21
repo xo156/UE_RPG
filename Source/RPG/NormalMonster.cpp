@@ -107,6 +107,23 @@ void ANormalMonster::SetHealth(float NewHealth)
 	NormalMonsterHealth = NewHealth;
 }
 
+//void ANormalMonster::UpdateStun(float DeltaTime)
+//{
+//	bIsStunned = true;
+//	UE_LOG(LogTemp, Error, TEXT("ANormalMonster Is Stunned"));
+//	StunDuration -= DeltaTime;
+//	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("StunDuration: %f"), StunDuration));
+//	if (StunDuration <= 0.0f) {
+//		bIsStunned = false;
+//		UE_LOG(LogTemp, Error, TEXT("ANormalMonster Is Not Stunned"));
+//	}
+//}
+//
+//bool ANormalMonster::GetbIsStunned()
+//{
+//	return bIsStunned;
+//}
+
 UAnimMontage* ANormalMonster::GetNormalMonsterAttackMontage()
 {
 	return NormalMonsterAttackMontage;

@@ -26,7 +26,6 @@ public:
 	UFUNCTION()
 	void OnWeaponAttackHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);
 
-
 //º¯¼öµé
 public:	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon")

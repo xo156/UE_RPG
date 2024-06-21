@@ -32,6 +32,8 @@ public:
 	float GetHealth() const;
 	float GetMaxHealth() const;
 	void SetHealth(float NewHealth);
+	/*void UpdateStun(float DeltaTime);
+	bool GetbIsStunned();*/
 
 	class UAnimMontage* GetNormalMonsterAttackMontage();
 
@@ -42,7 +44,6 @@ protected:
 private:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Status", meta = (AllowPrivateAccess = "true"))
 	float MaxNormalMonsterHealth = 100.f;
-
 	float NormalMonsterHealth;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Status", meta = (AllowPrivateAccess = "true"))
@@ -53,6 +54,10 @@ private:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Status", meta = (AllowPrivateAccess = "true"))
 	float AttackRange = 100.f;
+
+	/*UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Status", meta = (AllowPrivateAccess = "true"))
+	float StunDuration = 2.f;
+	bool bIsStunned;*/
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AI", meta = (AllowPrivateAccess = "true"))
 	class UBehaviorTree* BehaviorTree;
