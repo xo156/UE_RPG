@@ -19,6 +19,7 @@ ANormalMonster::ANormalMonster()
 
 	GetCharacterMovement()->MaxWalkSpeed = PatrolSpeed;
 	GetCapsuleComponent()->SetCollisionProfileName(TEXT("Enemy"));
+	GetMesh()->SetCollisionProfileName(TEXT("NoCollision"));
 
 	NormalMonsterHealth = MaxNormalMonsterHealth;
 

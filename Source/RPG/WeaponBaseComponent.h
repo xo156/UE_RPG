@@ -24,7 +24,8 @@ public:
 	void SetOwnerCharacter(class AMyCharacter* NewOwner);
 	void AttachToCharacter();
 
-	//무기 콜리전을 특정한 타이밍에만 검출하기
+	class AWeapon* GetRightHandWeaponInstance() const;
+	class AWeapon* GetLeftHandWeaponInstance() const;
 
 protected:
 	// Called when the game starts or when spawned

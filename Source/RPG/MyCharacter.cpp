@@ -33,11 +33,10 @@ AMyCharacter::AMyCharacter() {
 	CameraBoom->TargetArmLength = 300.f;
 	CameraBoom->SocketOffset = FVector(0.f, 0.f, 60.f);
 	CameraBoom->bDoCollisionTest = true;
-	CameraBoom->bUsePawnControlRotation = true;
+	CameraBoom->bUsePawnControlRotation = false;
 
 	VGCameraComponent = CreateDefaultSubobject<UCameraComponent>(TEXT("VGCamera"));
 	VGCameraComponent->SetupAttachment(CameraBoom, USpringArmComponent::SocketName);
-	CameraBoom->bUsePawnControlRotation = false;
 }
 
 void AMyCharacter::PlayAirboneMontage()
@@ -73,14 +72,6 @@ void AMyCharacter::Attack()
 				bIsAttacking = false;
 				return;
 			}
-			//TODO: 함수로 따로 묶어놓자
-			CurrentWeapon->RightHandWeaponInstance->WeaponCollision->SetCollisionProfileName("Weapon");
-			CurrentWeapon->RightHandWeaponInstance->WeaponCollision->SetNotifyRigidBodyCollision(true);
-			CurrentWeapon->RightHandWeaponInstance->bHasHit = false;
-			CurrentWeapon->LeftHandWeaponInstance->WeaponCollision->SetCollisionProfileName("Weapon");
-			CurrentWeapon->LeftHandWeaponInstance->WeaponCollision->SetNotifyRigidBodyCollision(true);
-			CurrentWeapon->LeftHandWeaponInstance->bHasHit = false;
-
 			GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Red, TEXT("Attack"));
 			int32 SectionCount = CurrentWeapon->GetSectionCount(CurrentWeapon->AttackMontage);
 			if (CurrentWeapon->CurrentComboCount < SectionCount) {
@@ -111,11 +102,6 @@ void AMyCharacter::ResetAttackCount()
 	if (CurrentWeapon)
 		CurrentWeapon->CurrentComboCount = 0;
 	bIsAttacking = false;
-	CurrentWeapon->RightHandWeaponInstance->WeaponCollision->SetCollisionProfileName("NoCollision");
-	CurrentWeapon->RightHandWeaponInstance->WeaponCollision->SetNotifyRigidBodyCollision(false);
-
-	CurrentWeapon->LeftHandWeaponInstance->WeaponCollision->SetCollisionProfileName("NoCollision");
-	CurrentWeapon->LeftHandWeaponInstance->WeaponCollision->SetNotifyRigidBodyCollision(false);
 }
 
 void AMyCharacter::EquipWeapon(TSubclassOf<class UWeaponBaseComponent> WeaponClass)
@@ -144,9 +130,11 @@ void AMyCharacter::SetupStimulusSource()
 	}
 }
 
-void AMyCharacter::WeaponCollisionEnable()
+UWeaponBaseComponent* AMyCharacter::GetCurrentWeapon() const
 {
-
+	if (CurrentWeapon)
+		return CurrentWeapon;
+	return nullptr;
 }
 
 // Called when the game starts or when spawned

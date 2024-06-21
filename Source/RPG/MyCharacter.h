@@ -30,7 +30,7 @@ public:
 
 	void SetupStimulusSource();
 
-	void WeaponCollisionEnable();
+	class UWeaponBaseComponent* GetCurrentWeapon() const;
 
 	bool bIsAttacking;
 
@@ -54,5 +54,6 @@ private:
 
 	FTimerHandle ComboCheckTimerHandle;
 
-	class UAIPerceptionStimuliSourceComponent* StimulusSource;
+	class UAIPerceptionStimuliSourceComponent* StimulusSource; //NormalMonster가 탐지할 수 있도록
+
 };

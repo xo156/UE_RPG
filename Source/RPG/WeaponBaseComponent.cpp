@@ -64,3 +64,17 @@ void UWeaponBaseComponent::AttachToCharacter()
         }
     }
 }
+
+AWeapon* UWeaponBaseComponent::GetRightHandWeaponInstance() const
+{
+    if (RightHandWeaponInstance)
+        return RightHandWeaponInstance;
+    return nullptr;
+}
+
+AWeapon* UWeaponBaseComponent::GetLeftHandWeaponInstance() const
+{
+    if (LeftHandWeaponInstance)
+        return LeftHandWeaponInstance;
+    return nullptr;
+}

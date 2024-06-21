@@ -34,8 +34,7 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon")
 	class UBoxComponent* WeaponCollision;
 
-	//검출된 대상의 정보를 델리게이트로 전달 -> 캐릭터한테
-	class AMyCharacter* OwnerCharacter;
-
 	bool bHasHit = false; //공격 1번에 데미지 1번씩 하기 위함
+
+	TArray<AActor*> HitMonsters; //공격에 맞은 몬스터 관리용
 };
