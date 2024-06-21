@@ -28,6 +28,10 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Weapon")
 	void EquipWeapon(TSubclassOf<class UWeaponBaseComponent> WeaponClass);
 
+	void SetupStimulusSource();
+
+	void WeaponCollisionEnable();
+
 	bool bIsAttacking;
 
 protected:
@@ -50,4 +54,5 @@ private:
 
 	FTimerHandle ComboCheckTimerHandle;
 
+	class UAIPerceptionStimuliSourceComponent* StimulusSource;
 };

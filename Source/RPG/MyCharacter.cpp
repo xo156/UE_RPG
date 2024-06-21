@@ -10,6 +10,8 @@
 #include "Weapon.h"
 #include "MyPlayerController.h"
 #include "Components/BoxComponent.h"
+#include "Perception/AIPerceptionStimuliSourceComponent.h"
+#include "Perception/AISense_Sight.h"
 
 // Sets default values
 AMyCharacter::AMyCharacter() {
@@ -131,6 +133,20 @@ void AMyCharacter::EquipWeapon(TSubclassOf<class UWeaponBaseComponent> WeaponCla
 	else {
 		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("WeaponClass is not set"));
 	}
+}
+
+void AMyCharacter::SetupStimulusSource()
+{
+	StimulusSource = CreateDefaultSubobject<UAIPerceptionStimuliSourceComponent>(TEXT("Stimulus"));
+	if (StimulusSource) {
+		StimulusSource->RegisterForSense(TSubclassOf<UAISense_Sight>());
+		StimulusSource->RegisterWithPerceptionSystem();
+	}
+}
+
+void AMyCharacter::WeaponCollisionEnable()
+{
+
 }
 
 // Called when the game starts or when spawned
