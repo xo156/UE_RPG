@@ -31,18 +31,14 @@ protected:
 
 	virtual void SetupInputComponent() override;
 
+	void AccessCharacterStatus();
+
 	void Move(const FInputActionValue& Value);
+	void RunStart();
+	void RunEnd();
 	void Jump(const FInputActionValue& Value);
 	void Look(const FInputActionValue& Value);
 	void Attack(const FInputActionValue& Value);
-
-
-public:
-
-	/*UPROPERTY(EditAnywhere, Category = "Combo")
-	TSubclassOf<class UWeaponBaseComponent> WeaponClass;
-
-	class UWeaponBaseComponent* CurrentWeapon;*/
 
 protected:
 	//ÀÎÇ² ¾×¼Ç
@@ -50,6 +46,8 @@ protected:
 	class UInputMappingContext* DefaultMappingContext;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input", meta = (AllowPrivateAccess = "true"))
 	class UInputAction* MoveAction;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input", meta = (AllowPrivateAccess = "true"))
+	class UInputAction* RunAction;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input", meta = (AllowPrivateAccess = "true"))
 	class UInputAction* JumpAction;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input", meta = (AllowPrivateAccess = "true"))

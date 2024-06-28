@@ -26,6 +26,7 @@ AMyCharacter::AMyCharacter() {
 	GetCharacterMovement()->bOrientRotationToMovement = true; //이동하는 방향으로 캐릭터를 회전
 	GetCharacterMovement()->RotationRate = FRotator(0.f, 720.f, 0.f);
 	GetCharacterMovement()->JumpZVelocity = 500.0f;
+	GetCharacterMovement()->MaxWalkSpeed = WalkSpeed;
 
 	CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));
 	CameraBoom->SetupAttachment(RootComponent);
@@ -37,6 +38,14 @@ AMyCharacter::AMyCharacter() {
 
 	VGCameraComponent = CreateDefaultSubobject<UCameraComponent>(TEXT("VGCamera"));
 	VGCameraComponent->SetupAttachment(CameraBoom, USpringArmComponent::SocketName);
+
+	//구조체
+	CharacterStatus.CurrentHP = 100.0f;
+	CharacterStatus.MaxHP = 100.0f;
+	CharacterStatus.CurrentStamina = 50.0f;
+	CharacterStatus.MaxStamina = 50.0f;
+	CharacterStatus.CurrentMP = 30.0f;
+	CharacterStatus.MaxMP = 30.0f;
 }
 
 void AMyCharacter::PlayAirboneMontage()
@@ -57,6 +66,24 @@ void AMyCharacter::Move(FVector2D InputValue)
 	AddMovementInput(RightDirection, InputValue.X);
 }
 
+void AMyCharacter::RunStart()
+{
+	if (bHasEnoughStamina(RunStaminaCost)) {
+		ConsumeStaminaForAction(RunStaminaCost);
+		bIsRunning = true;
+		TargetSpeed = RunSpeed;
+	}
+	else {
+		GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Red, TEXT("Not Enough Stamina to Run"));
+	}
+}
+
+void AMyCharacter::RunEnd()
+{
+	bIsRunning = false;
+	TargetSpeed = WalkSpeed;
+}
+
 void AMyCharacter::Look(FVector2D InputValue)
 {
 	AddControllerPitchInput(InputValue.Y);
@@ -65,7 +92,8 @@ void AMyCharacter::Look(FVector2D InputValue)
 
 void AMyCharacter::Attack()
 {
-	if (!bIsAttacking) {
+	if (!bIsAttacking && bHasEnoughStamina(AttackStaminaCost)) {
+		ConsumeStaminaForAction(AttackStaminaCost);
 		bIsAttacking = true;
 		if (UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance()) {
 			if (CurrentWeapon == nullptr) {
@@ -94,6 +122,9 @@ void AMyCharacter::Attack()
 			GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Red, FString::Printf(TEXT("CurrentComboCount: %d"), CurrentWeapon->CurrentComboCount));
 			GetWorld()->GetTimerManager().SetTimer(ComboCheckTimerHandle, this, &AMyCharacter::ResetAttackCount, CurrentWeapon->WaitComboTime, false);
 		}
+	}
+	else {
+		GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Red, TEXT("Not Enough Stamina to Attack"));
 	}
 }
 
@@ -152,5 +183,60 @@ void AMyCharacter::BeginPlay() {
 void AMyCharacter::Tick(float DeltaTime) {
 	Super::Tick(DeltaTime);
 
+	CheckStaminaRecovery(DeltaTime);
+
+	ChangeMoveSpeed(DeltaTime);
 }
 
+void AMyCharacter::ConsumeStaminaForAction(float StaminaCost)
+{
+	CharacterStatus.ConsumeStamina(StaminaCost);
+}
+
+bool AMyCharacter::bHasEnoughStamina(float StaminaCost) const
+{
+	return CharacterStatus.CurrentStamina >= StaminaCost;
+}
+
+void AMyCharacter::ConsumeMPForAction(float MPCost)
+{
+	CharacterStatus.ConsumeMP(MPCost);
+}
+
+bool AMyCharacter::bHasEnoughMP(float MPCost) const
+{
+	return CharacterStatus.CurrentMP >= MPCost;
+}
+
+void AMyCharacter::ChangeMoveSpeed(float DeltaTime)
+{
+	//현재 속도를 보간
+	float CurrentSpeed = GetCharacterMovement()->MaxWalkSpeed;
+	float NewSpeed = FMath::Lerp(CurrentSpeed, TargetSpeed, 1.f * DeltaTime);
+	if (NewSpeed < WalkSpeed)
+		NewSpeed = WalkSpeed;
+	GetCharacterMovement()->MaxWalkSpeed = NewSpeed;
+}
+
+void AMyCharacter::CheckStaminaRecovery(float DeltaTime)
+{
+	if (!bIsAttacking && !bIsRunning) {
+		if (GetCharacterMovement()->MaxWalkSpeed > WalkSpeed) {
+			TimeWithoutAction += DeltaTime;
+			if (TimeWithoutAction >= 5.0f) {
+				RecoveryStaminia(DeltaTime);
+				TimeWithoutAction = 0.0f; // 회복 후 초기화
+			}
+		}
+	}
+	else {
+		TimeWithoutAction = 0.0f; // 동작 수행 시 초기화
+	}
+}
+
+void AMyCharacter::RecoveryStaminia(float DeltaTime)
+{
+	float StaminaRecoveryRate = 10.0f; // 매 초당 회복되는 스태미너 양
+	CharacterStatus.CurrentStamina = FMath::Min(CharacterStatus.CurrentStamina + (StaminaRecoveryRate * DeltaTime), CharacterStatus.MaxStamina);
+	UE_LOG(LogTemp, Warning, TEXT("RecoveryStamina: %f"), CharacterStatus.CurrentStamina)
+}

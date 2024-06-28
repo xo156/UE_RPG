@@ -41,9 +41,24 @@ void AMyPlayerController::SetupInputComponent() {
 
 	if (UEnhancedInputComponent* EnHancedInputComponent = Cast<UEnhancedInputComponent>(InputComponent)) {
 		EnHancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &AMyPlayerController::Move);
+		EnHancedInputComponent->BindAction(RunAction, ETriggerEvent::Triggered, this, &AMyPlayerController::RunStart);
+		EnHancedInputComponent->BindAction(RunAction, ETriggerEvent::Completed, this, &AMyPlayerController::RunEnd);
+
 		EnHancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &AMyPlayerController::Look);
 		EnHancedInputComponent->BindAction(JumpAction, ETriggerEvent::Started, this, &AMyPlayerController::Jump);
 		EnHancedInputComponent->BindAction(AttackAction, ETriggerEvent::Started, this, &AMyPlayerController::Attack);
+	}
+}
+
+void AMyPlayerController::AccessCharacterStatus()
+{
+	if (GetCharacter() != nullptr) {
+		float CurrentHealth = MyCharacter->CharacterStatus.CurrentHP;
+		float MaxHealth = MyCharacter->CharacterStatus.MaxHP;
+		float CurrentStamina = MyCharacter->CharacterStatus.CurrentStamina;
+		float MaxStamina = MyCharacter->CharacterStatus.MaxStamina;
+		float CurrentMP = MyCharacter->CharacterStatus.CurrentMP;
+		float MaxMP = MyCharacter->CharacterStatus.MaxMP;
 	}
 }
 
@@ -57,9 +72,28 @@ void AMyPlayerController::Move(const FInputActionValue& Value)
 	}
 }
 
+void AMyPlayerController::RunStart()
+{
+	if (GetCharacter() != nullptr) {
+		if (!GetCharacter()->bIsRunning) {
+			GetCharacter()->RunStart();
+		}
+	}
+}
+
+void AMyPlayerController::RunEnd()
+{
+	if (GetCharacter() != nullptr) {
+		if (GetCharacter()->bIsRunning) {
+			GetCharacter()->RunEnd();
+		}
+	}
+}
+
 void AMyPlayerController::Jump(const FInputActionValue& Value) {
 	if (GetCharacter() != nullptr) {
-		if (GetCharacter()->CanJump()) {
+		if (GetCharacter()->CanJump() && GetCharacter()->bHasEnoughStamina(GetCharacter()->JumpStaminaCost)) {
+			GetCharacter()->ConsumeStaminaForAction(GetCharacter()->JumpStaminaCost);
 			GetCharacter()->Jump();
 			GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Red, TEXT("JumpUpMontage"));
 		}
