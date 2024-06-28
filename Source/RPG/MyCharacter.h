@@ -74,6 +74,8 @@ public:
 	void Look(FVector2D InputValue);
 	void Attack();
 	void ResetAttackCount();
+	void Block();
+	void Dodge();
 
 	UFUNCTION(BlueprintCallable, Category = "Weapon")
 	void EquipWeapon(TSubclassOf<class UWeaponBaseComponent> WeaponClass);
@@ -82,17 +84,17 @@ public:
 
 	class UWeaponBaseComponent* GetCurrentWeapon() const;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Status")
+	FCharacterStatus CharacterStatus;
+
 	//캐릭터 상태들
 	bool bIsAttacking;
 	bool bIsRunning;
 	bool bIsBloacking;
 	bool bIsDodging;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Status")
-	FCharacterStatus CharacterStatus;
-
 	//소모되는 스테미나
-	float RunStaminaCost = 2.f;
+	float RunStaminaCost = 0.2f;
 	float JumpStaminaCost = 5.f;
 	float AttackStaminaCost = 10.f;
 	float BlockStaminaCost = 10.f;
@@ -104,6 +106,10 @@ protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Montage")
 	class UAnimMontage* AirboneMontage;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Montage")
+	class UAnimMontage* BlockMontage;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Montage")
+	class UAnimMontage* DodgeMontage;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Weapon")
 	TSubclassOf<class UWeaponBaseComponent> BareHand;
@@ -117,6 +123,7 @@ private:
 	class UWeaponBaseComponent* CurrentWeapon;
 
 	FTimerHandle ComboCheckTimerHandle;
+	FTimerHandle DodgeHandle;
 
 	class UAIPerceptionStimuliSourceComponent* StimulusSource; //NormalMonster가 탐지할 수 있도록
 
@@ -125,6 +132,9 @@ private:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Status", meta = (AllowPrivateAccess = "true"))
 	float RunSpeed = 900.f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Status", meta = (AllowPrivateAccess = "true"))
+	float DodgeSpeed = 2500.f;
 
 	float TargetSpeed;
 	float TimeWithoutAction = 0.f; //스테미나 회복 시작까지 걸리는 시간 체크용도

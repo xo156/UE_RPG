@@ -36,9 +36,11 @@ protected:
 	void Move(const FInputActionValue& Value);
 	void RunStart();
 	void RunEnd();
-	void Jump(const FInputActionValue& Value);
+	void Jump();
 	void Look(const FInputActionValue& Value);
 	void Attack(const FInputActionValue& Value);
+	void Block();
+	void Dodge();
 
 protected:
 	//ÀÎÇ² ¾×¼Ç
@@ -54,6 +56,10 @@ protected:
 	class UInputAction* AttackAction;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input", meta = (AllowPrivateAccess = "true"))
 	class UInputAction* LookAction;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input", meta = (AllowPrivateAccess = "true"))
+	class UInputAction* BlockAction;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input", meta = (AllowPrivateAccess = "true"))
+	class UInputAction* DodgeAction;
 
 private:
 	class AMyCharacter* MyCharacter;

@@ -45,8 +45,14 @@ void AMyPlayerController::SetupInputComponent() {
 		EnHancedInputComponent->BindAction(RunAction, ETriggerEvent::Completed, this, &AMyPlayerController::RunEnd);
 
 		EnHancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &AMyPlayerController::Look);
+		
 		EnHancedInputComponent->BindAction(JumpAction, ETriggerEvent::Started, this, &AMyPlayerController::Jump);
+		
 		EnHancedInputComponent->BindAction(AttackAction, ETriggerEvent::Started, this, &AMyPlayerController::Attack);
+		
+		EnHancedInputComponent->BindAction(BlockAction, ETriggerEvent::Triggered, this, &AMyPlayerController::Block);
+		
+		EnHancedInputComponent->BindAction(DodgeAction, ETriggerEvent::Started, this, &AMyPlayerController::Dodge);
 	}
 }
 
@@ -90,7 +96,7 @@ void AMyPlayerController::RunEnd()
 	}
 }
 
-void AMyPlayerController::Jump(const FInputActionValue& Value) {
+void AMyPlayerController::Jump() {
 	if (GetCharacter() != nullptr) {
 		if (GetCharacter()->CanJump() && GetCharacter()->bHasEnoughStamina(GetCharacter()->JumpStaminaCost)) {
 			GetCharacter()->ConsumeStaminaForAction(GetCharacter()->JumpStaminaCost);
@@ -110,5 +116,19 @@ void AMyPlayerController::Look(const FInputActionValue& Value) {
 void AMyPlayerController::Attack(const FInputActionValue& Value) {
 	if (GetCharacter() != nullptr) {
 		GetCharacter()->Attack();
+	}
+}
+
+void AMyPlayerController::Block()
+{
+	if (GetCharacter() != nullptr) {
+		GetCharacter()->Block();
+	}
+}
+
+void AMyPlayerController::Dodge()
+{
+	if (GetCharacter() != nullptr) {
+		GetCharacter()->Dodge();
 	}
 }

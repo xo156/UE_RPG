@@ -58,18 +58,19 @@ void AMyCharacter::PlayAirboneMontage()
 
 void AMyCharacter::Move(FVector2D InputValue)
 {
-	const FRotator YawRotation(0.f, GetControlRotation().Yaw, 0.f);
-	const FVector ForwardDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);
-	const FVector RightDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
+	if (!bIsDodging) {
+		const FRotator YawRotation(0.f, GetControlRotation().Yaw, 0.f);
+		const FVector ForwardDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);
+		const FVector RightDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
 
-	AddMovementInput(ForwardDirection, InputValue.Y);
-	AddMovementInput(RightDirection, InputValue.X);
+		AddMovementInput(ForwardDirection, InputValue.Y);
+		AddMovementInput(RightDirection, InputValue.X);
+	}
 }
 
 void AMyCharacter::RunStart()
 {
 	if (bHasEnoughStamina(RunStaminaCost)) {
-		ConsumeStaminaForAction(RunStaminaCost);
 		bIsRunning = true;
 		TargetSpeed = RunSpeed;
 	}
@@ -92,8 +93,7 @@ void AMyCharacter::Look(FVector2D InputValue)
 
 void AMyCharacter::Attack()
 {
-	if (!bIsAttacking && bHasEnoughStamina(AttackStaminaCost)) {
-		ConsumeStaminaForAction(AttackStaminaCost);
+	if (!bIsDodging && !bIsAttacking && bHasEnoughStamina(AttackStaminaCost)) {
 		bIsAttacking = true;
 		if (UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance()) {
 			if (CurrentWeapon == nullptr) {
@@ -102,6 +102,7 @@ void AMyCharacter::Attack()
 			}
 			GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Red, TEXT("Attack"));
 			int32 SectionCount = CurrentWeapon->GetSectionCount(CurrentWeapon->AttackMontage);
+			ConsumeStaminaForAction(AttackStaminaCost);
 			if (CurrentWeapon->CurrentComboCount < SectionCount) {
 				FString SectionName = "Combo" + FString::FromInt(CurrentWeapon->CurrentComboCount);
 				if (AnimInstance->Montage_IsPlaying(CurrentWeapon->AttackMontage)) {
@@ -133,6 +134,36 @@ void AMyCharacter::ResetAttackCount()
 	if (CurrentWeapon)
 		CurrentWeapon->CurrentComboCount = 0;
 	bIsAttacking = false;
+}
+
+void AMyCharacter::Block()
+{
+	if (bHasEnoughStamina(BlockStaminaCost)) {
+		if (UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance()) {
+			//TODO: 공격을 막은 순간에만 소모하도록
+			//ConsumeStaminaForAction(BlockStaminaCost);
+			//AnimInstance->Montage_Play(BlockMontage);
+		}
+	}
+	else {
+		GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Red, TEXT("Not Enough Stamina to Block"));
+	}
+}
+
+void AMyCharacter::Dodge()
+{
+	if (bHasEnoughStamina(DodgeStaminaCost)) {
+		if (!bIsAttacking && CanJump()) {
+			if (UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance()) {
+				ConsumeStaminaForAction(DodgeStaminaCost);
+
+				AnimInstance->Montage_Play(DodgeMontage);
+			}
+		}
+	}
+	else {
+		GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Red, TEXT("Not Enough Stamina to Dodge"));
+	}
 }
 
 void AMyCharacter::EquipWeapon(TSubclassOf<class UWeaponBaseComponent> WeaponClass)
@@ -216,14 +247,24 @@ void AMyCharacter::ChangeMoveSpeed(float DeltaTime)
 	if (NewSpeed < WalkSpeed)
 		NewSpeed = WalkSpeed;
 	GetCharacterMovement()->MaxWalkSpeed = NewSpeed;
+
+	//달릴때만 스테미나 소모하도록
+	if (bIsRunning) {
+		ConsumeStaminaForAction(RunStaminaCost);
+	}
+	//스테미나가 달리기에 부족하면
+	if (!bHasEnoughStamina(RunStaminaCost)) {
+		bIsRunning = false;
+		TargetSpeed = WalkSpeed;
+	}
 }
 
 void AMyCharacter::CheckStaminaRecovery(float DeltaTime)
 {
-	if (!bIsAttacking && !bIsRunning) {
-		if (GetCharacterMovement()->MaxWalkSpeed > WalkSpeed) {
+	if (!bIsAttacking && !bIsRunning && !bIsDodging) {
+		if (CharacterStatus.CurrentStamina < CharacterStatus.MaxStamina) {
 			TimeWithoutAction += DeltaTime;
-			if (TimeWithoutAction >= 5.0f) {
+			if (TimeWithoutAction >= 1.0f) {
 				RecoveryStaminia(DeltaTime);
 				TimeWithoutAction = 0.0f; // 회복 후 초기화
 			}
@@ -236,7 +277,7 @@ void AMyCharacter::CheckStaminaRecovery(float DeltaTime)
 
 void AMyCharacter::RecoveryStaminia(float DeltaTime)
 {
-	float StaminaRecoveryRate = 10.0f; // 매 초당 회복되는 스태미너 양
+	float StaminaRecoveryRate = 1000.0f; // 매 초당 회복되는 스태미너 양
 	CharacterStatus.CurrentStamina = FMath::Min(CharacterStatus.CurrentStamina + (StaminaRecoveryRate * DeltaTime), CharacterStatus.MaxStamina);
 	UE_LOG(LogTemp, Warning, TEXT("RecoveryStamina: %f"), CharacterStatus.CurrentStamina)
 }
