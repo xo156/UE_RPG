@@ -8,7 +8,7 @@
 void UComboCheckAnimNotifyState::NotifyBegin(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, float TotalDuration)
 {
 	if (AMyCharacter* Character = Cast<AMyCharacter>(MeshComp->GetOwner())) {
-		Character->bIsAttacking = true;
+		Character->bIsAttack = true;
 		GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Green, TEXT("NotifyBegin"));
 	}
 }
@@ -16,7 +16,7 @@ void UComboCheckAnimNotifyState::NotifyBegin(USkeletalMeshComponent* MeshComp, U
 void UComboCheckAnimNotifyState::NotifyEnd(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation)
 {
 	if (AMyCharacter* Character = Cast<AMyCharacter>(MeshComp->GetOwner())) {
-		Character->bIsAttacking = false;
+		Character->bIsAttack = false;
 		GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Green, TEXT("NotifyEnd"));
 	}
 }

@@ -21,7 +21,6 @@ public:
 protected:
 	virtual void OnPossess(APawn* InPawn) override;
 
-
 public:
 	void SetupPerceptionSystem();
 
@@ -30,5 +29,4 @@ public:
 
 private:
 	class UAISenseConfig_Sight* SightConfig; //시야 감각
-
 };

@@ -7,7 +7,7 @@
 void UDodgeAnimNotifyState::NotifyBegin(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, float TotalDuration)
 {
 	if (AMyCharacter* Character = Cast<AMyCharacter>(MeshComp->GetOwner())) {
-		Character->bIsDodging = true;
+		Character->bIsDodge = true;
 		GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Green, TEXT("NotifyBegin"));
 	}
 }
@@ -15,7 +15,7 @@ void UDodgeAnimNotifyState::NotifyBegin(USkeletalMeshComponent* MeshComp, UAnimS
 void UDodgeAnimNotifyState::NotifyEnd(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation)
 {
 	if (AMyCharacter* Character = Cast<AMyCharacter>(MeshComp->GetOwner())) {
-		Character->bIsDodging = false;
+		Character->bIsDodge = false;
 		GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Green, TEXT("NotifyBegin"));
 	}
 }

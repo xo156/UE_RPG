@@ -6,6 +6,19 @@
 #include "GameFramework/Character.h"
 #include "NormalMonster.generated.h"
 
+USTRUCT(BlueprintType)
+struct FNormalMonsterStatus
+{
+	GENERATED_BODY()
+
+public:
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Status")
+	float CurrentNormalMonsterHP;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Status")
+	float MaxNormalMonsterHP;
+};
+
 UCLASS()
 class RPG_API ANormalMonster : public ACharacter
 {
@@ -34,6 +47,9 @@ public:
 	void SetHealth(float NewHealth);
 
 	class UAnimMontage* GetNormalMonsterAttackMontage();
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Status")
+	FNormalMonsterStatus NormalMonsterStatus;
 
 protected:
 	// Called when the game starts or when spawned
@@ -64,5 +80,4 @@ private:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Widget", meta = (AllowPrivateAccess = "true"))
 	class UWidgetComponent* WidgetComponent;
-
 };

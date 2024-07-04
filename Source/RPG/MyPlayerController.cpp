@@ -50,29 +50,22 @@ void AMyPlayerController::SetupInputComponent() {
 		
 		EnHancedInputComponent->BindAction(AttackAction, ETriggerEvent::Started, this, &AMyPlayerController::Attack);
 		
-		EnHancedInputComponent->BindAction(BlockAction, ETriggerEvent::Triggered, this, &AMyPlayerController::Block);
+		EnHancedInputComponent->BindAction(BlockAction, ETriggerEvent::Triggered, this, &AMyPlayerController::Guard);
 		
 		EnHancedInputComponent->BindAction(DodgeAction, ETriggerEvent::Started, this, &AMyPlayerController::Dodge);
+	
+		EnHancedInputComponent->BindAction(LockOnAction, ETriggerEvent::Started, this, &AMyPlayerController::LockOnTarget);
+	
+		EnHancedInputComponent->BindAction(TESTSTATUSAction, ETriggerEvent::Started, this, &AMyPlayerController::TESTSTATUS);
 	}
-}
-
-void AMyPlayerController::AccessCharacterStatus()
-{
-	if (GetCharacter() != nullptr) {
-		float CurrentHealth = MyCharacter->CharacterStatus.CurrentHP;
-		float MaxHealth = MyCharacter->CharacterStatus.MaxHP;
-		float CurrentStamina = MyCharacter->CharacterStatus.CurrentStamina;
-		float MaxStamina = MyCharacter->CharacterStatus.MaxStamina;
-		float CurrentMP = MyCharacter->CharacterStatus.CurrentMP;
-		float MaxMP = MyCharacter->CharacterStatus.MaxMP;
-	}
+	
 }
 
 void AMyPlayerController::Move(const FInputActionValue& Value)
 {
 	const FVector2D InputValue = Value.Get<FVector2D>();
 	if (GetCharacter() != nullptr) {
-		if (!GetCharacter()->bIsAttacking) {
+		if (!GetCharacter()->bIsAttack) {
 			GetCharacter()->Move(InputValue);
 		}
 	}
@@ -81,7 +74,7 @@ void AMyPlayerController::Move(const FInputActionValue& Value)
 void AMyPlayerController::RunStart()
 {
 	if (GetCharacter() != nullptr) {
-		if (!GetCharacter()->bIsRunning) {
+		if (!GetCharacter()->bIsRun) {
 			GetCharacter()->RunStart();
 		}
 	}
@@ -90,7 +83,7 @@ void AMyPlayerController::RunStart()
 void AMyPlayerController::RunEnd()
 {
 	if (GetCharacter() != nullptr) {
-		if (GetCharacter()->bIsRunning) {
+		if (GetCharacter()->bIsRun) {
 			GetCharacter()->RunEnd();
 		}
 	}
@@ -119,10 +112,10 @@ void AMyPlayerController::Attack(const FInputActionValue& Value) {
 	}
 }
 
-void AMyPlayerController::Block()
+void AMyPlayerController::Guard()
 {
 	if (GetCharacter() != nullptr) {
-		GetCharacter()->Block();
+		GetCharacter()->Guard();
 	}
 }
 
@@ -130,5 +123,19 @@ void AMyPlayerController::Dodge()
 {
 	if (GetCharacter() != nullptr) {
 		GetCharacter()->Dodge();
+	}
+}
+
+void AMyPlayerController::LockOnTarget()
+{
+	if (GetCharacter() != nullptr) {
+		GetCharacter()->LockOnTarget();
+	}
+}
+
+void AMyPlayerController::TESTSTATUS()
+{
+	if (GetCharacter() != nullptr) {
+		GetCharacter()->TESTSTATUS();
 	}
 }

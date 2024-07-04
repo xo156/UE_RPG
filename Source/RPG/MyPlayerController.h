@@ -20,6 +20,7 @@ class RPG_API AMyPlayerController : public APlayerController
 public:
 	AMyPlayerController();
 
+	//플레이어 유효성 체크
 	AMyCharacter* GetCharacter();
 
 protected:
@@ -29,18 +30,20 @@ protected:
 	//빙의하는 타이밍에(캐릭터에 컨트롤러가 들어갈 때)
 	virtual void OnPossess(APawn* InPawn) override;
 
+	//인풋
 	virtual void SetupInputComponent() override;
 
-	void AccessCharacterStatus();
-
+	//액션
 	void Move(const FInputActionValue& Value);
 	void RunStart();
 	void RunEnd();
 	void Jump();
 	void Look(const FInputActionValue& Value);
 	void Attack(const FInputActionValue& Value);
-	void Block();
+	void Guard();
 	void Dodge();
+	void LockOnTarget();
+	void TESTSTATUS();
 
 protected:
 	//인풋 액션
@@ -60,6 +63,10 @@ protected:
 	class UInputAction* BlockAction;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input", meta = (AllowPrivateAccess = "true"))
 	class UInputAction* DodgeAction;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input", meta = (AllowPrivateAccess = "true"))
+	class UInputAction* LockOnAction;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input", meta = (AllowPrivateAccess = "true"))
+	class UInputAction* TESTSTATUSAction;
 
 private:
 	class AMyCharacter* MyCharacter;

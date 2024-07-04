@@ -20,10 +20,14 @@ public:
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
+	//몽타주
 	int GetSectionCount(UAnimMontage* Montage);
+
+	//캐릭터가 사용하기 위행
 	void SetOwnerCharacter(class AMyCharacter* NewOwner);
 	void AttachToCharacter();
 
+	//무기
 	class AWeapon* GetRightHandWeaponInstance() const;
 	class AWeapon* GetLeftHandWeaponInstance() const;
 

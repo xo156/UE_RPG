@@ -23,6 +23,7 @@ ANormalMonster::ANormalMonster()
 
 	NormalMonsterHealth = MaxNormalMonsterHealth;
 
+	//몬스터 체력 용도
 	WidgetComponent = CreateDefaultSubobject<UWidgetComponent>(TEXT("HealthValue"));
 	if (WidgetComponent) {
 		WidgetComponent->SetupAttachment(RootComponent);
@@ -33,6 +34,10 @@ ANormalMonster::ANormalMonster()
 			WidgetComponent->SetWidgetClass(WidgetClass.Class);
 		}
 	}
+
+	//구조체
+	NormalMonsterStatus.CurrentNormalMonsterHP = 100.0f;
+	NormalMonsterStatus.MaxNormalMonsterHP = 100.0f;
 }
 
 // Called when the game starts or when spawned
