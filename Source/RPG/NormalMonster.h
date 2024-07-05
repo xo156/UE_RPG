@@ -42,8 +42,8 @@ public:
 
 	float GetPatrolSpeed() const;
 	float GetChaseSpeed() const;
-	float GetHealth() const;
-	float GetMaxHealth() const;
+	float GetHP() const;
+	float GetMaxHP() const;
 	void SetHealth(float NewHealth);
 
 	class UAnimMontage* GetNormalMonsterAttackMontage();
@@ -56,10 +56,6 @@ protected:
 	virtual void BeginPlay() override;
 
 private:
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Status", meta = (AllowPrivateAccess = "true"))
-	float MaxNormalMonsterHealth = 100.f;
-	float NormalMonsterHealth;
-
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Status", meta = (AllowPrivateAccess = "true"))
 	float PatrolSpeed = 300.f;
 

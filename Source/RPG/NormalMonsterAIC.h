@@ -28,5 +28,5 @@ public:
 	void OnTargetDetected(AActor* Actor, FAIStimulus const Stimulus);
 
 private:
-	class UAISenseConfig_Sight* SightConfig; //시야 감각
+	class UAISenseConfig_Sight* SightConfig; //시각
 };

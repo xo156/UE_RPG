@@ -39,11 +39,11 @@ protected:
 	void RunEnd();
 	void Jump();
 	void Look(const FInputActionValue& Value);
-	void Attack(const FInputActionValue& Value);
+	void AttackStart(const FInputActionValue& Value);
 	void Guard();
 	void Dodge();
 	void LockOnTarget();
-	void TESTSTATUS();
+	void TEST();
 
 protected:
 	//ÀÎÇ² ¾×¼Ç

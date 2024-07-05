@@ -19,7 +19,6 @@ EBTNodeResult::Type UBTTask_FindRandomLocation::ExecuteTask(UBehaviorTreeCompone
 				OriginPos = NormalMonster->GetActorLocation();
 				bInitOriginPosSet = true;
 			}
-			//FVector OriginPos = NormalMonster->GetActorLocation();
 			if (UNavigationSystemV1* NavSystem = UNavigationSystemV1::GetCurrent(GetWorld())) {
 				FNavLocation NavLocation;
 				if (NavSystem->GetRandomPointInNavigableRadius(OriginPos, SearchRadius, NavLocation)) {

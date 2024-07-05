@@ -4,3 +4,5 @@ https://www.unrealengine.com/marketplace/ko/product/e4494c76c3b348aba7ef9b263a6d
 mixamo
 Crpyto, Idle, walking, running, punching, stand to roll, jumping
 
+https://forums.unrealengine.com/t/how-can-i-open-a-uasset-file-in-blender/309306
+https://learn.awesometuts.com/courses/199187/lectures/38261413

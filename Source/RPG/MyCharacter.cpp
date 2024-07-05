@@ -53,6 +53,19 @@ AMyCharacter::AMyCharacter() {
 	PlayerStatusWidgetClass = UPlayerStatusUserWidget::StaticClass();
 }
 
+// Called when the game starts or when spawned
+void AMyCharacter::BeginPlay() {
+	Super::BeginPlay();
+
+	//TODO: 지금은 시작할때 장착하지만 나중에는 바꿔보자
+	if (BareHand) {
+		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("BareHand set"));
+		EquipWeapon(BareHand);
+	}
+
+	SetupWidget();
+}
+
 // Called every frame
 void AMyCharacter::Tick(float DeltaTime) {
 	Super::Tick(DeltaTime);
@@ -61,13 +74,15 @@ void AMyCharacter::Tick(float DeltaTime) {
 
 	ChangeMoveSpeed(DeltaTime);
 
-	//TODO: 락온 완성하고나서 함수로 하자
+	//락온 시 카메라
 	if (bIsLockOnTarget && LockedOnTarget) {
-		FVector TargetLocation = LockedOnTarget->GetActorLocation();
-		FVector Direction = (TargetLocation - GetActorLocation()).GetSafeNormal();
-		FRotator NewControlRotation = FRotationMatrix::MakeFromX(Direction).Rotator();
-		NewControlRotation.Pitch = 0.0f;  // 캐릭터의 Pitch 회전은 고정
-		GetController()->SetControlRotation(NewControlRotation);
+		float TargetDist = FVector::Dist(LockedOnTarget->GetActorLocation(), GetActorLocation());
+		if (TargetDist > MaxLockOnDist) {
+			UnLockOnTarget();
+		}
+		else {
+			LockOnCamera(DeltaTime);
+		}
 	}
 }
 
@@ -114,45 +129,50 @@ void AMyCharacter::Look(FVector2D InputValue)
 	AddControllerYawInput(InputValue.X);
 }
 
-void AMyCharacter::Attack()
+void AMyCharacter::AttackStart()
 {
 	if (!bIsDodge && !bIsAttack && bHasEnoughStamina(AttackStaminaCost)) {
 		bIsAttack = true;
-		if (UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance()) {
-			if (CurrentWeapon == nullptr) {
-				bIsAttack = false;
-				return;
-			}
-			GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Red, TEXT("Attack"));
-			int32 SectionCount = CurrentWeapon->GetSectionCount(CurrentWeapon->AttackMontage);
-			ConsumeStaminaForAction(AttackStaminaCost);
-			if (CurrentWeapon->CurrentComboCount < SectionCount) {
-				FString SectionName = "Combo" + FString::FromInt(CurrentWeapon->CurrentComboCount);
-				if (AnimInstance->Montage_IsPlaying(CurrentWeapon->AttackMontage)) {
-					AnimInstance->Montage_JumpToSection(FName(*SectionName), CurrentWeapon->AttackMontage);
-				}
-				else {
-					AnimInstance->Montage_Play(CurrentWeapon->AttackMontage);
-					AnimInstance->Montage_JumpToSection(FName(*SectionName), CurrentWeapon->AttackMontage);
-				}
-				CurrentWeapon->CurrentComboCount++;
-			}
-			else {
-				CurrentWeapon->CurrentComboCount = 0;
-				FString SectionName = "Combo0";
-				AnimInstance->Montage_Play(CurrentWeapon->AttackMontage);
-				AnimInstance->Montage_JumpToSection(FName(*SectionName), CurrentWeapon->AttackMontage);
-			}
-			GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Red, FString::Printf(TEXT("CurrentComboCount: %d"), CurrentWeapon->CurrentComboCount));
-			GetWorld()->GetTimerManager().SetTimer(ComboCheckTimerHandle, this, &AMyCharacter::ResetAttackCount, CurrentWeapon->WaitComboTime, false);
-		}
+		AttackExecute();
 	}
 	else {
 		GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Red, TEXT("Not Enough Stamina to Attack"));
 	}
 }
 
-void AMyCharacter::ResetAttackCount()
+void AMyCharacter::AttackExecute()
+{
+	if (UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance()) {
+		if (CurrentWeapon == nullptr) {
+			bIsAttack = false;
+			return;
+		}
+		GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Red, TEXT("Attack"));
+		int32 SectionCount = CurrentWeapon->GetSectionCount(CurrentWeapon->AttackMontage);
+		ConsumeStaminaForAction(AttackStaminaCost);
+		if (CurrentWeapon->CurrentComboCount < SectionCount) {
+			FString SectionName = "Combo" + FString::FromInt(CurrentWeapon->CurrentComboCount);
+			if (AnimInstance->Montage_IsPlaying(CurrentWeapon->AttackMontage)) {
+				AnimInstance->Montage_JumpToSection(FName(*SectionName), CurrentWeapon->AttackMontage);
+			}
+			else {
+				AnimInstance->Montage_Play(CurrentWeapon->AttackMontage);
+				AnimInstance->Montage_JumpToSection(FName(*SectionName), CurrentWeapon->AttackMontage);
+			}
+			CurrentWeapon->CurrentComboCount++;
+		}
+		else {
+			CurrentWeapon->CurrentComboCount = 0;
+			FString SectionName = "Combo0";
+			AnimInstance->Montage_Play(CurrentWeapon->AttackMontage);
+			AnimInstance->Montage_JumpToSection(FName(*SectionName), CurrentWeapon->AttackMontage);
+		}
+		GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Red, FString::Printf(TEXT("CurrentComboCount: %d"), CurrentWeapon->CurrentComboCount));
+		GetWorld()->GetTimerManager().SetTimer(ComboCheckTimerHandle, this, &AMyCharacter::AttackEnd, CurrentWeapon->WaitComboTime, false);
+	}
+}
+
+void AMyCharacter::AttackEnd()
 {
 	if (CurrentWeapon)
 		CurrentWeapon->CurrentComboCount = 0;
@@ -161,9 +181,10 @@ void AMyCharacter::ResetAttackCount()
 
 void AMyCharacter::Guard()
 {
-	if (bHasEnoughStamina(BlockStaminaCost)) {
+	if (bHasEnoughStamina(GuardStaminaCost)) {
 		bIsGuard = true;
 		if (UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance()) {
+			ConsumeStaminaForAction(GuardStaminaCost);
 			/*AnimInstance->Montage_Play(BlockMontage, 1.0f);
 			FName StartSection = TEXT("GuardStart");
 			AnimInstance->Montage_JumpToSection(StartSection, BlockMontage);*/
@@ -177,8 +198,7 @@ void AMyCharacter::Dodge()
 		if (!bIsAttack && CanJump()) {
 			if (UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance()) {
 				ConsumeStaminaForAction(DodgeStaminaCost);
-
-				//AnimInstance->Montage_Play(DodgeMontage);
+				AnimInstance->Montage_Play(DodgeMontage);
 			}
 		}
 	}
@@ -190,96 +210,84 @@ void AMyCharacter::Dodge()
 void AMyCharacter::LockOnTarget()
 {
 	if (bIsLockOnTarget) {
-		// 이미 락온된 상태에서는 새로운 타겟을 찾습니다.
-		AActor* NewTarget = FindNewTarget();
-		if (NewTarget) {
+		//이미 락온된 상태에서는 새로운 타겟
+		if (AActor* NewTarget = FindNewTarget()) {
 			LockedOnTarget = NewTarget;
-			// 디버그용으로 락온된 타겟을 표시
-			DrawDebugSphere(GetWorld(), LockedOnTarget->GetActorLocation(), 50.0f, 12, FColor::Red, false, 5.0f);
+			DrawDebugSphere(GetWorld(), LockedOnTarget->GetActorLocation(), 150.0f, 12, FColor::Red, false, 5.0f);
 		}
 		else {
-			// 새로운 타겟을 찾지 못하면 락온을 해제합니다.
+			//새로운 타겟을 찾지 못하면 락온을 해제
 			UnLockOnTarget();
 		}
 	}
 	else {
-		FVector CameraLocation = CameraComponent->GetComponentLocation();
-		FVector CameraForwardVector = CameraComponent->GetForwardVector();
-
-		// 부채꼴 범위 내의 모든 액터를 검색합니다.
-		AActor* NearestTarget = nullptr;
-		float NearestDistance = LockOnConeRadius;
-
-		TArray<AActor*> PotentialTargets;
-		UGameplayStatics::GetAllActorsOfClass(GetWorld(), AActor::StaticClass(), PotentialTargets);
-
-		for (AActor* Actor : PotentialTargets) {
-			//플레이어 자신을 무시
-			if (Actor != this) {
-				FVector DirectionToActor = (Actor->GetActorLocation() - CameraLocation).GetSafeNormal();
-				float DistanceToActor = FVector::Dist(CameraLocation, Actor->GetActorLocation());
-
-				// 카메라의 전방 벡터와 타겟까지의 벡터 간의 각도를 계산
-				float AngleToActor = FMath::Acos(FVector::DotProduct(CameraForwardVector, DirectionToActor));
-				AngleToActor = FMath::RadiansToDegrees(AngleToActor);
-
-				if (AngleToActor <= LockOnConeAngle && DistanceToActor < NearestDistance) {
-					NearestTarget = Actor;
-					NearestDistance = DistanceToActor;
-				}
-			}
-		}
-		if (NearestTarget) {
-			LockedOnTarget = NearestTarget;
-			bIsLockOnTarget = true;
-			// 디버그용으로 락온된 타겟을 표시
-			DrawDebugSphere(GetWorld(), LockedOnTarget->GetActorLocation(), 50.0f, 12, FColor::Red, false, 5.0f);
+		if (AActor* NewTarget = FindNewTarget()) {
+			LockedOnTarget = NewTarget;
+			DrawDebugSphere(GetWorld(), LockedOnTarget->GetActorLocation(), 150.0f, 12, FColor::Red, false, 5.0f);
 		}
 	}
-	GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Red, TEXT("Lock On"));
+}
+
+AActor* AMyCharacter::FindNewTarget()
+{
+	FVector CameraLocation = CameraComponent->GetComponentLocation();
+	FVector CameraForwardVector = CameraComponent->GetForwardVector();
+
+	//범위 내의 모든 액터를 검색
+	AActor* NearestTarget = nullptr;
+	float NearestDistance = LockOnConeRadius;
+
+	TArray<AActor*> PotentialTargets;
+	UGameplayStatics::GetAllActorsOfClassWithTag(GetWorld(), AActor::StaticClass(), FName(TEXT("Enemy")), PotentialTargets);
+
+	//이미 락온중인거는 거르도록
+	for (AActor* Target : PotentialTargets) {
+		if (LockedOnTarget == Target) {
+			PotentialTargets.Remove(Target);
+		}
+	}
+
+	for (AActor* Target : PotentialTargets) {
+		FVector DirectionToActor = (Target->GetActorLocation() - CameraLocation).GetSafeNormal();
+		float DistToActor = FVector::Dist(CameraLocation, Target->GetActorLocation());
+
+		//카메라의 전방 벡터와 타겟까지의 벡터 간의 각도를 계산
+		float AngleToTarget = FMath::Acos(FVector::DotProduct(CameraForwardVector, DirectionToActor));
+		AngleToTarget = FMath::RadiansToDegrees(AngleToTarget);
+
+		if (AngleToTarget <= LockOnConeAngle && DistToActor < NearestDistance) {
+			NearestTarget = Target;
+			NearestDistance = DistToActor;
+		}
+	}
+	if (NearestTarget) {
+		bIsLockOnTarget = true;
+	}
+	return NearestTarget;
+}
+
+void AMyCharacter::LockOnCamera(float DeltaTime)
+{
+	FVector TargetLocation = LockedOnTarget->GetActorLocation();
+	FVector Direction = (TargetLocation - GetActorLocation()).GetSafeNormal();
+	FRotator NewControlRotation = FRotationMatrix::MakeFromX(Direction).Rotator();
+	NewControlRotation.Pitch = 0.0f;  // 캐릭터의 Pitch 회전은 고정
+	GetController()->SetControlRotation(NewControlRotation);
+
+	float CurrentCameraBoomOffsetZ = CameraBoom->SocketOffset.Z;
+	float NewOffsetZ = FMath::Lerp(CurrentCameraBoomOffsetZ, 90.f, 3.f * DeltaTime);
+	if (NewOffsetZ <= 90.f) {
+		CameraBoom->SocketOffset = FVector(0.f, 0.f, NewOffsetZ);
+	}
 }
 
 void AMyCharacter::UnLockOnTarget()
 {
+	GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Cyan, TEXT("UnLockOnTarget"));
 	LockedOnTarget = nullptr;
 	bIsLockOnTarget = false;
-}
 
-AActor* AMyCharacter::FindNewTarget() const
-{
-	if (!LockedOnTarget) return nullptr;
-
-	FVector CameraLocation = CameraComponent->GetComponentLocation();
-	FVector CameraForwardVector = CameraComponent->GetForwardVector();
-
-	// 현재 타겟의 위치를 가져옵니다.
-	FVector CurrentTargetLocation = LockedOnTarget->GetActorLocation();
-
-	// 특정 반경 내의 모든 액터를 검색합니다.
-	TArray<AActor*> PotentialTargets;
-	UGameplayStatics::GetAllActorsOfClass(GetWorld(), AActor::StaticClass(), PotentialTargets);
-
-	AActor* NearestTarget = nullptr;
-	float NearestDistance = LockOnConeRadius;
-
-	for (AActor* Actor : PotentialTargets) {
-		//플레이어 자신과 현재 타겟을 무시	
-		if (Actor != this) {
-			FVector DirectionToActor = (Actor->GetActorLocation() - CameraLocation).GetSafeNormal();
-			float DistanceToActor = FVector::Dist(CurrentTargetLocation, Actor->GetActorLocation());
-
-			// 카메라의 전방 벡터와 타겟까지의 벡터 간의 각도를 계산
-			float AngleToActor = FMath::Acos(FVector::DotProduct(CameraForwardVector, DirectionToActor));
-			AngleToActor = FMath::RadiansToDegrees(AngleToActor);
-
-			if (AngleToActor <= LockOnConeAngle && DistanceToActor < NearestDistance) {
-				NearestTarget = Actor;
-				NearestDistance = DistanceToActor;
-			}
-		}
-	}
-
-	return NearestTarget;
+	CameraBoom->SocketOffset = FVector(0.f, 0.f, 60.f);
 }
 
 void AMyCharacter::EquipWeapon(TSubclassOf<class UWeaponBaseComponent> WeaponClass)
@@ -347,7 +355,7 @@ void AMyCharacter::ConsumeHPForAction(float HPCost)
 	OnUIUpdated.Broadcast(CharacterStatus.CurrentHP, CharacterStatus.CurrentMP, CharacterStatus.CurrentStamina);
 }
 
-bool AMyCharacter::bHasEnoughHP(float HPCost)
+bool AMyCharacter::bHasEnoughHP(float HPCost) const
 {
 	return CharacterStatus.CurrentHP >= HPCost;
 }
@@ -405,24 +413,11 @@ void AMyCharacter::SetupStimulusSource()
 	}
 }
 
-void AMyCharacter::TESTSTATUS()
+void AMyCharacter::TEST()
 {
 	CharacterStatus.UseStamina(50.f);
 	CharacterStatus.UseMP(3.f);
 	CharacterStatus.UseHP(5.f);
 
 	GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Cyan, TEXT("TESTSTATUS"));
-}
-
-// Called when the game starts or when spawned
-void AMyCharacter::BeginPlay() {
-	Super::BeginPlay();
-
-	//TODO: 지금은 시작할때 장착하지만 나중에는 바꿔보자
-	if (BareHand) {
-		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("BareHand set"));
-		EquipWeapon(BareHand);
-	}
-	
-	SetupWidget();
 }

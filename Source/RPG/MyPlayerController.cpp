@@ -48,7 +48,7 @@ void AMyPlayerController::SetupInputComponent() {
 		
 		EnHancedInputComponent->BindAction(JumpAction, ETriggerEvent::Started, this, &AMyPlayerController::Jump);
 		
-		EnHancedInputComponent->BindAction(AttackAction, ETriggerEvent::Started, this, &AMyPlayerController::Attack);
+		EnHancedInputComponent->BindAction(AttackAction, ETriggerEvent::Started, this, &AMyPlayerController::AttackStart);
 		
 		EnHancedInputComponent->BindAction(BlockAction, ETriggerEvent::Triggered, this, &AMyPlayerController::Guard);
 		
@@ -56,7 +56,7 @@ void AMyPlayerController::SetupInputComponent() {
 	
 		EnHancedInputComponent->BindAction(LockOnAction, ETriggerEvent::Started, this, &AMyPlayerController::LockOnTarget);
 	
-		EnHancedInputComponent->BindAction(TESTSTATUSAction, ETriggerEvent::Started, this, &AMyPlayerController::TESTSTATUS);
+		EnHancedInputComponent->BindAction(TESTSTATUSAction, ETriggerEvent::Started, this, &AMyPlayerController::TEST);
 	}
 	
 }
@@ -106,9 +106,9 @@ void AMyPlayerController::Look(const FInputActionValue& Value) {
 	}
 }
 
-void AMyPlayerController::Attack(const FInputActionValue& Value) {
+void AMyPlayerController::AttackStart(const FInputActionValue& Value) {
 	if (GetCharacter() != nullptr) {
-		GetCharacter()->Attack();
+		GetCharacter()->AttackStart();
 	}
 }
 
@@ -133,9 +133,9 @@ void AMyPlayerController::LockOnTarget()
 	}
 }
 
-void AMyPlayerController::TESTSTATUS()
+void AMyPlayerController::TEST()
 {
 	if (GetCharacter() != nullptr) {
-		GetCharacter()->TESTSTATUS();
+		GetCharacter()->TEST();
 	}
 }

@@ -73,13 +73,15 @@ public:
 	void RunStart();
 	void RunEnd();
 	void Look(FVector2D InputValue);
-	void Attack();
-	void ResetAttackCount();
+	void AttackStart();
+	void AttackExecute();
+	void AttackEnd();
 	void Guard();
 	void Dodge();
 	void LockOnTarget();
+	AActor* FindNewTarget();
+	void LockOnCamera(float DeltaTime);
 	void UnLockOnTarget();
-	AActor* FindNewTarget() const;
 
 	//무기
 	void EquipWeapon(TSubclassOf<class UWeaponBaseComponent> WeaponClass);
@@ -97,7 +99,7 @@ public:
 	void ConsumeMPForAction(float MPCost);
 	bool bHasEnoughMP(float MPCost) const;
 	void ConsumeHPForAction(float HPCost);
-	bool bHasEnoughHP(float HPCost);
+	bool bHasEnoughHP(float HPCost) const;
 	void ChangeMoveSpeed(float DeltaTime);
 	void CheckStaminaRecovery(float DeltaTime);
 	void RecoveryStaminia(float DeltaTime);
@@ -116,14 +118,17 @@ public:
 	float RunStaminaCost = 0.2f;
 	float JumpStaminaCost = 5.f;
 	float AttackStaminaCost = 6.f;
-	float BlockStaminaCost = 10.f;
+	float GuardStaminaCost = 10.f;
 	float DodgeStaminaCost = 5.f;
 
 	//테스트
-	void TESTSTATUS();
+	void TEST();
 
 	//델리게이트
 	FOnUIUpdated OnUIUpdated;
+
+	//락온
+	AActor* LockedOnTarget = nullptr;
 
 protected:
 	// Called when the game starts or when spawned
@@ -147,8 +152,6 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Weapon")
 	TSubclassOf<class UWeaponBaseComponent> BareHand;
 
-	AActor* LockedOnTarget; //현재 락온중인 타겟
-
 private:
 	//카메라
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera", meta = (AllowPrivateAccess = "true"))
@@ -171,8 +174,6 @@ private:
 	float WalkSpeed = 600.f;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Status", meta = (AllowPrivateAccess = "true"))
 	float RunSpeed = 900.f;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Status", meta = (AllowPrivateAccess = "true"))
-	float DodgeSpeed = 2500.f;
 
 	//이동속도
 	float TargetSpeed;
@@ -183,4 +184,6 @@ private:
 	float LockOnConeAngle = 45.f;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "LockOn", meta = (AllowPrivateAccess = "true"))
 	float LockOnConeRadius = 1000.f;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "LockOn", meta = (AllowPrivateAccess = "true"))
+	float MaxLockOnDist = 300.f;
 };

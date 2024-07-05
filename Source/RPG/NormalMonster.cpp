@@ -21,9 +21,7 @@ ANormalMonster::ANormalMonster()
 	GetCapsuleComponent()->SetCollisionProfileName(TEXT("Enemy"));
 	GetMesh()->SetCollisionProfileName(TEXT("NoCollision"));
 
-	NormalMonsterHealth = MaxNormalMonsterHealth;
-
-	//몬스터 체력 용도
+	//몬스터 체력 위젯
 	WidgetComponent = CreateDefaultSubobject<UWidgetComponent>(TEXT("HealthValue"));
 	if (WidgetComponent) {
 		WidgetComponent->SetupAttachment(RootComponent);
@@ -36,8 +34,8 @@ ANormalMonster::ANormalMonster()
 	}
 
 	//구조체
-	NormalMonsterStatus.CurrentNormalMonsterHP = 100.0f;
 	NormalMonsterStatus.MaxNormalMonsterHP = 100.0f;
+	NormalMonsterStatus.CurrentNormalMonsterHP = NormalMonsterStatus.MaxNormalMonsterHP;
 }
 
 // Called when the game starts or when spawned
@@ -46,7 +44,7 @@ void ANormalMonster::BeginPlay()
 	Super::BeginPlay();
 	
 	if (UHealthBarWidget* HealthWidget = Cast<UHealthBarWidget>(WidgetComponent->GetUserWidgetObject())) {
-		HealthWidget->SetBarValuePercent(NormalMonsterHealth / MaxNormalMonsterHealth);
+		HealthWidget->SetBarValuePercent(NormalMonsterStatus.CurrentNormalMonsterHP / NormalMonsterStatus.MaxNormalMonsterHP);
 	}
 }
 
@@ -63,7 +61,7 @@ void ANormalMonster::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 
 	if (UHealthBarWidget* HealthWidget = Cast<UHealthBarWidget>(WidgetComponent->GetUserWidgetObject())) {
-		HealthWidget->SetBarValuePercent(NormalMonsterHealth / MaxNormalMonsterHealth);
+		HealthWidget->SetBarValuePercent(NormalMonsterStatus.CurrentNormalMonsterHP / NormalMonsterStatus.MaxNormalMonsterHP);
 	}
 }
 
@@ -71,8 +69,8 @@ void ANormalMonster::MonsterAttack()
 {
 	if (UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance()) {
 		if (NormalMonsterAttackMontage) {
-			//AnimInstance->Montage_Play(NormalMonsterAttackMontage);
-			//GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Yellow, TEXT("NormalMonsterAttackMontage"));
+			AnimInstance->Montage_Play(NormalMonsterAttackMontage);
+			GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Yellow, TEXT("NormalMonsterAttackMontage"));
 		}
 	}
 }
@@ -97,23 +95,22 @@ float ANormalMonster::GetChaseSpeed() const
 	return ChaseSpeed;
 }
 
-float ANormalMonster::GetHealth() const
+float ANormalMonster::GetHP() const
 {
-	return NormalMonsterHealth;
+	return NormalMonsterStatus.CurrentNormalMonsterHP;
 }
 
-float ANormalMonster::GetMaxHealth() const
+float ANormalMonster::GetMaxHP() const
 {
-	return MaxNormalMonsterHealth;
+	return NormalMonsterStatus.MaxNormalMonsterHP;
 }
 
 void ANormalMonster::SetHealth(float NewHealth)
 {
-	NormalMonsterHealth = NewHealth;
+	NormalMonsterStatus.CurrentNormalMonsterHP = NewHealth;
 }
 
 UAnimMontage* ANormalMonster::GetNormalMonsterAttackMontage()
 {
 	return NormalMonsterAttackMontage;
 }
-
