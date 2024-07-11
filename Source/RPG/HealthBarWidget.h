@@ -16,9 +16,13 @@ class RPG_API UHealthBarWidget : public UUserWidget
 
 public:
 	virtual void NativeConstruct() override;
-	void SetBarValuePercent(float const value);
+	UFUNCTION(BlueprintCallable, Category = "Status")
+	void UpdateHP(float CurrentHP, float MaxHP);
 
-private:
-	UPROPERTY(BlueprintReadWrite, meta = (BindWidget, AllowPrivateAccess = "true"))
-	class UProgressBar* HealthValue = nullptr;
+	UFUNCTION()
+	void OnMonsterHPUpdate(float NewHP);
+
+protected:
+	UPROPERTY(meta = (BindWidget))
+	class UProgressBar* HPProgressBar;
 };

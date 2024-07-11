@@ -30,6 +30,12 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Status")
 	float MaxMP;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Status")
+	float Strength;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Status")
+	float CurrentMoney;
+
 	float UseStamina(float StaminaCost) {
 		if (StaminaCost >= 0) {
 			CurrentStamina = FMath::Max(CurrentStamina - StaminaCost, 0.0f);
@@ -50,6 +56,19 @@ public:
 		}
 		UE_LOG(LogTemp, Warning, TEXT("CurrentHP: %f"), CurrentHP);
 		return CurrentHP;
+	}
+	float UseMoney(float AddMoney) {
+		if (AddMoney) {
+			if (CurrentMoney + AddMoney <= 0) {
+				UE_LOG(LogTemp, Warning, TEXT("Can Not Use CurrentMoney"));
+				return CurrentMoney;
+			}
+			else {
+				CurrentMoney = FMath::Max(CurrentMoney + AddMoney, 0.0f);
+			}
+		}
+		UE_LOG(LogTemp, Warning, TEXT("CurrentMoney: %f"), CurrentMoney);
+		return CurrentMoney;
 	}
 };
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FOnUIUpdated, float, NewHP, float, NewMP, float, NewStamina);
@@ -107,6 +126,14 @@ public:
 	//AI
 	void SetupStimulusSource();
 
+	//전투에서
+	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser) override;
+	void OnHit(float Damage);
+	void OnDie();
+	UFUNCTION()
+	void OnEnemyDie_Money(float Money);
+
+
 	//캐릭터 상태들
 	bool bIsAttack;
 	bool bIsRun;
@@ -128,8 +155,8 @@ public:
 	FOnUIUpdated OnUIUpdated;
 
 	//락온
-	AActor* LockedOnTarget = nullptr;
-
+	AActor* LockedOnTarget = nullptr; 
+	
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -167,7 +194,7 @@ private:
 	FTimerHandle DodgeHandle;
 
 	//AI
-	class UAIPerceptionStimuliSourceComponent* StimulusSource; //NormalMonster가 탐지할 수 있도록
+	class UAIPerceptionStimuliSourceComponent* StimulusSource; //Monster가 탐지할 수 있도록
 
 	//구조체 추가 고민중
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Status", meta = (AllowPrivateAccess = "true"))

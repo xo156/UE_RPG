@@ -2,9 +2,9 @@
 
 
 #include "BTTask_FindPathPoint.h"
-#include "NormalMonsterAIC.h"
+#include "MonsterAICSight.h"
 #include "BehaviorTree/BlackboardComponent.h"
-#include "NormalMonster.h"
+#include "Monster.h"
 #include "PatrolPath.h"
 
 UBTTask_FindPathPoint::UBTTask_FindPathPoint()
@@ -15,15 +15,14 @@ UBTTask_FindPathPoint::UBTTask_FindPathPoint()
 
 EBTNodeResult::Type UBTTask_FindPathPoint::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
 {
-	if (ANormalMonsterAIC* NormalMonsterAIC = Cast<ANormalMonsterAIC>(OwnerComp.GetAIOwner())) {
+	if (auto* MonsterAICSight = Cast<AMonsterAICSight>(OwnerComp.GetAIOwner())) {
 		if (UBlackboardComponent* BlackboardComponent = OwnerComp.GetBlackboardComponent()) {
 			//patrolpath(몬스터가 거쳐가는 위치 좌표) index를 블랙보드에서 가져오기
 			int32 Index = BlackboardComponent->GetValueAsInt(GetSelectedBlackboardKey());
-			if (ANormalMonster* NormalMonster = Cast<ANormalMonster>(NormalMonsterAIC->GetPawn())) {
+			if (auto* Monster = Cast<AMonster>(MonsterAICSight->GetPawn())) {
 				//현재 normal monster가 가지고 있는 patrol path vector(patrol path actor에 있는)
-				FVector LocalPoint = NormalMonster->GetPatrolPath()->GetPatrolPoints(Index);
-				//이거 auto로 하는게 좋나?
-				UE::Math::TVector<double> GlobalPoint = NormalMonster->GetPatrolPath()->GetActorTransform().TransformPosition(LocalPoint);
+				FVector LocalPoint = Monster->GetPatrolPath()->GetPatrolPoints(Index);
+				auto GlobalPoint = Monster->GetPatrolPath()->GetActorTransform().TransformPosition(LocalPoint);
 				BlackboardComponent->SetValueAsVector(PatrolPathVectorKey.SelectedKeyName, GlobalPoint);
 				FinishLatentTask(OwnerComp, EBTNodeResult::Succeeded);
 				return EBTNodeResult::Succeeded;

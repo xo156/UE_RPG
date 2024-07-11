@@ -2,7 +2,7 @@
 
 
 #include "BTTask_ChasePlayer.h"
-#include "NormalMonsterAIC.h"
+#include "MonsterAICSight.h"
 #include "BehaviorTree/BlackboardComponent.h"
 #include "Blueprint/AIBlueprintHelperLibrary.h"
 
@@ -13,9 +13,9 @@ UBTTask_ChasePlayer::UBTTask_ChasePlayer()
 
 EBTNodeResult::Type UBTTask_ChasePlayer::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
 {
-	if (ANormalMonsterAIC* NormalMonsterAIC = Cast<ANormalMonsterAIC>(OwnerComp.GetAIOwner())) {
+	if (auto* MonsterAICSight = Cast<AMonsterAICSight>(OwnerComp.GetAIOwner())) {
 		FVector PlayerLocation = OwnerComp.GetBlackboardComponent()->GetValueAsVector(GetSelectedBlackboardKey());
-		UAIBlueprintHelperLibrary::SimpleMoveToLocation(NormalMonsterAIC, PlayerLocation);
+		UAIBlueprintHelperLibrary::SimpleMoveToLocation(MonsterAICSight, PlayerLocation);
 		FinishLatentTask(OwnerComp, EBTNodeResult::Succeeded);
 		return EBTNodeResult::Succeeded;
 	}

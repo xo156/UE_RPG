@@ -27,6 +27,8 @@ public:
 	UFUNCTION()
 	void OnWeaponAttackHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);
 
+	class AMyCharacter* OwnerCharacter;
+
 //변수들
 public:	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon")
@@ -34,7 +36,7 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon")
 	class UBoxComponent* WeaponCollision;
 
-	bool bHasHit = false; //공격 1번에 데미지 1번씩 하기 위함
+	bool bHasHit = false;
 
 	TArray<AActor*> HitMonsters; //공격에 맞은 몬스터 관리용
 };

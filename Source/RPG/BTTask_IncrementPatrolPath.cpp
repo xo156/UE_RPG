@@ -2,8 +2,8 @@
 
 
 #include "BTTask_IncrementPatrolPath.h"
-#include "NormalMonsterAIC.h"
-#include "NormalMonster.h"
+#include "MonsterAICSight.h"
+#include "Monster.h"
 #include "BehaviorTree/BlackboardComponent.h"
 #include "PatrolPath.h"
 
@@ -15,10 +15,10 @@ UBTTask_IncrementPatrolPath::UBTTask_IncrementPatrolPath()
 
 EBTNodeResult::Type UBTTask_IncrementPatrolPath::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
 {
-	if (ANormalMonsterAIC* NormalMonsterAIC = Cast<ANormalMonsterAIC>(OwnerComp.GetAIOwner())) {
-		if (ANormalMonster* NormalMonster = Cast<ANormalMonster>(NormalMonsterAIC->GetPawn())) {
+	if (auto* MonsterAICSight = Cast<AMonsterAICSight>(OwnerComp.GetAIOwner())) {
+		if (auto* Monster = Cast<AMonster>(MonsterAICSight->GetPawn())) {
 			if (UBlackboardComponent* BlackboardComponent = OwnerComp.GetBlackboardComponent()) {
-				int NumberOfPoints = NormalMonster->GetPatrolPath()->GetPatrolPointsNum();
+				int NumberOfPoints = Monster->GetPatrolPath()->GetPatrolPointsNum();
 				int MinIndex = 0;
 				int MaxIndex = NumberOfPoints - 1;
 				int32 Index = BlackboardComponent->GetValueAsInt(GetSelectedBlackboardKey());

@@ -26,7 +26,7 @@ AMyCharacter::AMyCharacter() {
 	bUseControllerRotationRoll = false;
 
 	GetCharacterMovement()->bOrientRotationToMovement = true; //이동하는 방향으로 캐릭터를 회전
-	GetCharacterMovement()->RotationRate = FRotator(0.f, 720.f, 0.f);
+	GetCharacterMovement()->RotationRate = FRotator(0.f, 540.f, 0.f);
 	GetCharacterMovement()->JumpZVelocity = 500.0f;
 	GetCharacterMovement()->MaxWalkSpeed = WalkSpeed;
 
@@ -48,6 +48,7 @@ AMyCharacter::AMyCharacter() {
 	CharacterStatus.MaxStamina = 50.0f;
 	CharacterStatus.CurrentMP = 30.0f;
 	CharacterStatus.MaxMP = 30.0f;
+	CharacterStatus.Strength = 20.f;
 
 	//위젯
 	PlayerStatusWidgetClass = UPlayerStatusUserWidget::StaticClass();
@@ -184,7 +185,7 @@ void AMyCharacter::Guard()
 	if (bHasEnoughStamina(GuardStaminaCost)) {
 		bIsGuard = true;
 		if (UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance()) {
-			ConsumeStaminaForAction(GuardStaminaCost);
+			//ConsumeStaminaForAction(GuardStaminaCost);
 			/*AnimInstance->Montage_Play(BlockMontage, 1.0f);
 			FName StartSection = TEXT("GuardStart");
 			AnimInstance->Montage_JumpToSection(StartSection, BlockMontage);*/
@@ -270,15 +271,17 @@ void AMyCharacter::LockOnCamera(float DeltaTime)
 {
 	FVector TargetLocation = LockedOnTarget->GetActorLocation();
 	FVector Direction = (TargetLocation - GetActorLocation()).GetSafeNormal();
-	FRotator NewControlRotation = FRotationMatrix::MakeFromX(Direction).Rotator();
-	NewControlRotation.Pitch = 0.0f;  // 캐릭터의 Pitch 회전은 고정
-	GetController()->SetControlRotation(NewControlRotation);
-
+	FRotator NewRotation = FRotationMatrix::MakeFromX(Direction).Rotator();
+	NewRotation.Pitch = 0.0f;  // 캐릭터의 Pitch 회전은 고정
+	SetActorRotation(NewRotation);
 	float CurrentCameraBoomOffsetZ = CameraBoom->SocketOffset.Z;
-	float NewOffsetZ = FMath::Lerp(CurrentCameraBoomOffsetZ, 90.f, 3.f * DeltaTime);
+	float NewOffsetZ = FMath::Lerp(CurrentCameraBoomOffsetZ, 90.f, 5.f * DeltaTime);
 	if (NewOffsetZ <= 90.f) {
 		CameraBoom->SocketOffset = FVector(0.f, 0.f, NewOffsetZ);
 	}
+
+	/*FRotator SmoothRotation = FMath::Lerp(GetActorRotation(), NewRotation, 5.f * DeltaTime);
+	SetActorRotation(SmoothRotation);*/
 }
 
 void AMyCharacter::UnLockOnTarget()
@@ -411,6 +414,45 @@ void AMyCharacter::SetupStimulusSource()
 		StimulusSource->RegisterForSense(TSubclassOf<UAISense_Sight>());
 		StimulusSource->RegisterWithPerceptionSystem();
 	}
+}
+
+float AMyCharacter::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
+{
+	if (EventInstigator == nullptr) {
+		return -1.f;
+	}
+	if (DamageCauser == nullptr) {
+		return -1.f;
+	}
+
+	if (!bHasEnoughHP(DamageAmount)) {
+		//액터 사망 처리
+		OnDie();
+	}
+	else {
+		//데미지를 입었을 때
+		OnHit(DamageAmount);
+	}
+
+	return Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
+
+}
+
+void AMyCharacter::OnHit(float Damage)
+{
+	ConsumeHPForAction(Damage);
+}
+
+void AMyCharacter::OnDie()
+{
+	CharacterStatus.CurrentHP = 0;
+
+	GetCharacterMovement()->DisableMovement();
+}
+
+void AMyCharacter::OnEnemyDie_Money(float Money)
+{
+	CharacterStatus.UseMoney(Money);
 }
 
 void AMyCharacter::TEST()

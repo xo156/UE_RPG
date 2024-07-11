@@ -2,8 +2,8 @@
 
 
 #include "BTService_PlayerIsInAttackRange.h"
-#include "NormalMonsterAIC.h"
-#include "NormalMonster.h"
+#include "MonsterAICSight.h"
+#include "Monster.h"
 #include "Kismet/GameplayStatics.h"
 #include "BehaviorTree/BlackboardComponent.h"
 
@@ -15,10 +15,10 @@ UBTService_PlayerIsInAttackRange::UBTService_PlayerIsInAttackRange()
 
 void UBTService_PlayerIsInAttackRange::OnBecomeRelevant(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
 {
-	if (ANormalMonsterAIC* NormalMonsterAIC = Cast<ANormalMonsterAIC>(OwnerComp.GetAIOwner())) {
-		if (ANormalMonster* NormalMonster = Cast<ANormalMonster>(NormalMonsterAIC->GetPawn())) {
-			if (ACharacter* PlayerCharacter = UGameplayStatics::GetPlayerCharacter(GetWorld(), 0)) {
-				OwnerComp.GetBlackboardComponent()->SetValueAsBool(GetSelectedBlackboardKey(), NormalMonster->GetDistanceTo(PlayerCharacter) <= AttackRange);
+	if (auto* MonsterAICSight = Cast<AMonsterAICSight>(OwnerComp.GetAIOwner())) {
+		if (auto* Monster = Cast<AMonster>(MonsterAICSight->GetPawn())) {
+			if (auto* PlayerCharacter = UGameplayStatics::GetPlayerCharacter(GetWorld(), 0)) {
+				OwnerComp.GetBlackboardComponent()->SetValueAsBool(GetSelectedBlackboardKey(), Monster->GetDistanceTo(PlayerCharacter) <= AttackRange);
 			}
 		}
 	}

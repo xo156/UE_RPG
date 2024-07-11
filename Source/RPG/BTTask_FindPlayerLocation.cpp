@@ -14,7 +14,7 @@ UBTTask_FindPlayerLocation::UBTTask_FindPlayerLocation()
 
 EBTNodeResult::Type UBTTask_FindPlayerLocation::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
 {
-	if (ACharacter* PlayerCharacter = UGameplayStatics::GetPlayerCharacter(GetWorld(), 0)) {
+	if (auto* PlayerCharacter = UGameplayStatics::GetPlayerCharacter(GetWorld(), 0)) {
 		FVector PlayerLocation = PlayerCharacter->GetActorLocation();
 		if (bSearchRandom) {
 			if (UNavigationSystemV1* NavSystem = UNavigationSystemV1::GetCurrent(GetWorld())) {

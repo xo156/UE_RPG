@@ -2,8 +2,8 @@
 
 
 #include "BTService_ChangeSpeed.h"
-#include "NormalMonsterAIC.h"
-#include "NormalMonster.h"
+#include "MonsterAICSight.h"
+#include "Monster.h"
 #include "GameFramework/CharacterMovementComponent.h"
 //#include "BehaviorTree/BlackboardComponent.h"
 //#include "BehaviorTree/Blackboard/BlackboardKeyType_Float.h"
@@ -18,9 +18,9 @@ void UBTService_ChangeSpeed::OnBecomeRelevant(UBehaviorTreeComponent& OwnerComp,
 {
 	Super::OnBecomeRelevant(OwnerComp, NodeMemory);
 
-	if (ANormalMonsterAIC* NormalMonsterAIC = Cast<ANormalMonsterAIC>(OwnerComp.GetAIOwner())) {
-		if (ANormalMonster* NormalMonster = Cast<ANormalMonster>(NormalMonsterAIC->GetPawn())) {
-			NormalMonster->GetCharacterMovement()->MaxWalkSpeed = Speed;
+	if (AMonsterAICSight* MonsterAICSight = Cast<AMonsterAICSight>(OwnerComp.GetAIOwner())) {
+		if (AMonster* Monster = Cast<AMonster>(MonsterAICSight->GetPawn())) {
+			Monster->GetCharacterMovement()->MaxWalkSpeed = Speed;
 		}
 	}
 }
@@ -31,18 +31,18 @@ void UBTService_ChangeSpeed::OnBecomeRelevant(UBehaviorTreeComponent& OwnerComp,
 //
 //	if (UBlackboardComponent* BlackboardComp = OwnerComp.GetBlackboardComponent()) {
 //		if (float* SpeedValue = BlackboardComp->GetValue<UBlackboardKeyType_Float>(SpeedKey.GetSelectedKeyID())) {
-//			if (ANormalMonsterAIC* NormalMonsterAIC = Cast<ANormalMonsterAIC>(OwnerComp.GetAIOwner())) {
-//				if (ANormalMonster* NormalMonster = Cast<ANormalMonster>(NormalMonsterAIC->GetPawn())) {
+//			if (AMonsterAICSight* MonsterAICSight = Cast<AMonsterAICSight>(OwnerComp.GetAIOwner())) {
+//				if (AMonster* Monster = Cast<AMonster>(MonsterAICSight->GetPawn())) {
 //					// 블랙보드에서 읽어온 속도값에 따라 AI 캐릭터의 속도 설정
-//					if (*SpeedValue == NormalMonster->GetPatrolSpeed()) {
-//						NormalMonster->GetCharacterMovement()->MaxWalkSpeed = NormalMonster->GetPatrolSpeed();
+//					if (*SpeedValue == Monster->GetPatrolSpeed()) {
+//						Monster->GetCharacterMovement()->MaxWalkSpeed = Monster->GetPatrolSpeed();
 //					}
-//					else if (*SpeedValue == NormalMonster->GetChaseSpeed()) {
-//						NormalMonster->GetCharacterMovement()->MaxWalkSpeed = NormalMonster->GetChaseSpeed();
+//					else if (*SpeedValue == Monster->GetChaseSpeed()) {
+//						Monster->GetCharacterMovement()->MaxWalkSpeed = Monster->GetChaseSpeed();
 //					}
 //					else {
 //						// 기본적으로 PatrolSpeed로 설정
-//						NormalMonster->GetCharacterMovement()->MaxWalkSpeed = NormalMonster->GetPatrolSpeed();
+//						Monster->GetCharacterMovement()->MaxWalkSpeed = Monster->GetPatrolSpeed();
 //					}
 //				}
 //			}

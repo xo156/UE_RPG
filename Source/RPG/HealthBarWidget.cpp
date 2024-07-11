@@ -3,13 +3,27 @@
 
 #include "HealthBarWidget.h"
 #include "Components/ProgressBar.h"
+#include "Monster.h"
 
 void UHealthBarWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
+
+	if (auto* Monster = Cast<AMonster>(GetOwningPlayerPawn())) {
+		Monster->OnUIUpdated.AddDynamic(this, &UHealthBarWidget::OnMonsterHPUpdate);
+	}
 }
 
-void UHealthBarWidget::SetBarValuePercent(float const value)
+void UHealthBarWidget::UpdateHP(float CurrentHP, float MaxHP)
 {
-	HealthValue->SetPercent(value);
+	if (HPProgressBar) {
+		HPProgressBar->SetPercent(CurrentHP / MaxHP);
+	}
+}
+
+void UHealthBarWidget::OnMonsterHPUpdate(float NewHP)
+{
+	if (auto* Monster = Cast<AMonster>(GetOwningPlayerPawn())) {
+		UpdateHP(NewHP, Monster->MonsterStatus.MaxMonsterHP);
+	}
 }

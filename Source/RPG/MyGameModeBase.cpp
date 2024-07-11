@@ -2,5 +2,5 @@
 
 
 #include "MyGameModeBase.h"
-#include "NormalMonster.h"
+#include "Monster.h"
 

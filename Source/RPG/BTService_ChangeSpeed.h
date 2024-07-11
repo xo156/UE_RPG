@@ -21,7 +21,7 @@ public:
 
 private:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AI", meta = (AllowPrivateAccess = "true"))
-	float Speed = 500.f; //나중에는 NormalMonster에서 가져오는걸로 하자
+	float Speed = 500.f; //나중에는 Monster에서 가져오는걸로 하자
 
 	/*UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AI", meta = (AllowPrivateAccess = "true"))
 	FBlackboardKeySelector SpeedKey;*/
