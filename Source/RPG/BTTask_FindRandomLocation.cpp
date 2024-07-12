@@ -13,8 +13,8 @@ UBTTask_FindRandomLocation::UBTTask_FindRandomLocation()
 
 EBTNodeResult::Type UBTTask_FindRandomLocation::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
 {
-	if (AMonsterAICSight* MonsterAICSight = Cast<AMonsterAICSight>(OwnerComp.GetAIOwner())) {
-		if (APawn* Monster = MonsterAICSight->GetPawn()) {
+	if (auto* MonsterAICSight = Cast<AMonsterAICSight>(OwnerComp.GetAIOwner())) {
+		if (auto* Monster = MonsterAICSight->GetPawn()) {
 			if (!bInitOriginPosSet) { //처음에만 위치 정보를 저장
 				OriginPos = Monster->GetActorLocation();
 				bInitOriginPosSet = true;

@@ -47,14 +47,24 @@ void AWeapon::Tick(float DeltaTime)
 
 void AWeapon::OnWeaponAttackHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
 {
+	if (bHasHit)
+		return;
+
 	if (OtherActor && (OtherActor != this) && OtherComp) {
 		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("OtherActor, Weapon collided with: %s"), *OtherActor->GetName()));
 		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("HitComponent, Weapon collided with: %s"), *HitComponent->GetName()));
 		
-		bHasHit = true;
 
 		if (!HitMonsters.Contains(OtherActor)) {
 			HitMonsters.Add(OtherActor); //공격이 닿으면 리스트에 추가
 		}
+		//임시 확인용
+		if (HitMonsters.Num() > 0) {
+			for (AActor* TargetActor : HitMonsters) {
+				UE_LOG(LogTemp, Warning, TEXT("Target is-----> %s"), *TargetActor->GetName());
+			
+			}
+		}
+		bHasHit = true;
 	}
 }

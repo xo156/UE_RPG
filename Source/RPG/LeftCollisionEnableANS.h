@@ -4,13 +4,13 @@
 
 #include "CoreMinimal.h"
 #include "Animation/AnimNotifies/AnimNotifyState.h"
-#include "ComboCheckAnimNotifyState.generated.h"
+#include "LeftCollisionEnableANS.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class RPG_API UComboCheckAnimNotifyState : public UAnimNotifyState
+class RPG_API ULeftCollisionEnableANS : public UAnimNotifyState
 {
 	GENERATED_BODY()
 	

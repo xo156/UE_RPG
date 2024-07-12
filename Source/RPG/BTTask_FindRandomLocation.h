@@ -21,7 +21,7 @@ public:
 
 private:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AI", meta = (AllowPrivateAccess = "true"))
-	float SearchRadius = 1000.f; //탐지 거리
+	float SearchRadius = 600.f; //탐지 거리
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AI", meta = (AllowPrivateAccess = "true"))
 	float MaxDistance = 500.f; //이동 한계 거리

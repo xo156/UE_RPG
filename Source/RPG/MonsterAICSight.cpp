@@ -7,7 +7,6 @@
 #include "BehaviorTree/BehaviorTree.h"
 #include "Perception/AIPerceptionComponent.h"
 #include "Perception/AISenseConfig_Sight.h"
-#include "Perception/AISenseConfig_Hearing.h"
 #include "MyCharacter.h"
 
 AMonsterAICSight::AMonsterAICSight()
@@ -20,7 +19,7 @@ void AMonsterAICSight::OnPossess(APawn* InPawn)
 {
 	Super::OnPossess(InPawn);
 
-	if (AMonster* Monster = Cast<AMonster>(InPawn)) {
+	if (auto* Monster = Cast<AMonster>(InPawn)) {
 		if (UBehaviorTree* const BehaviorTree = Monster->GetBehaviorTree()) {
 			UBlackboardComponent* BB;
 			UseBlackboard(BehaviorTree->BlackboardAsset, BB);
@@ -55,7 +54,7 @@ void AMonsterAICSight::SetupPerceptionSystem()
 
 void AMonsterAICSight::OnTargetDetected(AActor* Actor, FAIStimulus const Stimulus)
 {
-	if (AMyCharacter* PlayerCharacter = Cast<AMyCharacter>(Actor)) {
+	if (auto* PlayerCharacter = Cast<AMyCharacter>(Actor)) {
 		GetBlackboardComponent()->SetValueAsBool("CanSeePlayer", Stimulus.WasSuccessfullySensed());
 	}
 }

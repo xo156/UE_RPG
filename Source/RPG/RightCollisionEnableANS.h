@@ -4,17 +4,17 @@
 
 #include "CoreMinimal.h"
 #include "Animation/AnimNotifies/AnimNotifyState.h"
-#include "AttackCollisionAnimNotifyState.generated.h"
+#include "RightCollisionEnableANS.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class RPG_API UAttackCollisionAnimNotifyState : public UAnimNotifyState
+class RPG_API URightCollisionEnableANS : public UAnimNotifyState
 {
 	GENERATED_BODY()
-	
+
 	virtual void NotifyBegin(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, float TotalDuration) override;
 	virtual void NotifyEnd(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation) override;
-
+	
 };

@@ -4,13 +4,13 @@
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
-#include "PlayerStatusUserWidget.generated.h"
+#include "PlayerWidget.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class RPG_API UPlayerStatusUserWidget : public UUserWidget
+class RPG_API UPlayerWidget : public UUserWidget
 {
 	GENERATED_BODY()
 	

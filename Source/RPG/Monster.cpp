@@ -19,7 +19,7 @@ AMonster::AMonster()
 	bUseControllerRotationYaw = true;
 	bUseControllerRotationRoll = false;
 
-	GetCharacterMovement()->MaxWalkSpeed = MonsterStatus.PatrolSpeed;
+	GetCharacterMovement()->MaxWalkSpeed = 500.f;
 	GetCapsuleComponent()->SetCollisionProfileName(TEXT("Enemy"));
 	GetMesh()->SetCollisionProfileName(TEXT("NoCollision"));
 
@@ -38,9 +38,6 @@ AMonster::AMonster()
 	//±¸Á¶Ã¼
 	MonsterStatus.MaxMonsterHP = 100.0f;
 	MonsterStatus.CurrentMonsterHP = MonsterStatus.MaxMonsterHP;
-	MonsterStatus.PatrolSpeed = 300.f;
-	MonsterStatus.ChaseSpeed = 400.f;
-	MonsterStatus.AttackRange = 100.f;
 	MonsterStatus.AttackDamage = 10.f;
 	MonsterStatus.DropMoney = 0.f;
 }
@@ -143,6 +140,13 @@ void AMonster::OnHit()
 void AMonster::OnDie(AMyCharacter* LastAttacker)
 {
 	GetController()->StopMovement();
+
+	if (UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance()) {
+		if (MonsterDieMontage) {
+			AnimInstance->Montage_Play(MonsterDieMontage);
+			GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Yellow, TEXT("MonsterDieMontage"));
+		}
+	}
 
 	if (LastAttacker != nullptr) {
 		this->OnEventDieEvent.AddDynamic(LastAttacker, &AMyCharacter::OnEnemyDie_Money);

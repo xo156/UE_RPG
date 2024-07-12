@@ -19,15 +19,6 @@ public:
 	float MaxMonsterHP;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Status")
-	float PatrolSpeed;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Status")
-	float ChaseSpeed;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Status")
-	float AttackRange;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Status")
 	float AttackDamage;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Status")

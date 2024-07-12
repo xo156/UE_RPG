@@ -31,7 +31,7 @@ public:
 	float MaxMP;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Status")
-	float Strength;
+	float Damage;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Status")
 	float CurrentMoney;
@@ -133,9 +133,9 @@ public:
 	UFUNCTION()
 	void OnEnemyDie_Money(float Money);
 
-
 	//캐릭터 상태들
 	bool bIsAttack;
+	bool bIsMove;
 	bool bIsRun;
 	bool bIsGuard;
 	bool bIsDodge;
@@ -161,11 +161,16 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
+	UPROPERTY(EditAnywhere, Category = "AI")
+	float RunLoudness;
+	UPROPERTY(EditAnywhere, Category = "AI")
+	float AttackLoudness;
+
 	//위젯
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UI")
-	TSubclassOf<class UPlayerStatusUserWidget> PlayerStatusWidgetClass;
+	TSubclassOf<class UPlayerWidget> PlayerStatusWidgetClass;
 
-	class UPlayerStatusUserWidget* PlayerStatusWidgetInstance;
+	class UPlayerWidget* PlayerStatusWidgetInstance;
 
 	//몽타주
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Montage")
@@ -191,7 +196,6 @@ private:
 
 	//핸들러
 	FTimerHandle ComboCheckTimerHandle;
-	FTimerHandle DodgeHandle;
 
 	//AI
 	class UAIPerceptionStimuliSourceComponent* StimulusSource; //Monster가 탐지할 수 있도록
@@ -213,4 +217,8 @@ private:
 	float LockOnConeRadius = 1000.f;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "LockOn", meta = (AllowPrivateAccess = "true"))
 	float MaxLockOnDist = 300.f;
+
+	FVector PreviousLocation;
+	FVector CurrentLocation;
+	bool bIsMoving;
 };

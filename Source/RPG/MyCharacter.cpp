@@ -13,7 +13,8 @@
 #include "Components/BoxComponent.h"
 #include "Perception/AIPerceptionStimuliSourceComponent.h"
 #include "Perception/AISense_Sight.h"
-#include "PlayerStatusUserWidget.h"
+#include "Perception/AISense_Hearing.h"
+#include "PlayerWidget.h"
 
 // Sets default values
 AMyCharacter::AMyCharacter() {
@@ -48,10 +49,10 @@ AMyCharacter::AMyCharacter() {
 	CharacterStatus.MaxStamina = 50.0f;
 	CharacterStatus.CurrentMP = 30.0f;
 	CharacterStatus.MaxMP = 30.0f;
-	CharacterStatus.Strength = 20.f;
+	CharacterStatus.Damage = 20.f;
 
 	//위젯
-	PlayerStatusWidgetClass = UPlayerStatusUserWidget::StaticClass();
+	PlayerStatusWidgetClass = UPlayerWidget::StaticClass();
 }
 
 // Called when the game starts or when spawned
@@ -74,6 +75,13 @@ void AMyCharacter::Tick(float DeltaTime) {
 	CheckStaminaRecovery(DeltaTime);
 
 	ChangeMoveSpeed(DeltaTime);
+
+	//플레이어가 움직이는지 확인하기 위함
+	PreviousLocation = CurrentLocation;
+	CurrentLocation = GetActorLocation();
+
+	// 이전 위치와 현재 위치가 다른 경우 움직임이 있음
+	bIsMove = (CurrentLocation != PreviousLocation);
 
 	//락온 시 카메라
 	if (bIsLockOnTarget && LockedOnTarget) {
@@ -104,14 +112,20 @@ void AMyCharacter::Move(FVector2D InputValue)
 
 		AddMovementInput(ForwardDirection, InputValue.Y);
 		AddMovementInput(RightDirection, InputValue.X);
+
+		bIsMove = true;
 	}
 }
 
 void AMyCharacter::RunStart()
 {
+	if (!bIsMove)
+		return;
+
 	if (bHasEnoughStamina(RunStaminaCost)) {
 		bIsRun = true;
 		TargetSpeed = RunSpeed;
+		UAISense_Hearing::ReportNoiseEvent(GetWorld(), GetActorLocation(), RunLoudness, this);
 	}
 	else {
 		GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Red, TEXT("Not Enough Stamina to Run"));
@@ -137,7 +151,7 @@ void AMyCharacter::AttackStart()
 		AttackExecute();
 	}
 	else {
-		GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Red, TEXT("Not Enough Stamina to Attack"));
+		GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Red, TEXT("Not Enough to Attack"));
 	}
 }
 
@@ -151,8 +165,10 @@ void AMyCharacter::AttackExecute()
 		GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Red, TEXT("Attack"));
 		int32 SectionCount = CurrentWeapon->GetSectionCount(CurrentWeapon->AttackMontage);
 		ConsumeStaminaForAction(AttackStaminaCost);
+		UAISense_Hearing::ReportNoiseEvent(GetWorld(), GetActorLocation(), AttackLoudness, this);
 		if (CurrentWeapon->CurrentComboCount < SectionCount) {
 			FString SectionName = "Combo" + FString::FromInt(CurrentWeapon->CurrentComboCount);
+			
 			if (AnimInstance->Montage_IsPlaying(CurrentWeapon->AttackMontage)) {
 				AnimInstance->Montage_JumpToSection(FName(*SectionName), CurrentWeapon->AttackMontage);
 			}
@@ -175,8 +191,9 @@ void AMyCharacter::AttackExecute()
 
 void AMyCharacter::AttackEnd()
 {
-	if (CurrentWeapon)
+	if (CurrentWeapon) {
 		CurrentWeapon->CurrentComboCount = 0;
+	}
 	bIsAttack = false;
 }
 
@@ -279,9 +296,6 @@ void AMyCharacter::LockOnCamera(float DeltaTime)
 	if (NewOffsetZ <= 90.f) {
 		CameraBoom->SocketOffset = FVector(0.f, 0.f, NewOffsetZ);
 	}
-
-	/*FRotator SmoothRotation = FMath::Lerp(GetActorRotation(), NewRotation, 5.f * DeltaTime);
-	SetActorRotation(SmoothRotation);*/
 }
 
 void AMyCharacter::UnLockOnTarget()
@@ -320,7 +334,7 @@ UWeaponBaseComponent* AMyCharacter::GetCurrentWeapon() const
 void AMyCharacter::SetupWidget()
 {
 	if (PlayerStatusWidgetClass) {
-		PlayerStatusWidgetInstance = CreateWidget<UPlayerStatusUserWidget>(GetWorld(), PlayerStatusWidgetClass);
+		PlayerStatusWidgetInstance = CreateWidget<UPlayerWidget>(GetWorld(), PlayerStatusWidgetClass);
 		if (PlayerStatusWidgetInstance) {
 			PlayerStatusWidgetInstance->AddToViewport();
 			PlayerStatusWidgetInstance->UpdateHP(CharacterStatus.CurrentHP, CharacterStatus.MaxHP);
@@ -412,6 +426,7 @@ void AMyCharacter::SetupStimulusSource()
 	StimulusSource = CreateDefaultSubobject<UAIPerceptionStimuliSourceComponent>(TEXT("Stimulus"));
 	if (StimulusSource) {
 		StimulusSource->RegisterForSense(TSubclassOf<UAISense_Sight>());
+		StimulusSource->RegisterForSense(TSubclassOf<UAISense_Hearing>());
 		StimulusSource->RegisterWithPerceptionSystem();
 	}
 }
@@ -441,6 +456,9 @@ float AMyCharacter::TakeDamage(float DamageAmount, FDamageEvent const& DamageEve
 void AMyCharacter::OnHit(float Damage)
 {
 	ConsumeHPForAction(Damage);
+	if (UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance()) {
+		//AnimInstance->Montage_Play(); 맞았을 때 몽타주 재생하기
+	}
 }
 
 void AMyCharacter::OnDie()
@@ -448,6 +466,9 @@ void AMyCharacter::OnDie()
 	CharacterStatus.CurrentHP = 0;
 
 	GetCharacterMovement()->DisableMovement();
+	if (UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance()) {
+		//AnimInstance->Montage_Play(); 죽었을 때 몽타주 재생하기
+	}
 }
 
 void AMyCharacter::OnEnemyDie_Money(float Money)
