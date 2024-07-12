@@ -2,7 +2,7 @@
 
 
 #include "BTTask_FindRandomLocation.h"
-#include "MonsterAICSight.h"
+#include "MonsterAICHearing.h"
 #include "NavigationSystem.h"
 #include "BehaviorTree/BlackboardComponent.h"
 
@@ -13,8 +13,8 @@ UBTTask_FindRandomLocation::UBTTask_FindRandomLocation()
 
 EBTNodeResult::Type UBTTask_FindRandomLocation::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
 {
-	if (auto* MonsterAICSight = Cast<AMonsterAICSight>(OwnerComp.GetAIOwner())) {
-		if (auto* Monster = MonsterAICSight->GetPawn()) {
+	if (auto* MonsterAICHearing = Cast<AMonsterAICHearing>(OwnerComp.GetAIOwner())) {
+		if (auto* Monster = MonsterAICHearing->GetPawn()) {
 			if (!bInitOriginPosSet) { //처음에만 위치 정보를 저장
 				OriginPos = Monster->GetActorLocation();
 				bInitOriginPosSet = true;
