@@ -1,27 +1,27 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "HealthBarWidget.h"
+#include "MonsterWidget.h"
 #include "Components/ProgressBar.h"
 #include "Monster.h"
 
-void UHealthBarWidget::NativeConstruct()
+void UMonsterWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
 
 	if (auto* Monster = Cast<AMonster>(GetOwningPlayerPawn())) {
-		Monster->OnMonsterUIUpdated.AddDynamic(this, &UHealthBarWidget::OnMonsterHPUpdate);
+		Monster->OnMonsterUIUpdated.AddDynamic(this, &UMonsterWidget::OnMonsterHPUpdate);
 	}
 }
 
-void UHealthBarWidget::UpdateHP(float CurrentHP, float MaxHP)
+void UMonsterWidget::UpdateHP(float CurrentHP, float MaxHP)
 {
 	if (HPProgressBar) {
 		HPProgressBar->SetPercent(CurrentHP / MaxHP);
 	}
 }
 
-void UHealthBarWidget::OnMonsterHPUpdate(float NewHP)
+void UMonsterWidget::OnMonsterHPUpdate(float NewHP)
 {
 	if (auto* Monster = Cast<AMonster>(GetOwningPlayerPawn())) {
 		UpdateHP(NewHP, Monster->MonsterStatus.MaxMonsterHP);

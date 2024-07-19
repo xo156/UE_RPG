@@ -5,7 +5,7 @@
 #include "Components/CapsuleComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Components/WidgetComponent.h"
-#include "HealthBarWidget.h"
+#include "MonsterWidget.h"
 #include "MyCharacter.h"
 
 // Sets default values
@@ -27,7 +27,7 @@ AMonster::AMonster()
 	WidgetComponent = CreateDefaultSubobject<UWidgetComponent>(TEXT("HealthWidget"));
 	if (WidgetComponent) {
 		WidgetComponent->SetupAttachment(RootComponent);
-		WidgetComponent->SetWidgetClass(UHealthBarWidget::StaticClass());
+		WidgetComponent->SetWidgetClass(UMonsterWidget::StaticClass());
 		WidgetComponent->SetWidgetSpace(EWidgetSpace::Screen);
 		WidgetComponent->SetRelativeLocation(FVector(0.f, 0.f, 100.f));
 		WidgetComponent->SetDrawSize(FVector2D(200.f, 50.f));
@@ -58,7 +58,7 @@ void AMonster::BeginPlay()
 	Super::BeginPlay();
 	
 	if (WidgetComponent) {
-		auto* HealthWidget = Cast<UHealthBarWidget>(WidgetComponent->GetUserWidgetObject());
+		auto* HealthWidget = Cast<UMonsterWidget>(WidgetComponent->GetUserWidgetObject());
 		if (HealthWidget) {
 			HealthWidget->UpdateHP(MonsterStatus.CurrentMonsterHP, MonsterStatus.MaxMonsterHP);
 		}

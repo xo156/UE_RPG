@@ -4,13 +4,13 @@
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
-#include "HealthBarWidget.generated.h"
+#include "MonsterWidget.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class RPG_API UHealthBarWidget : public UUserWidget
+class RPG_API UMonsterWidget : public UUserWidget
 {
 	GENERATED_BODY()
 
