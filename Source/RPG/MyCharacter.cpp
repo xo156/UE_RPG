@@ -50,6 +50,8 @@ AMyCharacter::AMyCharacter() {
 	CharacterStatus.CurrentMP = 30.0f;
 	CharacterStatus.MaxMP = 30.0f;
 	CharacterStatus.Damage = 20.f;
+	CharacterStatus.CurrentMoney = 0;
+	CharacterStatus.MaxMoney = 10000;
 
 	//위젯
 	PlayerStatusWidgetClass = UPlayerWidget::StaticClass();
@@ -168,7 +170,6 @@ void AMyCharacter::AttackExecute()
 		UAISense_Hearing::ReportNoiseEvent(GetWorld(), GetActorLocation(), AttackLoudness, this);
 		if (CurrentWeapon->CurrentComboCount < SectionCount) {
 			FString SectionName = "Combo" + FString::FromInt(CurrentWeapon->CurrentComboCount);
-			
 			if (AnimInstance->Montage_IsPlaying(CurrentWeapon->AttackMontage)) {
 				AnimInstance->Montage_JumpToSection(FName(*SectionName), CurrentWeapon->AttackMontage);
 			}
@@ -453,25 +454,32 @@ float AMyCharacter::TakeDamage(float DamageAmount, FDamageEvent const& DamageEve
 
 }
 
-void AMyCharacter::OnHit(float Damage)
+void AMyCharacter::OnHit(float DamageAmount)
 {
-	ConsumeHPForAction(Damage);
-	if (UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance()) {
-		//AnimInstance->Montage_Play(); 맞았을 때 몽타주 재생하기
-	}
+	GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Yellow, TEXT("HitMontage"));
+
+	/*if (UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance()) {
+		if (HitMontage) {
+			ConsumeHPForAction(DamageAmount);
+			AnimInstance->Montage_Play(HitMontage);
+			GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Yellow, TEXT("HitMontage"));
+		}
+	}*/
 }
 
 void AMyCharacter::OnDie()
 {
 	CharacterStatus.CurrentHP = 0;
+	GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Yellow, TEXT("DieMontage"));
 
-	GetCharacterMovement()->DisableMovement();
+	/*GetCharacterMovement()->DisableMovement();
 	if (UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance()) {
-		//AnimInstance->Montage_Play(); 죽었을 때 몽타주 재생하기
-	}
+		AnimInstance->Montage_Play(DieMontage);
+		GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Yellow, TEXT("DieMontage"));
+	}*/
 }
 
-void AMyCharacter::OnEnemyDie_Money(float Money)
+void AMyCharacter::OnEnemyDie(float Money)
 {
 	CharacterStatus.UseMoney(Money);
 }
@@ -481,6 +489,6 @@ void AMyCharacter::TEST()
 	CharacterStatus.UseStamina(50.f);
 	CharacterStatus.UseMP(3.f);
 	CharacterStatus.UseHP(5.f);
-
-	GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Cyan, TEXT("TESTSTATUS"));
+	
+	GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Cyan, TEXT("TEST"));
 }

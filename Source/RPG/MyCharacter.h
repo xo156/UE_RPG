@@ -19,22 +19,25 @@ public:
 	float MaxHP;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Status")
-	float CurrentStamina;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Status")
-	float MaxStamina;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Status")
 	float CurrentMP;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Status")
 	float MaxMP;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Status")
+	float CurrentStamina;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Status")
+	float MaxStamina;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Status")
 	float Damage;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Status")
-	float CurrentMoney;
+	int32 CurrentMoney;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Status")
+	int32 MaxMoney;
 
 	float UseStamina(float StaminaCost) {
 		if (StaminaCost >= 0) {
@@ -71,6 +74,7 @@ public:
 		return CurrentMoney;
 	}
 };
+
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FOnUIUpdated, float, NewHP, float, NewMP, float, NewStamina);
 UCLASS()
 class RPG_API AMyCharacter : public ACharacter
@@ -128,10 +132,10 @@ public:
 
 	//전투에서
 	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser) override;
-	void OnHit(float Damage);
+	void OnHit(float DamageAmount);
 	void OnDie();
 	UFUNCTION()
-	void OnEnemyDie_Money(float Money);
+	void OnEnemyDie(float Money);
 
 	//캐릭터 상태들
 	bool bIsAttack;
@@ -161,9 +165,9 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
-	UPROPERTY(EditAnywhere, Category = "AI")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AI")
 	float RunLoudness;
-	UPROPERTY(EditAnywhere, Category = "AI")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AI")
 	float AttackLoudness;
 
 	//위젯
@@ -179,6 +183,10 @@ protected:
 	class UAnimMontage* BlockMontage;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Montage")
 	class UAnimMontage* DodgeMontage;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Montage")
+	class UAnimMontage* HitMontage;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Montage")
+	class UAnimMontage* DieMontage;
 
 	//무기
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Weapon")
@@ -200,15 +208,14 @@ private:
 	//AI
 	class UAIPerceptionStimuliSourceComponent* StimulusSource; //Monster가 탐지할 수 있도록
 
+	//이동속도
+	float TargetSpeed;
+	float TimeWithoutAction = 0.f; //스테미나 회복 시작까지 걸리는 시간 체크용도
 	//구조체 추가 고민중
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Status", meta = (AllowPrivateAccess = "true"))
 	float WalkSpeed = 600.f;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Status", meta = (AllowPrivateAccess = "true"))
 	float RunSpeed = 900.f;
-
-	//이동속도
-	float TargetSpeed;
-	float TimeWithoutAction = 0.f; //스테미나 회복 시작까지 걸리는 시간 체크용도
 
 	//락온
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "LockOn", meta = (AllowPrivateAccess = "true"))
@@ -217,8 +224,6 @@ private:
 	float LockOnConeRadius = 1000.f;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "LockOn", meta = (AllowPrivateAccess = "true"))
 	float MaxLockOnDist = 300.f;
-
 	FVector PreviousLocation;
 	FVector CurrentLocation;
-	bool bIsMoving;
 };

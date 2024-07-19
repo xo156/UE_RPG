@@ -3,6 +3,7 @@
 
 #include "BTService_PlayerIsInAttackRange.h"
 #include "MonsterAICSight.h"
+#include "MonsterAICHearing.h"
 #include "Monster.h"
 #include "Kismet/GameplayStatics.h"
 #include "BehaviorTree/BlackboardComponent.h"
@@ -15,10 +16,22 @@ UBTService_PlayerIsInAttackRange::UBTService_PlayerIsInAttackRange()
 
 void UBTService_PlayerIsInAttackRange::OnBecomeRelevant(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
 {
-	if (auto* MonsterAICSight = Cast<AMonsterAICSight>(OwnerComp.GetAIOwner())) {
-		if (auto* Monster = Cast<AMonster>(MonsterAICSight->GetPawn())) {
-			if (auto* PlayerCharacter = UGameplayStatics::GetPlayerCharacter(GetWorld(), 0)) {
-				OwnerComp.GetBlackboardComponent()->SetValueAsBool(GetSelectedBlackboardKey(), Monster->GetDistanceTo(PlayerCharacter) <= AttackRange);
+	if (bIsSight) {
+		if (auto* MonsterAICSight = Cast<AMonsterAICSight>(OwnerComp.GetAIOwner())) {
+			if (auto* Monster = Cast<AMonster>(MonsterAICSight->GetPawn())) {
+				if (auto* PlayerCharacter = UGameplayStatics::GetPlayerCharacter(GetWorld(), 0)) {
+					OwnerComp.GetBlackboardComponent()->SetValueAsBool(GetSelectedBlackboardKey(), Monster->GetDistanceTo(PlayerCharacter) <= AttackRange);
+				}
+			}
+		}
+	}
+
+	if (bIsHearing) {
+		if (auto* MonsterAICHearing = Cast<AMonsterAICHearing>(OwnerComp.GetAIOwner())) {
+			if (auto* Monster = Cast<AMonster>(MonsterAICHearing->GetPawn())) {
+				if (auto* PlayerCharacter = UGameplayStatics::GetPlayerCharacter(GetWorld(), 0)) {
+					OwnerComp.GetBlackboardComponent()->SetValueAsBool(GetSelectedBlackboardKey(), Monster->GetDistanceTo(PlayerCharacter) <= AttackRange);
+				}
 			}
 		}
 	}

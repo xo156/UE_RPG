@@ -61,7 +61,7 @@ public:
 	//데미지
 	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser) override;
 
-	void OnHit();
+	void OnHit(float DamagaAmount);
 	void OnDie(class AMyCharacter* LastAttacker);
 
 	//델리게이트
@@ -96,4 +96,5 @@ private:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Widget", meta = (AllowPrivateAccess = "true"))
 	class UWidgetComponent* WidgetComponent;
+
 };

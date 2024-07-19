@@ -9,22 +9,43 @@
 
 void ULeftCollisionEnableANS::NotifyBegin(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, float TotalDuration)
 {
-	if (MeshComp && MeshComp->GetOwner()) {
-		if (AMyCharacter* PlayerCharacter = Cast<AMyCharacter>(MeshComp->GetOwner())) {
-			PlayerCharacter->GetCurrentWeapon()->GetLeftHandWeaponInstance()->WeaponCollision->SetCollisionProfileName("Weapon");
-			PlayerCharacter->GetCurrentWeapon()->GetLeftHandWeaponInstance()->WeaponCollision->SetNotifyRigidBodyCollision(true);
-			PlayerCharacter->GetCurrentWeapon()->LeftHandWeaponInstance->bHasHit = false;
-		}
-	}
+    if (MeshComp && MeshComp->GetOwner()) {
+        if (auto* PlayerCharacter = Cast<AMyCharacter>(MeshComp->GetOwner())) {
+            if (auto* WeaponInstance = PlayerCharacter->GetCurrentWeapon()->GetLeftHandWeaponInstance()) {
+                if (WeaponInstance->WeaponCollision) {
+                    WeaponInstance->WeaponCollision->SetCollisionProfileName("Weapon");
+                    WeaponInstance->WeaponCollision->SetNotifyRigidBodyCollision(true);
+                    UE_LOG(LogTemp, Warning, TEXT("Collision Enabled"));
+                }
+                else {
+                    UE_LOG(LogTemp, Error, TEXT("WeaponCollision is null"));
+                }
+            }
+            else {
+                UE_LOG(LogTemp, Error, TEXT("WeaponInstance is null"));
+            }
+        }
+    }
 }
 
 void ULeftCollisionEnableANS::NotifyEnd(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation)
 {
-	if (MeshComp && MeshComp->GetOwner()) {
-		if (AMyCharacter* PlayerCharacter = Cast<AMyCharacter>(MeshComp->GetOwner())) {
-			PlayerCharacter->GetCurrentWeapon()->GetLeftHandWeaponInstance()->WeaponCollision->SetCollisionProfileName("NoCollision");
-			PlayerCharacter->GetCurrentWeapon()->GetLeftHandWeaponInstance()->WeaponCollision->SetNotifyRigidBodyCollision(false);
-			PlayerCharacter->GetCurrentWeapon()->GetLeftHandWeaponInstance()->HitMonsters.Empty();
-		}
-	}
+    if (MeshComp && MeshComp->GetOwner()) {
+        if (auto* PlayerCharacter = Cast<AMyCharacter>(MeshComp->GetOwner())) {
+            if (auto* WeaponInstance = PlayerCharacter->GetCurrentWeapon()->GetLeftHandWeaponInstance()) {
+                if (WeaponInstance->WeaponCollision) {
+                    WeaponInstance->WeaponCollision->SetCollisionProfileName("NoCollision");
+                    WeaponInstance->WeaponCollision->SetNotifyRigidBodyCollision(false);
+                    WeaponInstance->HitMonsters.Empty();
+                    UE_LOG(LogTemp, Warning, TEXT("Collision Disabled"));
+                }
+                else {
+                    UE_LOG(LogTemp, Error, TEXT("WeaponCollision is null"));
+                }
+            }
+            else {
+                UE_LOG(LogTemp, Error, TEXT("WeaponInstance is null"));
+            }
+        }
+    }
 }

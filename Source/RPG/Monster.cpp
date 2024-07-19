@@ -24,15 +24,14 @@ AMonster::AMonster()
 	GetMesh()->SetCollisionProfileName(TEXT("NoCollision"));
 
 	//몬스터 체력 위젯
-	WidgetComponent = CreateDefaultSubobject<UWidgetComponent>(TEXT("HealthValue"));
+	WidgetComponent = CreateDefaultSubobject<UWidgetComponent>(TEXT("HealthWidget"));
 	if (WidgetComponent) {
 		WidgetComponent->SetupAttachment(RootComponent);
+		WidgetComponent->SetWidgetClass(UHealthBarWidget::StaticClass());
 		WidgetComponent->SetWidgetSpace(EWidgetSpace::Screen);
-		WidgetComponent->SetRelativeLocation(FVector(0.f, 0.f, 95.f));
-		static ConstructorHelpers::FClassFinder<UUserWidget> WidgetClass(TEXT("/Content/Game/UI/WBP_MonsterHealthBar"));
-		if (WidgetClass.Succeeded()) {
-			WidgetComponent->SetWidgetClass(WidgetClass.Class);
-		}
+		WidgetComponent->SetRelativeLocation(FVector(0.f, 0.f, 100.f));
+		WidgetComponent->SetDrawSize(FVector2D(200.f, 50.f));
+		WidgetComponent->SetVisibility(true);
 	}
 
 	//구조체
@@ -46,6 +45,7 @@ void AMonster::ConsumeHPForAction(float HPCost)
 {
 	MonsterStatus.UseHP(HPCost);
 	OnUIUpdated.Broadcast(MonsterStatus.CurrentMonsterHP);
+	UE_LOG(LogTemp, Warning, TEXT("Current HP: %f"), MonsterStatus.CurrentMonsterHP);
 }
 
 bool AMonster::bHasEnoughHP(float HPCost) const
@@ -58,9 +58,13 @@ void AMonster::BeginPlay()
 {
 	Super::BeginPlay();
 	
-	if (UHealthBarWidget* HealthWidget = Cast<UHealthBarWidget>(WidgetComponent->GetUserWidgetObject())) {
-		HealthWidget->UpdateHP(MonsterStatus.CurrentMonsterHP, MonsterStatus.MaxMonsterHP);
+	if (WidgetComponent) {
+		auto* HealthWidget = Cast<UHealthBarWidget>(WidgetComponent->GetUserWidgetObject());
+		if (HealthWidget) {
+			HealthWidget->UpdateHP(MonsterStatus.CurrentMonsterHP, MonsterStatus.MaxMonsterHP);
+		}
 	}
+
 }
 
 // Called every frame
@@ -74,10 +78,6 @@ void AMonster::Tick(float DeltaTime)
 void AMonster::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
-
-	if (UHealthBarWidget* HealthWidget = Cast<UHealthBarWidget>(WidgetComponent->GetUserWidgetObject())) {
-		HealthWidget->UpdateHP(MonsterStatus.CurrentMonsterHP, MonsterStatus.MaxMonsterHP);
-	}
 }
 
 void AMonster::MonsterAttack()
@@ -108,29 +108,36 @@ UAnimMontage* AMonster::GetMonsterAttackMontage()
 float AMonster::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
 {
 	if (EventInstigator == nullptr) {
+		UE_LOG(LogTemp, Warning, TEXT("EventInstigator is nullptr"));
 		return -1.f;
 	}
 	if (DamageCauser == nullptr) {
+		UE_LOG(LogTemp, Warning, TEXT("DamageCauser is nullptr"));
 		return -1.f;
 	}
 
-	if (!MonsterStatus.UseHP(DamageAmount)) {
+	if (!bHasEnoughHP(DamageAmount)) {
+		UE_LOG(LogTemp, Warning, TEXT("Monster does not have enough HP"));
 		//액터 사망 처리
 		OnDie(Cast<AMyCharacter>(DamageCauser));
 	}
 	else {
 		//데미지를 입었을 때
-		OnHit();
+		UE_LOG(LogTemp, Warning, TEXT("Monster took damage: %f"), DamageAmount);
+		OnHit(DamageAmount);
 	}
+
+	ConsumeHPForAction(DamageAmount);
 
 	return Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
 
 }
 
-void AMonster::OnHit()
+void AMonster::OnHit(float DamageAmount)
 {
 	if (UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance()) {
 		if (MonsterHitMontage) {
+			ConsumeHPForAction(DamageAmount);
 			AnimInstance->Montage_Play(MonsterHitMontage);
 			GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Yellow, TEXT("MonsterHitMontage"));
 		}
@@ -149,7 +156,7 @@ void AMonster::OnDie(AMyCharacter* LastAttacker)
 	}
 
 	if (LastAttacker != nullptr) {
-		this->OnEventDieEvent.AddDynamic(LastAttacker, &AMyCharacter::OnEnemyDie_Money);
+		this->OnEventDieEvent.AddDynamic(LastAttacker, &AMyCharacter::OnEnemyDie);
 	}
 	OnEventDieEvent.Broadcast(MonsterStatus.DropMoney);
 }

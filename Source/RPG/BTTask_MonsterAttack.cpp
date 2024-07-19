@@ -3,6 +3,7 @@
 
 #include "BTTask_MonsterAttack.h"
 #include "MonsterAICSight.h"
+#include "MonsterAICHearing.h"
 #include "Monster.h"
 #include "BehaviorTree/BlackboardComponent.h"
 
@@ -19,15 +20,31 @@ EBTNodeResult::Type UBTTask_MonsterAttack::ExecuteTask(UBehaviorTreeComponent& O
 		return EBTNodeResult::Succeeded;
 	}
 
-	if (auto* MonsterAICSight = Cast<AMonsterAICSight>(OwnerComp.GetAIOwner())) {
-		if (auto* Monster = Cast<AMonster>(MonsterAICSight->GetPawn())) {
-			if (bMontageHasFinished(Monster)) {
-				Monster->MonsterAttack();
-				FinishLatentTask(OwnerComp, EBTNodeResult::Succeeded);
-				return EBTNodeResult::Succeeded;
+	if (bIsSight) {
+		if (auto* MonsterAICSight = Cast<AMonsterAICSight>(OwnerComp.GetAIOwner())) {
+			if (auto* Monster = Cast<AMonster>(MonsterAICSight->GetPawn())) {
+				if (bMontageHasFinished(Monster)) {
+					Monster->MonsterAttack();
+					FinishLatentTask(OwnerComp, EBTNodeResult::Succeeded);
+					return EBTNodeResult::Succeeded;
+				}
 			}
 		}
 	}
+	
+	if (bIsHearing) {
+		if (auto* MonsterAICHearing = Cast<AMonsterAICHearing>(OwnerComp.GetAIOwner())) {
+			if (auto* Monster = Cast<AMonster>(MonsterAICHearing->GetPawn())) {
+				if (bMontageHasFinished(Monster)) {
+					Monster->MonsterAttack();
+					FinishLatentTask(OwnerComp, EBTNodeResult::Succeeded);
+					return EBTNodeResult::Succeeded;
+				}
+			}
+		}
+	}
+
+
 	return EBTNodeResult::Failed;
 }
 
