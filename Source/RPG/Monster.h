@@ -66,7 +66,7 @@ public:
 
 	//델리게이트
 	FOnEnemyDieEvent OnEventDieEvent;
-	FOnMonsterUIUpdated OnUIUpdated;
+	FOnMonsterUIUpdated OnMonsterUIUpdated;
 
 	//구조체
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Status")
@@ -78,7 +78,7 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
-private:
+protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AI", meta = (AllowPrivateAccess = "true"))
 	class UBehaviorTree* BehaviorTree;
 

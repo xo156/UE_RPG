@@ -10,7 +10,7 @@ void UPlayerWidget::NativeConstruct()
 	Super::NativeConstruct();
 
 	if (auto* PlayerCharacter = Cast<AMyCharacter>(GetOwningPlayerPawn())) {
-		PlayerCharacter->OnUIUpdated.AddDynamic(this, &UPlayerWidget::OnPlayerStatusUswerWidgetUpdate);
+		PlayerCharacter->OnPlayerUIUpdated.AddDynamic(this, &UPlayerWidget::OnPlayerStatusUswerWidgetUpdate);
 	}
 }
 

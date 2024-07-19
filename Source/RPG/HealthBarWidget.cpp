@@ -10,7 +10,7 @@ void UHealthBarWidget::NativeConstruct()
 	Super::NativeConstruct();
 
 	if (auto* Monster = Cast<AMonster>(GetOwningPlayerPawn())) {
-		Monster->OnUIUpdated.AddDynamic(this, &UHealthBarWidget::OnMonsterHPUpdate);
+		Monster->OnMonsterUIUpdated.AddDynamic(this, &UHealthBarWidget::OnMonsterHPUpdate);
 	}
 }
 

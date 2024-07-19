@@ -75,7 +75,7 @@ public:
 	}
 };
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FOnUIUpdated, float, NewHP, float, NewMP, float, NewStamina);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FOnPlayerUIUpdated, float, NewHP, float, NewMP, float, NewStamina);
 UCLASS()
 class RPG_API AMyCharacter : public ACharacter
 {
@@ -107,9 +107,9 @@ public:
 	void UnLockOnTarget();
 
 	//무기
-	void EquipWeapon(TSubclassOf<class UWeaponBaseComponent> WeaponClass);
 	class UWeaponBaseComponent* GetCurrentWeapon() const;
 	UFUNCTION(BlueprintCallable, Category = "Weapon")
+	void EquipWeapon(TSubclassOf<class UWeaponBaseComponent> WeaponClass);
 
 	//위젯
 	void SetupWidget();
@@ -148,7 +148,8 @@ public:
 	//소모되는 스테미나
 	float RunStaminaCost = 0.2f;
 	float JumpStaminaCost = 5.f;
-	float AttackStaminaCost = 6.f;
+	//float AttackStaminaCost = 6.f;
+	float AttackStaminaCost = 0.0f;
 	float GuardStaminaCost = 10.f;
 	float DodgeStaminaCost = 5.f;
 
@@ -156,7 +157,7 @@ public:
 	void TEST();
 
 	//델리게이트
-	FOnUIUpdated OnUIUpdated;
+	FOnPlayerUIUpdated OnPlayerUIUpdated;
 
 	//락온
 	AActor* LockedOnTarget = nullptr; 

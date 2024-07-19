@@ -44,8 +44,7 @@ AMonster::AMonster()
 void AMonster::ConsumeHPForAction(float HPCost)
 {
 	MonsterStatus.UseHP(HPCost);
-	OnUIUpdated.Broadcast(MonsterStatus.CurrentMonsterHP);
-	UE_LOG(LogTemp, Warning, TEXT("Current HP: %f"), MonsterStatus.CurrentMonsterHP);
+	OnMonsterUIUpdated.Broadcast(MonsterStatus.CurrentMonsterHP);
 }
 
 bool AMonster::bHasEnoughHP(float HPCost) const
@@ -64,7 +63,6 @@ void AMonster::BeginPlay()
 			HealthWidget->UpdateHP(MonsterStatus.CurrentMonsterHP, MonsterStatus.MaxMonsterHP);
 		}
 	}
-
 }
 
 // Called every frame
@@ -72,6 +70,10 @@ void AMonster::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+	ConsumeHPForAction(1.f);
+	OnMonsterUIUpdated.Broadcast(MonsterStatus.CurrentMonsterHP);
+
+	UE_LOG(LogTemp, Error, TEXT("monster hp: %f"), MonsterStatus.CurrentMonsterHP);
 }
 
 // Called to bind functionality to input
@@ -159,4 +161,6 @@ void AMonster::OnDie(AMyCharacter* LastAttacker)
 		this->OnEventDieEvent.AddDynamic(LastAttacker, &AMyCharacter::OnEnemyDie);
 	}
 	OnEventDieEvent.Broadcast(MonsterStatus.DropMoney);
+
+	Destroy();
 }

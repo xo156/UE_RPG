@@ -25,13 +25,12 @@ AWeapon::AWeapon()
 
 	WeaponCollision->SetHiddenInGame(false);
 	WeaponCollision->SetVisibility(true);
-	WeaponCollision->SetCollisionProfileName("Weapon");
-	WeaponCollision->SetNotifyRigidBodyCollision(true);
+	WeaponCollision->SetCollisionProfileName("NoCollision");
+	WeaponCollision->SetNotifyRigidBodyCollision(false);
     WeaponCollision->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics); // 물리 및 쿼리 모두 활성화
 
-
 	// 충돌 이벤트 바인딩
-	WeaponCollision->OnComponentHit.AddDynamic(this, &AWeapon::OnWeaponAttackHit);
+	WeaponCollision->OnComponentHit.AddDynamic(this, &AWeapon::OnWeaponHit);
 }
 
 // Called when the game starts or when spawned
@@ -40,7 +39,7 @@ void AWeapon::BeginPlay()
 	Super::BeginPlay();
 
 	HitMonsters.Empty();
-	OwnerCharacter = Cast<AMyCharacter>(GetOwner());
+    OwnerCharacter = Cast<AMyCharacter>(GetOwner());
 }
 
 // Called every frame
@@ -50,73 +49,49 @@ void AWeapon::Tick(float DeltaTime)
 
 }
 
-void AWeapon::OnWeaponAttackHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
+void AWeapon::OnWeaponHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
 {
-    // Validate if the owner character is valid
-    if (!OwnerCharacter)
-    {
-        UE_LOG(LogTemp, Error, TEXT("OwnerCharacter is null. Cannot process hit."));
-        return;
-    }
+    OwnerCharacter = Cast<AMyCharacter>(GetOwner());
 
-    // Validate hit and other actor
-    if (OtherActor == nullptr)
-    {
-        UE_LOG(LogTemp, Error, TEXT("OtherActor is null. No collision detected."));
-        return;
-    }
-
-    if (OtherComp == nullptr)
-    {
-        UE_LOG(LogTemp, Error, TEXT("OtherComp is null. No valid component found for the hit."));
-        return;
-    }
-
-    if (OtherActor == OwnerCharacter)
-    {
-        UE_LOG(LogTemp, Warning, TEXT("Weapon hit the owner character, skipping damage application."));
-        return;
-    }
-
-    // Log details about the hit
-    UE_LOG(LogTemp, Warning, TEXT("Weapon collided with: %s"), *OtherActor->GetName());
-    UE_LOG(LogTemp, Warning, TEXT("HitComponent details: %s"), *HitComponent->GetName());
-
-    // Add the actor to the hit monsters list if not already present
-    if (!HitMonsters.Contains(OtherActor))
-    {
-        HitMonsters.Add(OtherActor);
-        UE_LOG(LogTemp, Warning, TEXT("Added %s to hit monsters list."), *OtherActor->GetName());
-    }
-    else
-    {
-        UE_LOG(LogTemp, Warning, TEXT("%s is already in the hit monsters list."), *OtherActor->GetName());
-    }
-
-    // Iterate over all hit monsters and apply damage if they are enemies
-    if (HitMonsters.Num() > 0)
-    {
-        for (AActor* HitMonster : HitMonsters)
+    if (OwnerCharacter && OtherActor && (OtherActor != OwnerCharacter) && OtherComp) {
+        if (!HitMonsters.Contains(OtherActor)) {
+            HitMonsters.Add(OtherActor);
+            UE_LOG(LogTemp, Warning, TEXT("Added %s to hit monsters list."), *OtherActor->GetName());
+        }
+        else
         {
-            if (HitMonster->ActorHasTag("Enemy"))
-            {
-                UE_LOG(LogTemp, Warning, TEXT("Applying damage to enemy: %s"), *HitMonster->GetName());
+            UE_LOG(LogTemp, Warning, TEXT("%s is already in the hit monsters list."), *OtherActor->GetName());
+        }
 
-                FDamageEvent DamageEvent;
-                float ActualDamage = HitMonster->TakeDamage(OwnerCharacter->CharacterStatus.Damage, DamageEvent, OwnerCharacter->GetInstigatorController(), OwnerCharacter);
+        if (HitMonsters.Num() > 0) {
+            for (AActor* HitMonster : HitMonsters) {
+                if (HitMonster->ActorHasTag("Enemy")) {
+                    // 로그를 통해 적 캐릭터에 피해를 적용한다고 표시
+                    UE_LOG(LogTemp, Warning, TEXT("Applying damage to enemy: %s"), *HitMonster->GetName());
 
-                // Log the actual damage applied
-                UE_LOG(LogTemp, Warning, TEXT("Damage applied to %s: %f"), *HitMonster->GetName(), ActualDamage);
-            }
-            else
-            {
-                UE_LOG(LogTemp, Warning, TEXT("%s is not an enemy, skipping damage application."), *HitMonster->GetName());
+                    // HitMonster가 AMonster의 인스턴스인지 확인 및 캐스팅
+                    if (auto* Monster = Cast<AMonster>(HitMonster)) {
+                        UE_LOG(LogTemp, Warning, TEXT("Monster Cast: %s"), *Monster->GetName());
+                        // DamageEvent를 정의
+                        FDamageEvent DamageEvent;
+
+                        // Monster의 TakeDamage 메서드를 호출하여 피해를 적용
+                        Monster->TakeDamage(OwnerCharacter->CharacterStatus.Damage, DamageEvent, OwnerCharacter->GetInstigatorController(), OwnerCharacter);
+                    }
+                    else {
+                        // HitMonster가 AMonster 인스턴스가 아닌 경우 로그 기록
+                        UE_LOG(LogTemp, Warning, TEXT("%s is not a monster, skipping damage application."), *HitMonster->GetName());
+                    }
+                }
+                else {
+                    // HitMonster가 "Enemy" 태그가 없는 경우 로그 기록
+                    UE_LOG(LogTemp, Warning, TEXT("%s is not an enemy, skipping damage application."), *HitMonster->GetName());
+                }
             }
         }
+        else {
+            // HitMonsters 리스트가 비어 있는 경우 로그 기록
+            UE_LOG(LogTemp, Warning, TEXT("No hit monsters to apply damage to."));
+        }
     }
-    else
-    {
-        UE_LOG(LogTemp, Warning, TEXT("No hit monsters to apply damage to."));
-    }
-
 }

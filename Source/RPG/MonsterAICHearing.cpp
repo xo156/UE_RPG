@@ -34,8 +34,8 @@ void AMonsterAICHearing::SetupPerceptionSystem()
 	if (HearingConfig) {
 		SetPerceptionComponent(*CreateDefaultSubobject<UAIPerceptionComponent>(TEXT("Perception Component")));
 		HearingConfig->HearingRange = 600.f; //청각 반경
-		HearingConfig->LoSHearingRange = HearingConfig->HearingRange + 50.f; //소리가 안들리게되는 반경
-		HearingConfig->bUseLoSHearing = true; //소리를 이용한 청각 탐지
+		//HearingConfig->LoSHearingRange = HearingConfig->HearingRange + 50.f; //소리가 안들리게되는 반경
+		//HearingConfig->bUseLoSHearing = true; //소리를 이용한 청각 탐지
 		HearingConfig->DetectionByAffiliation.bDetectEnemies = true; //적 탐지
 		HearingConfig->DetectionByAffiliation.bDetectFriendlies = true; //아군 탐지
 		HearingConfig->DetectionByAffiliation.bDetectNeutrals = true; //중립 탐지

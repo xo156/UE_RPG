@@ -163,7 +163,7 @@ void AMyCharacter::AttackExecute()
 		if (CurrentWeapon == nullptr) {
 			bIsAttack = false;
 			return;
-		}
+		}		
 		GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Red, TEXT("Attack"));
 		int32 SectionCount = CurrentWeapon->GetSectionCount(CurrentWeapon->AttackMontage);
 		ConsumeStaminaForAction(AttackStaminaCost);
@@ -348,7 +348,7 @@ void AMyCharacter::SetupWidget()
 void AMyCharacter::ConsumeStaminaForAction(float StaminaCost)
 {
 	CharacterStatus.UseStamina(StaminaCost);
-	OnUIUpdated.Broadcast(CharacterStatus.CurrentHP, CharacterStatus.CurrentMP, CharacterStatus.CurrentStamina);
+	OnPlayerUIUpdated.Broadcast(CharacterStatus.CurrentHP, CharacterStatus.CurrentMP, CharacterStatus.CurrentStamina);
 }
 
 bool AMyCharacter::bHasEnoughStamina(float StaminaCost) const
@@ -359,7 +359,7 @@ bool AMyCharacter::bHasEnoughStamina(float StaminaCost) const
 void AMyCharacter::ConsumeMPForAction(float MPCost)
 {
 	CharacterStatus.UseMP(MPCost);
-	OnUIUpdated.Broadcast(CharacterStatus.CurrentHP, CharacterStatus.CurrentMP, CharacterStatus.CurrentStamina);
+	OnPlayerUIUpdated.Broadcast(CharacterStatus.CurrentHP, CharacterStatus.CurrentMP, CharacterStatus.CurrentStamina);
 }
 
 bool AMyCharacter::bHasEnoughMP(float MPCost) const
@@ -370,7 +370,7 @@ bool AMyCharacter::bHasEnoughMP(float MPCost) const
 void AMyCharacter::ConsumeHPForAction(float HPCost)
 {
 	CharacterStatus.UseHP(HPCost);	
-	OnUIUpdated.Broadcast(CharacterStatus.CurrentHP, CharacterStatus.CurrentMP, CharacterStatus.CurrentStamina);
+	OnPlayerUIUpdated.Broadcast(CharacterStatus.CurrentHP, CharacterStatus.CurrentMP, CharacterStatus.CurrentStamina);
 }
 
 bool AMyCharacter::bHasEnoughHP(float HPCost) const
@@ -418,7 +418,7 @@ void AMyCharacter::RecoveryStaminia(float DeltaTime)
 {
 	float StaminaRecoveryRate = 1000.0f;
 	CharacterStatus.CurrentStamina = FMath::Min(CharacterStatus.CurrentStamina + (StaminaRecoveryRate * DeltaTime), CharacterStatus.MaxStamina);
-	OnUIUpdated.Broadcast(CharacterStatus.CurrentHP, CharacterStatus.CurrentMP, CharacterStatus.CurrentStamina);
+	OnPlayerUIUpdated.Broadcast(CharacterStatus.CurrentHP, CharacterStatus.CurrentMP, CharacterStatus.CurrentStamina);
 	UE_LOG(LogTemp, Warning, TEXT("RecoveryStamina: %f"), CharacterStatus.CurrentStamina)
 }
 
@@ -490,5 +490,6 @@ void AMyCharacter::TEST()
 	CharacterStatus.UseMP(3.f);
 	CharacterStatus.UseHP(5.f);
 	
+
 	GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Cyan, TEXT("TEST"));
 }
