@@ -51,18 +51,11 @@ public:
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
 	void MonsterAttack();
+	virtual float TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
 
 	class UBehaviorTree* GetBehaviorTree() const;
-
 	class APatrolPath* GetPatrolPath() const;
-
 	class UAnimMontage* GetMonsterAttackMontage();
-
-	//데미지
-	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser) override;
-
-	void OnHit(float DamagaAmount);
-	void OnDie(class AMyCharacter* LastAttacker);
 
 	//델리게이트
 	FOnEnemyDieEvent OnEventDieEvent;
@@ -78,7 +71,7 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
-protected:
+private:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AI", meta = (AllowPrivateAccess = "true"))
 	class UBehaviorTree* BehaviorTree;
 

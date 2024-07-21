@@ -107,9 +107,9 @@ public:
 	void UnLockOnTarget();
 
 	//무기
-	class UWeaponBaseComponent* GetCurrentWeapon() const;
 	UFUNCTION(BlueprintCallable, Category = "Weapon")
 	void EquipWeapon(TSubclassOf<class UWeaponBaseComponent> WeaponClass);
+	class UWeaponBaseComponent* GetCurrentWeapon() const;
 
 	//위젯
 	void SetupWidget();
@@ -130,12 +130,7 @@ public:
 	//AI
 	void SetupStimulusSource();
 
-	//전투에서
-	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser) override;
-	void OnHit(float DamageAmount);
-	void OnDie();
-	UFUNCTION()
-	void OnEnemyDie(float Money);
+	//전투
 
 	//캐릭터 상태들
 	bool bIsAttack;
@@ -174,7 +169,6 @@ protected:
 	//위젯
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UI")
 	TSubclassOf<class UPlayerWidget> PlayerStatusWidgetClass;
-
 	class UPlayerWidget* PlayerStatusWidgetInstance;
 
 	//몽타주

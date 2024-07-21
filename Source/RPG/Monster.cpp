@@ -70,10 +70,7 @@ void AMonster::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	ConsumeHPForAction(1.f);
-	OnMonsterUIUpdated.Broadcast(MonsterStatus.CurrentMonsterHP);
-
-	UE_LOG(LogTemp, Error, TEXT("monster hp: %f"), MonsterStatus.CurrentMonsterHP);
+	//UE_LOG(LogTemp, Log, TEXT("Current Monster HP: %f"), MonsterStatus.CurrentMonsterHP);
 }
 
 // Called to bind functionality to input
@@ -92,6 +89,26 @@ void AMonster::MonsterAttack()
 	}
 }
 
+float AMonster::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
+{
+	Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
+
+	if (EventInstigator == nullptr)
+		return -1.f;
+	if (DamageCauser == nullptr)
+		return -1.f;
+
+	if (bHasEnoughHP(DamageAmount)) {
+		ConsumeHPForAction(DamageAmount);
+		UE_LOG(LogTemp, Log, TEXT("Monster Damaged, CurrentHP: %f"), MonsterStatus.CurrentMonsterHP);
+	}
+	else {
+		UE_LOG(LogTemp, Log, TEXT("Monster Die"));
+	}
+
+	return DamageAmount;
+}
+
 UBehaviorTree* AMonster::GetBehaviorTree() const
 {
 	return BehaviorTree;
@@ -105,62 +122,4 @@ APatrolPath* AMonster::GetPatrolPath() const
 UAnimMontage* AMonster::GetMonsterAttackMontage()
 {
 	return MonsterAttackMontage;
-}
-
-float AMonster::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
-{
-	if (EventInstigator == nullptr) {
-		UE_LOG(LogTemp, Warning, TEXT("EventInstigator is nullptr"));
-		return -1.f;
-	}
-	if (DamageCauser == nullptr) {
-		UE_LOG(LogTemp, Warning, TEXT("DamageCauser is nullptr"));
-		return -1.f;
-	}
-
-	if (!bHasEnoughHP(DamageAmount)) {
-		UE_LOG(LogTemp, Warning, TEXT("Monster does not have enough HP"));
-		//액터 사망 처리
-		OnDie(Cast<AMyCharacter>(DamageCauser));
-	}
-	else {
-		//데미지를 입었을 때
-		UE_LOG(LogTemp, Warning, TEXT("Monster took damage: %f"), DamageAmount);
-		OnHit(DamageAmount);
-	}
-
-	ConsumeHPForAction(DamageAmount);
-
-	return Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
-
-}
-
-void AMonster::OnHit(float DamageAmount)
-{
-	if (UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance()) {
-		if (MonsterHitMontage) {
-			ConsumeHPForAction(DamageAmount);
-			AnimInstance->Montage_Play(MonsterHitMontage);
-			GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Yellow, TEXT("MonsterHitMontage"));
-		}
-	}
-}
-
-void AMonster::OnDie(AMyCharacter* LastAttacker)
-{
-	GetController()->StopMovement();
-
-	if (UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance()) {
-		if (MonsterDieMontage) {
-			AnimInstance->Montage_Play(MonsterDieMontage);
-			GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Yellow, TEXT("MonsterDieMontage"));
-		}
-	}
-
-	if (LastAttacker != nullptr) {
-		this->OnEventDieEvent.AddDynamic(LastAttacker, &AMyCharacter::OnEnemyDie);
-	}
-	OnEventDieEvent.Broadcast(MonsterStatus.DropMoney);
-
-	Destroy();
 }

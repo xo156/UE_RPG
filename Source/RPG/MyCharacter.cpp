@@ -185,6 +185,7 @@ void AMyCharacter::AttackExecute()
 			AnimInstance->Montage_Play(CurrentWeapon->AttackMontage);
 			AnimInstance->Montage_JumpToSection(FName(*SectionName), CurrentWeapon->AttackMontage);
 		}
+
 		GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Red, FString::Printf(TEXT("CurrentComboCount: %d"), CurrentWeapon->CurrentComboCount));
 		GetWorld()->GetTimerManager().SetTimer(ComboCheckTimerHandle, this, &AMyCharacter::AttackEnd, CurrentWeapon->WaitComboTime, false);
 	}
@@ -430,58 +431,6 @@ void AMyCharacter::SetupStimulusSource()
 		StimulusSource->RegisterForSense(TSubclassOf<UAISense_Hearing>());
 		StimulusSource->RegisterWithPerceptionSystem();
 	}
-}
-
-float AMyCharacter::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
-{
-	if (EventInstigator == nullptr) {
-		return -1.f;
-	}
-	if (DamageCauser == nullptr) {
-		return -1.f;
-	}
-
-	if (!bHasEnoughHP(DamageAmount)) {
-		//액터 사망 처리
-		OnDie();
-	}
-	else {
-		//데미지를 입었을 때
-		OnHit(DamageAmount);
-	}
-
-	return Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
-
-}
-
-void AMyCharacter::OnHit(float DamageAmount)
-{
-	GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Yellow, TEXT("HitMontage"));
-
-	/*if (UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance()) {
-		if (HitMontage) {
-			ConsumeHPForAction(DamageAmount);
-			AnimInstance->Montage_Play(HitMontage);
-			GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Yellow, TEXT("HitMontage"));
-		}
-	}*/
-}
-
-void AMyCharacter::OnDie()
-{
-	CharacterStatus.CurrentHP = 0;
-	GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Yellow, TEXT("DieMontage"));
-
-	/*GetCharacterMovement()->DisableMovement();
-	if (UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance()) {
-		AnimInstance->Montage_Play(DieMontage);
-		GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Yellow, TEXT("DieMontage"));
-	}*/
-}
-
-void AMyCharacter::OnEnemyDie(float Money)
-{
-	CharacterStatus.UseMoney(Money);
 }
 
 void AMyCharacter::TEST()

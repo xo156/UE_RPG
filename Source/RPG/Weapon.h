@@ -23,18 +23,29 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
-	//무기가 HIT 했을때
 	UFUNCTION()
-	void OnWeaponHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);
+	void OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
+						UPrimitiveComponent* OtherComponent, int32 OtherBodyIndex,
+						bool bFromSweep, const FHitResult& SweepResult);
+
+	UFUNCTION()
+	void OnOverlapEnd(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, 
+					  UPrimitiveComponent* OtherComponent, int32 OtherBodyIndex);
+
+	void ApplyDamageToActor(AActor* ActorToDamage);
+	
+	void SetOwnerCharacter(class AMyCharacter* NewOwnerCharacter);
+
+	class USkeletalMeshComponent* GetWeaponMesh() const;
+	class UBoxComponent* GetWeaponCollision() const;
 
 //변수들
-public:	
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon")
+private:	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon", meta = (AllowPrivateAccess = "true"))
 	class USkeletalMeshComponent* WeaponMesh;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon", meta = (AllowPrivateAccess = "true"))
 	class UBoxComponent* WeaponCollision;
 
-	TArray<AActor*> HitMonsters; //공격에 맞은 몬스터 관리용
-
 	class AMyCharacter* OwnerCharacter;
+	TSet<AActor*> OverlapActors;
 };

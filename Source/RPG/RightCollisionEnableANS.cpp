@@ -12,10 +12,10 @@ void URightCollisionEnableANS::NotifyBegin(USkeletalMeshComponent* MeshComp, UAn
     if (MeshComp && MeshComp->GetOwner()) {
         if (auto* PlayerCharacter = Cast<AMyCharacter>(MeshComp->GetOwner())) {
             if (auto* WeaponInstance = PlayerCharacter->GetCurrentWeapon()->GetRightHandWeaponInstance()) {
-                if (WeaponInstance->WeaponCollision) {
-                    WeaponInstance->WeaponCollision->SetCollisionProfileName("Weapon");
-                    WeaponInstance->WeaponCollision->SetNotifyRigidBodyCollision(true);
-                    UE_LOG(LogTemp, Warning, TEXT("Collision Enabled"));
+                if (WeaponInstance->GetWeaponCollision()) {
+                    WeaponInstance->GetWeaponCollision()->SetCollisionProfileName("Weapon");
+                    WeaponInstance->GetWeaponCollision()->SetNotifyRigidBodyCollision(true);
+                    UE_LOG(LogTemp, Warning, TEXT("Right Collision Enabled"));
                 }
                 else {
                     UE_LOG(LogTemp, Error, TEXT("WeaponCollision is null"));
@@ -33,11 +33,10 @@ void URightCollisionEnableANS::NotifyEnd(USkeletalMeshComponent* MeshComp, UAnim
     if (MeshComp && MeshComp->GetOwner()) {
         if (auto* PlayerCharacter = Cast<AMyCharacter>(MeshComp->GetOwner())) {
             if (auto* WeaponInstance = PlayerCharacter->GetCurrentWeapon()->GetRightHandWeaponInstance()) {
-                if (WeaponInstance->WeaponCollision) {
-                    WeaponInstance->WeaponCollision->SetCollisionProfileName("NoCollision");
-                    WeaponInstance->WeaponCollision->SetNotifyRigidBodyCollision(false);
-                    WeaponInstance->HitMonsters.Empty();
-                    UE_LOG(LogTemp, Warning, TEXT("Collision Disabled"));
+                if (WeaponInstance->GetWeaponCollision()) {
+                    WeaponInstance->GetWeaponCollision()->SetCollisionProfileName("NoCollision");
+                    WeaponInstance->GetWeaponCollision()->SetNotifyRigidBodyCollision(false);
+                    UE_LOG(LogTemp, Warning, TEXT("Right Collision Disabled"));
                 }
                 else {
                     UE_LOG(LogTemp, Error, TEXT("WeaponCollision is null"));

@@ -7,6 +7,7 @@
 #include "Monster.h"
 #include "Kismet/GameplayStatics.h"
 #include "Engine/DamageEvents.h"
+#include "WeaponBaseComponent.h"
 
 // Sets default values
 AWeapon::AWeapon()
@@ -25,12 +26,11 @@ AWeapon::AWeapon()
 
 	WeaponCollision->SetHiddenInGame(false);
 	WeaponCollision->SetVisibility(true);
-	WeaponCollision->SetCollisionProfileName("NoCollision");
+	WeaponCollision->SetCollisionProfileName("Weapon");
 	WeaponCollision->SetNotifyRigidBodyCollision(false);
-    WeaponCollision->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics); // 물리 및 쿼리 모두 활성화
+    WeaponCollision->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
 
-	// 충돌 이벤트 바인딩
-	WeaponCollision->OnComponentHit.AddDynamic(this, &AWeapon::OnWeaponHit);
+	WeaponCollision->OnComponentBeginOverlap.AddDynamic(this, &AWeapon::OnOverlapBegin);
 }
 
 // Called when the game starts or when spawned
@@ -38,60 +38,82 @@ void AWeapon::BeginPlay()
 {
 	Super::BeginPlay();
 
-	HitMonsters.Empty();
-    OwnerCharacter = Cast<AMyCharacter>(GetOwner());
 }
 
 // Called every frame
 void AWeapon::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
 }
 
-void AWeapon::OnWeaponHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
+void AWeapon::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComponent, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-    OwnerCharacter = Cast<AMyCharacter>(GetOwner());
+	if (OtherActor && OtherActor != this && !OtherActor->IsA(AMyCharacter::StaticClass())) {
+		if (OtherActor->ActorHasTag(FName("Enemy"))) {
+			//UE_LOG(LogTemp, Log, TEXT("OverlapBegin Call, OverlapActor: %s"), *OtherActor->GetName());
+			if (!OverlapActors.Contains(OtherActor)) {
+				OverlapActors.Add(OtherActor);
+			}
+		}
+	}
 
-    if (OwnerCharacter && OtherActor && (OtherActor != OwnerCharacter) && OtherComp) {
-        if (!HitMonsters.Contains(OtherActor)) {
-            HitMonsters.Add(OtherActor);
-            UE_LOG(LogTemp, Warning, TEXT("Added %s to hit monsters list."), *OtherActor->GetName());
-        }
-        else
-        {
-            UE_LOG(LogTemp, Warning, TEXT("%s is already in the hit monsters list."), *OtherActor->GetName());
-        }
+	if (OverlapActors.Num()) {
+		for (AActor* DamageMonster : OverlapActors) {
+			ApplyDamageToActor(DamageMonster);
+			UE_LOG(LogTemp, Log, TEXT("DamageActor: %s"), *DamageMonster->GetName());
+		}
+	}
+}
 
-        if (HitMonsters.Num() > 0) {
-            for (AActor* HitMonster : HitMonsters) {
-                if (HitMonster->ActorHasTag("Enemy")) {
-                    // 로그를 통해 적 캐릭터에 피해를 적용한다고 표시
-                    UE_LOG(LogTemp, Warning, TEXT("Applying damage to enemy: %s"), *HitMonster->GetName());
+void AWeapon::OnOverlapEnd(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComponent, int32 OtherBodyIndex)
+{
+	if (OtherActor && OtherActor != this && !OtherActor->IsA(AMyCharacter::StaticClass())) {
+		if (OverlapActors.Num()) {
+			for (AActor* DamageMonster : OverlapActors) {
+				OverlapActors.Remove(DamageMonster);
+			}
+		}
+	}
+}
 
-                    // HitMonster가 AMonster의 인스턴스인지 확인 및 캐스팅
-                    if (auto* Monster = Cast<AMonster>(HitMonster)) {
-                        UE_LOG(LogTemp, Warning, TEXT("Monster Cast: %s"), *Monster->GetName());
-                        // DamageEvent를 정의
-                        FDamageEvent DamageEvent;
+void AWeapon::ApplyDamageToActor(AActor* ActorToDamage)
+{
+	//UE_LOG(LogTemp, Log, TEXT("ApplyDamageToActor Call, ActorToDamage: %s"), *ActorToDamage->GetName());
 
-                        // Monster의 TakeDamage 메서드를 호출하여 피해를 적용
-                        Monster->TakeDamage(OwnerCharacter->CharacterStatus.Damage, DamageEvent, OwnerCharacter->GetInstigatorController(), OwnerCharacter);
-                    }
-                    else {
-                        // HitMonster가 AMonster 인스턴스가 아닌 경우 로그 기록
-                        UE_LOG(LogTemp, Warning, TEXT("%s is not a monster, skipping damage application."), *HitMonster->GetName());
-                    }
-                }
-                else {
-                    // HitMonster가 "Enemy" 태그가 없는 경우 로그 기록
-                    UE_LOG(LogTemp, Warning, TEXT("%s is not an enemy, skipping damage application."), *HitMonster->GetName());
-                }
-            }
-        }
-        else {
-            // HitMonsters 리스트가 비어 있는 경우 로그 기록
-            UE_LOG(LogTemp, Warning, TEXT("No hit monsters to apply damage to."));
-        }
-    }
+	if (OwnerCharacter == nullptr) {
+		UE_LOG(LogTemp, Error, TEXT("OnwerCharacter is Null"));
+		return;
+	}
+
+	float Damage = OwnerCharacter->CharacterStatus.Damage;
+	FDamageEvent DamageEvent;
+	if (GetInstigator() == nullptr) {
+		UE_LOG(LogTemp, Warning, TEXT("Instigator is not set"));
+	}
+	else {
+		ActorToDamage->TakeDamage(Damage, DamageEvent, GetInstigatorController(), this);
+		//UE_LOG(LogTemp, Log, TEXT("Try TakeDamage Call"));
+	}
+}
+
+void AWeapon::SetOwnerCharacter(AMyCharacter* NewOwnerCharacter)
+{
+	if (NewOwnerCharacter) {
+		OwnerCharacter = NewOwnerCharacter;
+		SetInstigator(NewOwnerCharacter->GetController()->GetPawn());
+		UE_LOG(LogTemp, Log, TEXT("OwnerCharacter set to: %s"), *OwnerCharacter->GetName());
+	}
+	else {
+		UE_LOG(LogTemp, Error, TEXT("SetOwnerCharacter called with null"));
+	}
+}
+
+USkeletalMeshComponent* AWeapon::GetWeaponMesh() const
+{
+	return WeaponMesh;
+}
+
+UBoxComponent* AWeapon::GetWeaponCollision() const
+{
+	return WeaponCollision;
 }
