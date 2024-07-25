@@ -70,4 +70,5 @@ protected:
 
 private:
 	class AMyCharacter* MyCharacter;
+
 };

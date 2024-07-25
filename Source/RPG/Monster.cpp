@@ -45,6 +45,7 @@ void AMonster::ConsumeHPForAction(float HPCost)
 {
 	MonsterStatus.UseHP(HPCost);
 	OnMonsterUIUpdated.Broadcast(MonsterStatus.CurrentMonsterHP);
+	UE_LOG(LogTemp, Log, TEXT("Monster HP Updated: %f"), MonsterStatus.CurrentMonsterHP);
 }
 
 bool AMonster::bHasEnoughHP(float HPCost) const
@@ -56,12 +57,18 @@ bool AMonster::bHasEnoughHP(float HPCost) const
 void AMonster::BeginPlay()
 {
 	Super::BeginPlay();
-	
+
 	if (WidgetComponent) {
-		auto* HealthWidget = Cast<UMonsterWidget>(WidgetComponent->GetUserWidgetObject());
-		if (HealthWidget) {
+		if (auto* HealthWidget = Cast<UMonsterWidget>(WidgetComponent->GetUserWidgetObject())) {
 			HealthWidget->UpdateHP(MonsterStatus.CurrentMonsterHP, MonsterStatus.MaxMonsterHP);
+			UE_LOG(LogTemp, Log, TEXT("BeginPlay: HealthWidget Initialized with HP: %f / %f"), MonsterStatus.CurrentMonsterHP, MonsterStatus.MaxMonsterHP);
 		}
+		else {
+			UE_LOG(LogTemp, Warning, TEXT("BeginPlay: HealthWidget is nullptr"));
+		}
+	}
+	else {
+		UE_LOG(LogTemp, Warning, TEXT("BeginPlay: WidgetComponent is nullptr"));
 	}
 }
 

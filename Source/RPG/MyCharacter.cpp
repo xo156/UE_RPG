@@ -74,6 +74,13 @@ void AMyCharacter::BeginPlay() {
 void AMyCharacter::Tick(float DeltaTime) {
 	Super::Tick(DeltaTime);
 
+	/*if (CurrentWeapon) {
+		if (CurrentWeapon->GetRightHandWeaponInstance()->GetOverlapActors().IsEmpty())
+			UE_LOG(LogTemp, Warning, TEXT("Right Weapon Is Empty"));
+		if (CurrentWeapon->GetLeftHandWeaponInstance()->GetOverlapActors().IsEmpty())
+			UE_LOG(LogTemp, Warning, TEXT("Left Weapon Is Empty"));
+	}*/
+
 	CheckStaminaRecovery(DeltaTime);
 
 	ChangeMoveSpeed(DeltaTime);
@@ -163,8 +170,11 @@ void AMyCharacter::AttackExecute()
 		if (CurrentWeapon == nullptr) {
 			bIsAttack = false;
 			return;
-		}		
-		GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Red, TEXT("Attack"));
+		}
+		//오버랩 액터 리스트 비우기
+		CurrentWeapon->GetRightHandWeaponInstance()->GetOverlapActors().Empty();
+		CurrentWeapon->GetLeftHandWeaponInstance()->GetOverlapActors().Empty();
+
 		int32 SectionCount = CurrentWeapon->GetSectionCount(CurrentWeapon->AttackMontage);
 		ConsumeStaminaForAction(AttackStaminaCost);
 		UAISense_Hearing::ReportNoiseEvent(GetWorld(), GetActorLocation(), AttackLoudness, this);
@@ -195,6 +205,8 @@ void AMyCharacter::AttackEnd()
 {
 	if (CurrentWeapon) {
 		CurrentWeapon->CurrentComboCount = 0;
+		CurrentWeapon->GetRightHandWeaponInstance()->GetOverlapActors().Empty();
+		CurrentWeapon->GetLeftHandWeaponInstance()->GetOverlapActors().Empty();
 	}
 	bIsAttack = false;
 }

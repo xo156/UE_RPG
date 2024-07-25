@@ -21,7 +21,7 @@ UWeaponBaseComponent::UWeaponBaseComponent()
 void UWeaponBaseComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
     Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
-
+    
 }
 
 // Called when the game starts or when spawned

@@ -31,6 +31,7 @@ AWeapon::AWeapon()
     WeaponCollision->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
 
 	WeaponCollision->OnComponentBeginOverlap.AddDynamic(this, &AWeapon::OnOverlapBegin);
+	//WeaponCollision->OnComponentEndOverlap.AddDynamic(this, &AWeapon::OnOverlapEnd);
 }
 
 // Called when the game starts or when spawned
@@ -44,37 +45,27 @@ void AWeapon::BeginPlay()
 void AWeapon::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+
 }
 
 void AWeapon::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComponent, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
 	if (OtherActor && OtherActor != this && !OtherActor->IsA(AMyCharacter::StaticClass())) {
 		if (OtherActor->ActorHasTag(FName("Enemy"))) {
-			//UE_LOG(LogTemp, Log, TEXT("OverlapBegin Call, OverlapActor: %s"), *OtherActor->GetName());
 			if (!OverlapActors.Contains(OtherActor)) {
 				OverlapActors.Add(OtherActor);
-			}
-		}
-	}
-
-	if (OverlapActors.Num()) {
-		for (AActor* DamageMonster : OverlapActors) {
-			ApplyDamageToActor(DamageMonster);
-			UE_LOG(LogTemp, Log, TEXT("DamageActor: %s"), *DamageMonster->GetName());
-		}
-	}
-}
-
-void AWeapon::OnOverlapEnd(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComponent, int32 OtherBodyIndex)
-{
-	if (OtherActor && OtherActor != this && !OtherActor->IsA(AMyCharacter::StaticClass())) {
-		if (OverlapActors.Num()) {
-			for (AActor* DamageMonster : OverlapActors) {
-				OverlapActors.Remove(DamageMonster);
+				ApplyDamageToActor(OtherActor);
+				UE_LOG(LogTemp, Log, TEXT("DamageActor: %s"), *OtherActor->GetName());
 			}
 		}
 	}
 }
+
+//void AWeapon::OnOverlapEnd(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComponent, int32 OtherBodyIndex)
+//{
+//	OverlapActors.Empty();
+//	UE_LOG(LogTemp, Log, TEXT("All actors removed from OverlapActors list"));
+//}
 
 void AWeapon::ApplyDamageToActor(AActor* ActorToDamage)
 {
@@ -116,4 +107,9 @@ USkeletalMeshComponent* AWeapon::GetWeaponMesh() const
 UBoxComponent* AWeapon::GetWeaponCollision() const
 {
 	return WeaponCollision;
+}
+
+TArray<AActor*>& AWeapon::GetOverlapActors()
+{
+	return OverlapActors;
 }

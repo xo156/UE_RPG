@@ -22,7 +22,6 @@ public:
 	UFUNCTION()
 	void OnMonsterHPUpdate(float NewHP);
 
-protected:
 	UPROPERTY(meta = (BindWidget))
 	class UProgressBar* HPProgressBar;
 };

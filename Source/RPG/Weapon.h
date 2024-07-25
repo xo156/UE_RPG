@@ -28,9 +28,9 @@ public:
 						UPrimitiveComponent* OtherComponent, int32 OtherBodyIndex,
 						bool bFromSweep, const FHitResult& SweepResult);
 
-	UFUNCTION()
+	/*UFUNCTION()
 	void OnOverlapEnd(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, 
-					  UPrimitiveComponent* OtherComponent, int32 OtherBodyIndex);
+					  UPrimitiveComponent* OtherComponent, int32 OtherBodyIndex);*/
 
 	void ApplyDamageToActor(AActor* ActorToDamage);
 	
@@ -38,6 +38,7 @@ public:
 
 	class USkeletalMeshComponent* GetWeaponMesh() const;
 	class UBoxComponent* GetWeaponCollision() const;
+	TArray<AActor*>& GetOverlapActors();
 
 //º¯¼öµé
 private:	
@@ -47,5 +48,5 @@ private:
 	class UBoxComponent* WeaponCollision;
 
 	class AMyCharacter* OwnerCharacter;
-	TSet<AActor*> OverlapActors;
+	TArray<AActor*> OverlapActors;
 };
