@@ -114,9 +114,20 @@ void AMonster::MonsterAttack()
 {
 	if (UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance()) {
 		if (MonsterAttackMontage) {
+			GetCharacterMovement()->DisableMovement();
 			AnimInstance->Montage_Play(MonsterAttackMontage);
+			FOnMontageEnded MontageEndedDelegate;
+			MontageEndedDelegate.BindUObject(this, &AMonster::OnAttackMontageEnd);
+			AnimInstance->Montage_SetEndDelegate(MontageEndedDelegate, MonsterAttackMontage);
 			GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Yellow, TEXT("MonsterAttackMontage"));
 		}
+	}
+}
+
+void AMonster::OnAttackMontageEnd(UAnimMontage* Montage, bool bInterrupted)
+{
+	if (Montage == MonsterAttackMontage) {
+		GetCharacterMovement()->SetMovementMode(MOVE_Walking);
 	}
 }
 
@@ -179,18 +190,6 @@ UAnimMontage* AMonster::GetMonsterAttackMontage() const
 UCapsuleComponent* AMonster::GetAttackCollision() const
 {
 	return MonsterAttackCollisionComponent;
-}
-
-float AMonster::GetAttackCollisionLength(UCapsuleComponent* Capsule)
-{
-	if (Capsule) {
-		float CapsuleHalfHeight = Capsule->GetUnscaledCapsuleHalfHeight();
-		float CapsuleRadius = Capsule->GetUnscaledCapsuleRadius();
-
-		float CapsuleLength = 2.0f * CapsuleHalfHeight + 2.0f * CapsuleRadius;
-		return CapsuleLength;
-	}
-	return 0.0f;
 }
 
 TArray<AActor*>& AMonster::GetOverlapActors()

@@ -20,9 +20,16 @@ EBTNodeResult::Type UBTTask_MonsterAttack::ExecuteTask(UBehaviorTreeComponent& O
 		return EBTNodeResult::Succeeded;
 	}
 
+	// 몬스터의 위치와 공격할 위치를 비교하기 위한 변수
+	FVector MonsterLocation;
+	FVector AttackLocation;
+
 	if (bIsSight) {
 		if (auto* MonsterAICSight = Cast<AMonsterAICSight>(OwnerComp.GetAIOwner())) {
 			if (auto* Monster = Cast<AMonster>(MonsterAICSight->GetPawn())) {
+				MonsterLocation = Monster->GetActorLocation();
+				AttackLocation = OwnerComp.GetBlackboardComponent()->GetValueAsVector(GetSelectedBlackboardKey());
+
 				if (bMontageHasFinished(Monster)) {
 					Monster->MonsterAttack();
 					FinishLatentTask(OwnerComp, EBTNodeResult::Succeeded);
@@ -31,10 +38,13 @@ EBTNodeResult::Type UBTTask_MonsterAttack::ExecuteTask(UBehaviorTreeComponent& O
 			}
 		}
 	}
-	
+
 	if (bIsHearing) {
 		if (auto* MonsterAICHearing = Cast<AMonsterAICHearing>(OwnerComp.GetAIOwner())) {
 			if (auto* Monster = Cast<AMonster>(MonsterAICHearing->GetPawn())) {
+				MonsterLocation = Monster->GetActorLocation();
+				AttackLocation = OwnerComp.GetBlackboardComponent()->GetValueAsVector(GetSelectedBlackboardKey());
+
 				if (bMontageHasFinished(Monster)) {
 					Monster->MonsterAttack();
 					FinishLatentTask(OwnerComp, EBTNodeResult::Succeeded);
@@ -43,8 +53,6 @@ EBTNodeResult::Type UBTTask_MonsterAttack::ExecuteTask(UBehaviorTreeComponent& O
 			}
 		}
 	}
-
-
 	return EBTNodeResult::Failed;
 }
 

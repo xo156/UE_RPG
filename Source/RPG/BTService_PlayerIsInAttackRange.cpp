@@ -20,7 +20,6 @@ void UBTService_PlayerIsInAttackRange::OnBecomeRelevant(UBehaviorTreeComponent& 
 		if (auto* MonsterAICSight = Cast<AMonsterAICSight>(OwnerComp.GetAIOwner())) {
 			if (auto* Monster = Cast<AMonster>(MonsterAICSight->GetPawn())) {
 				if (auto* PlayerCharacter = UGameplayStatics::GetPlayerCharacter(GetWorld(), 0)) {
-					AttackRange = Monster->GetAttackCollisionLength(Monster->GetAttackCollision());
 					OwnerComp.GetBlackboardComponent()->SetValueAsBool(GetSelectedBlackboardKey(), Monster->GetDistanceTo(PlayerCharacter) <= AttackRange);
 				}
 			}
@@ -31,7 +30,6 @@ void UBTService_PlayerIsInAttackRange::OnBecomeRelevant(UBehaviorTreeComponent& 
 		if (auto* MonsterAICHearing = Cast<AMonsterAICHearing>(OwnerComp.GetAIOwner())) {
 			if (auto* Monster = Cast<AMonster>(MonsterAICHearing->GetPawn())) {
 				if (auto* PlayerCharacter = UGameplayStatics::GetPlayerCharacter(GetWorld(), 0)) {
-					AttackRange = Monster->GetAttackCollisionLength(Monster->GetAttackCollision());
 					OwnerComp.GetBlackboardComponent()->SetValueAsBool(GetSelectedBlackboardKey(), Monster->GetDistanceTo(PlayerCharacter) <= AttackRange);
 				}
 			}

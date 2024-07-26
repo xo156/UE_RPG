@@ -32,7 +32,6 @@ public:
 		return CurrentMonsterHP;
 	}
 };
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnEnemyDieEvent, float, DropMoney);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnMonsterUIUpdated, float, NewHP);
 
 UCLASS()
@@ -53,6 +52,7 @@ public:
 	void WidgetFaceToPlayer();
 
 	void MonsterAttack();
+	void OnAttackMontageEnd(class UAnimMontage* Montage, bool bInterrupted);
 	UFUNCTION()
 	void OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, 
 						 UPrimitiveComponent* OtherComponent, int32 OtherBodyIndex, 
@@ -64,11 +64,9 @@ public:
 	class APatrolPath* GetPatrolPath() const;
 	class UAnimMontage* GetMonsterAttackMontage() const;
 	class UCapsuleComponent* GetAttackCollision() const;
-	float GetAttackCollisionLength(class UCapsuleComponent* Capsule);
 	TArray<AActor*>& GetOverlapActors();
 
 	//델리게이트
-	FOnEnemyDieEvent OnEventDieEvent;
 	FOnMonsterUIUpdated OnMonsterUIUpdated;
 
 	//구조체
