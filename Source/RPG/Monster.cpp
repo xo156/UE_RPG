@@ -9,6 +9,7 @@
 #include "AIController.h"
 #include "Components/WidgetComponent.h"
 #include "Kismet/GameplayStatics.h"
+#include "Engine/DamageEvents.h"
 
 // Sets default values
 AMonster::AMonster()
@@ -31,10 +32,16 @@ AMonster::AMonster()
 	MonsterWidgetComponent->SetRelativeLocation(GetActorLocation());
 	MonsterWidgetComponent->SetWidgetClass(MonsterWidgetClass); 
 
+	//몬스터 공격 콜리전 검출
+	MonsterAttackCollisionComponent = CreateDefaultSubobject<UCapsuleComponent>(TEXT("AttackCollisionComponent"));
+	MonsterAttackCollisionComponent->SetupAttachment(GetMesh(), FName("AttackCollision"));
+	MonsterAttackCollisionComponent->SetCollisionProfileName(TEXT("Enemy"));
+	MonsterAttackCollisionComponent->OnComponentBeginOverlap.AddDynamic(this, &AMonster::OnOverlapBegin);
+
 	//구조체
 	MonsterStatus.MaxMonsterHP = 100.0f;
 	MonsterStatus.CurrentMonsterHP = MonsterStatus.MaxMonsterHP;
-	MonsterStatus.AttackDamage = 10.f;
+	MonsterStatus.Damage = 10.f;
 	MonsterStatus.DropMoney = 0.f;
 }
 
@@ -112,6 +119,16 @@ void AMonster::MonsterAttack()
 	}
 }
 
+void AMonster::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComponent, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+{
+	if (OtherActor && OtherActor != this && OtherActor->IsA(AMyCharacter::StaticClass())) {
+		if (auto* PlayerCharacter = Cast<AMyCharacter>(OtherActor)) {
+			ApplyDamageToActor(OtherActor);
+			UE_LOG(LogTemp, Log, TEXT("Monster attacked Player!"));
+		}
+	}
+}
+
 float AMonster::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
 {
 	Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
@@ -132,6 +149,13 @@ float AMonster::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, 
 	}
 
 	return DamageAmount;
+}
+
+void AMonster::ApplyDamageToActor(AActor* ActorToDamage)
+{
+	float Damage = MonsterStatus.Damage;
+	FDamageEvent DamageEvent;
+	ActorToDamage->TakeDamage(Damage, DamageEvent, GetInstigatorController(), this);
 }
 
 UBehaviorTree* AMonster::GetBehaviorTree() const

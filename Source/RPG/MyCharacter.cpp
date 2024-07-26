@@ -105,6 +105,28 @@ void AMyCharacter::PlayAirboneMontage()
 	}
 }
 
+float AMyCharacter::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
+{
+	Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
+
+	if (EventInstigator == nullptr)
+		return -1.f;
+	if (DamageCauser == nullptr)
+		return -1.f;
+
+	if (bHasEnoughHP(DamageAmount)) {
+		//체력이 충분해서 데미지를 입을때
+		ConsumeHPForAction(DamageAmount);
+		UE_LOG(LogTemp, Log, TEXT("Player Damaged, CurrentHP: %f"), CharacterStatus.CurrentHP);
+	}
+	else {
+		//체력이 없어서 죽을때
+		UE_LOG(LogTemp, Log, TEXT("Player Die"));
+	}
+
+	return DamageAmount;
+}
+
 void AMyCharacter::Move(FVector2D InputValue)
 {
 	if (!bIsDodge) {

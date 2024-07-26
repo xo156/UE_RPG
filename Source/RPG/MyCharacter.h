@@ -91,6 +91,8 @@ public:
 	//특정 상황 재생 몽타주
 	void PlayAirboneMontage();
 
+	virtual float TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
+
 	//액션
 	void Move(FVector2D InputValue);
 	void RunStart();

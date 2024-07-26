@@ -19,7 +19,7 @@ public:
 	float MaxMonsterHP;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Status")
-	float AttackDamage;
+	float Damage;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Status")
 	float DropMoney;
@@ -53,7 +53,13 @@ public:
 	void WidgetFaceToPlayer();
 
 	void MonsterAttack();
+	UFUNCTION()
+	void OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, 
+						 UPrimitiveComponent* OtherComponent, int32 OtherBodyIndex, 
+						 bool bFromSweep, const FHitResult& SweepResult);
 	virtual float TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
+
+	void ApplyDamageToActor(AActor* ActorToDamage);
 
 	class UBehaviorTree* GetBehaviorTree() const;
 	class APatrolPath* GetPatrolPath() const;
@@ -79,6 +85,9 @@ private:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AI", meta = (AllowPrivateAccess = "true"))
 	class APatrolPath* PatrolPath;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Collision", meta = (AllowPrivateAccess = "true"))
+	class UCapsuleComponent* MonsterAttackCollisionComponent;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Montage", meta = (AllowPrivateAccess = "true"))
 	class UAnimMontage* MonsterAttackMontage;
