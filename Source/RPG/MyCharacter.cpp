@@ -54,7 +54,7 @@ AMyCharacter::AMyCharacter() {
 	CharacterStatus.MaxMoney = 10000;
 
 	//À§Á¬
-	PlayerStatusWidgetClass = UPlayerWidget::StaticClass();
+	PlayerWidgetClass = UPlayerWidget::StaticClass();
 }
 
 // Called when the game starts or when spawned
@@ -73,13 +73,6 @@ void AMyCharacter::BeginPlay() {
 // Called every frame
 void AMyCharacter::Tick(float DeltaTime) {
 	Super::Tick(DeltaTime);
-
-	/*if (CurrentWeapon) {
-		if (CurrentWeapon->GetRightHandWeaponInstance()->GetOverlapActors().IsEmpty())
-			UE_LOG(LogTemp, Warning, TEXT("Right Weapon Is Empty"));
-		if (CurrentWeapon->GetLeftHandWeaponInstance()->GetOverlapActors().IsEmpty())
-			UE_LOG(LogTemp, Warning, TEXT("Left Weapon Is Empty"));
-	}*/
 
 	CheckStaminaRecovery(DeltaTime);
 
@@ -347,13 +340,13 @@ UWeaponBaseComponent* AMyCharacter::GetCurrentWeapon() const
 
 void AMyCharacter::SetupWidget()
 {
-	if (PlayerStatusWidgetClass) {
-		PlayerStatusWidgetInstance = CreateWidget<UPlayerWidget>(GetWorld(), PlayerStatusWidgetClass);
-		if (PlayerStatusWidgetInstance) {
-			PlayerStatusWidgetInstance->AddToViewport();
-			PlayerStatusWidgetInstance->UpdateHP(CharacterStatus.CurrentHP, CharacterStatus.MaxHP);
-			PlayerStatusWidgetInstance->UpdateMP(CharacterStatus.CurrentMP, CharacterStatus.MaxMP);
-			PlayerStatusWidgetInstance->UpdateStamina(CharacterStatus.CurrentStamina, CharacterStatus.MaxStamina);
+	if (PlayerWidgetClass) {
+		PlayerWidgetInstance = CreateWidget<UPlayerWidget>(GetWorld(), PlayerWidgetClass);
+		if (PlayerWidgetInstance) {
+			PlayerWidgetInstance->AddToViewport();
+			PlayerWidgetInstance->UpdateHP(CharacterStatus.CurrentHP, CharacterStatus.MaxHP);
+			PlayerWidgetInstance->UpdateMP(CharacterStatus.CurrentMP, CharacterStatus.MaxMP);
+			PlayerWidgetInstance->UpdateStamina(CharacterStatus.CurrentStamina, CharacterStatus.MaxStamina);
 		}
 	}
 }

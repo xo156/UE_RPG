@@ -168,8 +168,8 @@ protected:
 
 	//À§Á¬
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UI")
-	TSubclassOf<class UPlayerWidget> PlayerStatusWidgetClass;
-	class UPlayerWidget* PlayerStatusWidgetInstance;
+	TSubclassOf<class UPlayerWidget> PlayerWidgetClass;
+	class UPlayerWidget* PlayerWidgetInstance;
 
 	//¸ùÅ¸ÁÖ
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Montage")

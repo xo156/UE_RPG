@@ -16,12 +16,18 @@ class RPG_API UMonsterWidget : public UUserWidget
 
 public:
 	virtual void NativeConstruct() override;
+
 	UFUNCTION(BlueprintCallable, Category = "Status")
 	void UpdateHP(float CurrentHP, float MaxHP);
 
 	UFUNCTION()
 	void OnMonsterHPUpdate(float NewHP);
 
+	void SetOwnerMonster(class AMonster* NewOwningMonster);
+
 	UPROPERTY(meta = (BindWidget))
 	class UProgressBar* HPProgressBar;
+
+private:
+	class AMonster* OwnerMonster;
 };

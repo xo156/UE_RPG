@@ -4,9 +4,11 @@
 #include "Monster.h"
 #include "Components/CapsuleComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
-#include "Components/WidgetComponent.h"
 #include "MonsterWidget.h"
 #include "MyCharacter.h"
+#include "AIController.h"
+#include "Components/WidgetComponent.h"
+#include "Kismet/GameplayStatics.h"
 
 // Sets default values
 AMonster::AMonster()
@@ -23,16 +25,11 @@ AMonster::AMonster()
 	GetCapsuleComponent()->SetCollisionProfileName(TEXT("Enemy"));
 	GetMesh()->SetCollisionProfileName(TEXT("NoCollision"));
 
-	//몬스터 체력 위젯
-	WidgetComponent = CreateDefaultSubobject<UWidgetComponent>(TEXT("HealthWidget"));
-	if (WidgetComponent) {
-		WidgetComponent->SetupAttachment(RootComponent);
-		WidgetComponent->SetWidgetClass(UMonsterWidget::StaticClass());
-		WidgetComponent->SetWidgetSpace(EWidgetSpace::Screen);
-		WidgetComponent->SetRelativeLocation(FVector(0.f, 0.f, 100.f));
-		WidgetComponent->SetDrawSize(FVector2D(200.f, 50.f));
-		WidgetComponent->SetVisibility(true);
-	}
+	//위젯 컴포넌트 생성 및 초기화
+	MonsterWidgetComponent = CreateDefaultSubobject<UWidgetComponent>(TEXT("MonsterWidgetComponent"));
+	MonsterWidgetComponent->SetupAttachment(GetMesh(), FName("HealthWidgetSocket")); // 헤드 소켓에 붙이기
+	MonsterWidgetComponent->SetRelativeLocation(GetActorLocation());
+	MonsterWidgetComponent->SetWidgetClass(MonsterWidgetClass); 
 
 	//구조체
 	MonsterStatus.MaxMonsterHP = 100.0f;
@@ -58,10 +55,12 @@ void AMonster::BeginPlay()
 {
 	Super::BeginPlay();
 
-	if (WidgetComponent) {
-		if (auto* HealthWidget = Cast<UMonsterWidget>(WidgetComponent->GetUserWidgetObject())) {
-			HealthWidget->UpdateHP(MonsterStatus.CurrentMonsterHP, MonsterStatus.MaxMonsterHP);
+	if (MonsterWidgetComponent) {
+		if (auto* HealthWidget = Cast<UMonsterWidget>(MonsterWidgetComponent->GetUserWidgetObject())) {
+			//HealthWidget->UpdateHP(MonsterStatus.CurrentMonsterHP, MonsterStatus.MaxMonsterHP);
 			UE_LOG(LogTemp, Log, TEXT("BeginPlay: HealthWidget Initialized with HP: %f / %f"), MonsterStatus.CurrentMonsterHP, MonsterStatus.MaxMonsterHP);
+		
+			HealthWidget->SetOwnerMonster(this);
 		}
 		else {
 			UE_LOG(LogTemp, Warning, TEXT("BeginPlay: HealthWidget is nullptr"));
@@ -77,13 +76,30 @@ void AMonster::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	//UE_LOG(LogTemp, Log, TEXT("Current Monster HP: %f"), MonsterStatus.CurrentMonsterHP);
+	WidgetFaceToPlayer();
 }
 
 // Called to bind functionality to input
 void AMonster::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
+}
+
+void AMonster::WidgetFaceToPlayer()
+{
+	if (MonsterWidgetComponent) {
+		//현재 카메라 위치를 가져오기
+		if (auto* PlayerController = UGameplayStatics::GetPlayerController(GetWorld(), 0)) {
+			FVector CameraLocation;
+			FRotator CameraRotation;
+			PlayerController->GetPlayerViewPoint(CameraLocation, CameraRotation);
+
+			// 위젯이 항상 카메라를 향하도록 회전 설정
+			FVector DirectionToCamera = (CameraLocation - MonsterWidgetComponent->GetComponentLocation()).GetSafeNormal();
+			FRotator LookAtRotation = DirectionToCamera.Rotation();
+			MonsterWidgetComponent->SetWorldRotation(LookAtRotation);
+		}
+	}
 }
 
 void AMonster::MonsterAttack()
@@ -106,10 +122,12 @@ float AMonster::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, 
 		return -1.f;
 
 	if (bHasEnoughHP(DamageAmount)) {
+		//체력이 충분해서 데미지를 입을때
 		ConsumeHPForAction(DamageAmount);
 		UE_LOG(LogTemp, Log, TEXT("Monster Damaged, CurrentHP: %f"), MonsterStatus.CurrentMonsterHP);
 	}
 	else {
+		//체력이 없어서 죽을때
 		UE_LOG(LogTemp, Log, TEXT("Monster Die"));
 	}
 
