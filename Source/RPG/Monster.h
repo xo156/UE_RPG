@@ -75,6 +75,8 @@ public:
 	void ConsumeHPForAction(float HPCost);
 	bool bHasEnoughHP(float HPCost) const;
 
+	bool bIsMonsterAttack = false;
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -104,7 +106,5 @@ private:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UI", meta = (AllowPrivateAccess = "true"))
 	class UWidgetComponent* MonsterWidgetComponent;
 
-
 	TArray<AActor*> OverlapActors;
-
 };

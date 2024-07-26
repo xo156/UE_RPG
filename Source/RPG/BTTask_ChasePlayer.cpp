@@ -2,6 +2,7 @@
 
 
 #include "BTTask_ChasePlayer.h"
+#include "Monster.h"
 #include "MonsterAICSight.h"
 #include "MonsterAICHearing.h"
 #include "BehaviorTree/BlackboardComponent.h"
@@ -19,16 +20,26 @@ EBTNodeResult::Type UBTTask_ChasePlayer::ExecuteTask(UBehaviorTreeComponent& Own
 
 	if (bIsSight) {
 		if (auto* MonsterAICSight = Cast<AMonsterAICSight>(OwnerComp.GetAIOwner())) {
-			UAIBlueprintHelperLibrary::SimpleMoveToLocation(MonsterAICSight, GoalLocation);
-			FinishLatentTask(OwnerComp, EBTNodeResult::Succeeded);
-			return EBTNodeResult::Succeeded;
+			if (auto* Monster = Cast<AMonster>(MonsterAICSight->GetPawn())) {
+				if (Monster->bIsMonsterAttack) {
+					return EBTNodeResult::Succeeded;
+				}
+				UAIBlueprintHelperLibrary::SimpleMoveToLocation(MonsterAICSight, GoalLocation);
+				FinishLatentTask(OwnerComp, EBTNodeResult::Succeeded);
+				return EBTNodeResult::Succeeded;
+			}
 		}
 	}
 	if (bIsHearing) {
 		if (auto* MonsterAICHearing = Cast<AMonsterAICHearing>(OwnerComp.GetAIOwner())) {
-			UAIBlueprintHelperLibrary::SimpleMoveToLocation(MonsterAICHearing, GoalLocation);
-			FinishLatentTask(OwnerComp, EBTNodeResult::Succeeded);
-			return EBTNodeResult::Succeeded;
+			if (auto* Monster = Cast<AMonster>(MonsterAICHearing->GetPawn())) {
+				if (Monster->bIsMonsterAttack) {
+					return EBTNodeResult::Succeeded;
+				}
+				UAIBlueprintHelperLibrary::SimpleMoveToLocation(MonsterAICHearing, GoalLocation);
+				FinishLatentTask(OwnerComp, EBTNodeResult::Succeeded);
+				return EBTNodeResult::Succeeded;
+			}
 		}
 	}
 

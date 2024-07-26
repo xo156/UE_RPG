@@ -19,7 +19,7 @@ AMonster::AMonster()
 
 	GetCapsuleComponent()->InitCapsuleSize(42.f, 96.f);
 	bUseControllerRotationPitch = false;
-	bUseControllerRotationYaw = true;
+	bUseControllerRotationYaw = false;
 	bUseControllerRotationRoll = false;
 
 	GetCharacterMovement()->MaxWalkSpeed = 500.f;
@@ -114,11 +114,16 @@ void AMonster::MonsterAttack()
 {
 	if (UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance()) {
 		if (MonsterAttackMontage) {
+			bIsMonsterAttack = true;
 			GetCharacterMovement()->DisableMovement();
+			GetCharacterMovement()->bOrientRotationToMovement = false;
+
 			AnimInstance->Montage_Play(MonsterAttackMontage);
+
 			FOnMontageEnded MontageEndedDelegate;
 			MontageEndedDelegate.BindUObject(this, &AMonster::OnAttackMontageEnd);
 			AnimInstance->Montage_SetEndDelegate(MontageEndedDelegate, MonsterAttackMontage);
+			
 			GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Yellow, TEXT("MonsterAttackMontage"));
 		}
 	}
@@ -127,7 +132,9 @@ void AMonster::MonsterAttack()
 void AMonster::OnAttackMontageEnd(UAnimMontage* Montage, bool bInterrupted)
 {
 	if (Montage == MonsterAttackMontage) {
+		bIsMonsterAttack = false;
 		GetCharacterMovement()->SetMovementMode(MOVE_Walking);
+		GetCharacterMovement()->bOrientRotationToMovement = true;
 	}
 }
 
