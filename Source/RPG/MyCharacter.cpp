@@ -121,6 +121,7 @@ float AMyCharacter::TakeDamage(float DamageAmount, FDamageEvent const& DamageEve
 	}
 	else {
 		//체력이 없어서 죽을때
+		ConsumeHPForAction(DamageAmount);
 		UE_LOG(LogTemp, Log, TEXT("Player Die"));
 	}
 
@@ -403,7 +404,7 @@ void AMyCharacter::ConsumeHPForAction(float HPCost)
 
 bool AMyCharacter::bHasEnoughHP(float HPCost) const
 {
-	return CharacterStatus.CurrentHP >= HPCost;
+	return CharacterStatus.CurrentHP > HPCost;
 }
 
 void AMyCharacter::ChangeMoveSpeed(float DeltaTime)

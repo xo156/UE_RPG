@@ -37,7 +37,7 @@ AMonster::AMonster()
 	MonsterAttackCollisionComponent->SetupAttachment(GetMesh(), FName("AttackCollision"));
 	MonsterAttackCollisionComponent->SetCollisionProfileName(TEXT("Enemy"));
 	MonsterAttackCollisionComponent->OnComponentBeginOverlap.AddDynamic(this, &AMonster::OnOverlapBegin);
-
+	
 	//구조체
 	MonsterStatus.MaxMonsterHP = 100.0f;
 	MonsterStatus.CurrentMonsterHP = MonsterStatus.MaxMonsterHP;
@@ -54,7 +54,7 @@ void AMonster::ConsumeHPForAction(float HPCost)
 
 bool AMonster::bHasEnoughHP(float HPCost) const
 {
-	return MonsterStatus.CurrentMonsterHP >= HPCost;
+	return MonsterStatus.CurrentMonsterHP > HPCost;
 }
 
 // Called when the game starts or when spawned
@@ -84,6 +84,7 @@ void AMonster::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 
 	WidgetFaceToPlayer();
+
 }
 
 // Called to bind functionality to input
@@ -122,7 +123,8 @@ void AMonster::MonsterAttack()
 void AMonster::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComponent, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
 	if (OtherActor && OtherActor != this && OtherActor->IsA(AMyCharacter::StaticClass())) {
-		if (auto* PlayerCharacter = Cast<AMyCharacter>(OtherActor)) {
+		if (!OverlapActors.Contains(OtherActor)) {
+			OverlapActors.Add(OtherActor);
 			ApplyDamageToActor(OtherActor);
 			UE_LOG(LogTemp, Log, TEXT("Monster attacked Player!"));
 		}
@@ -145,6 +147,7 @@ float AMonster::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, 
 	}
 	else {
 		//체력이 없어서 죽을때
+		ConsumeHPForAction(DamageAmount);
 		UE_LOG(LogTemp, Log, TEXT("Monster Die"));
 	}
 
@@ -168,7 +171,29 @@ APatrolPath* AMonster::GetPatrolPath() const
 	return PatrolPath;	
 }
 
-UAnimMontage* AMonster::GetMonsterAttackMontage()
+UAnimMontage* AMonster::GetMonsterAttackMontage() const
 {
 	return MonsterAttackMontage;
+}
+
+UCapsuleComponent* AMonster::GetAttackCollision() const
+{
+	return MonsterAttackCollisionComponent;
+}
+
+float AMonster::GetAttackCollisionLength(UCapsuleComponent* Capsule)
+{
+	if (Capsule) {
+		float CapsuleHalfHeight = Capsule->GetUnscaledCapsuleHalfHeight();
+		float CapsuleRadius = Capsule->GetUnscaledCapsuleRadius();
+
+		float CapsuleLength = 2.0f * CapsuleHalfHeight + 2.0f * CapsuleRadius;
+		return CapsuleLength;
+	}
+	return 0.0f;
+}
+
+TArray<AActor*>& AMonster::GetOverlapActors()
+{
+	return OverlapActors;
 }

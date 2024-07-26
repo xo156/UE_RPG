@@ -31,7 +31,6 @@ AWeapon::AWeapon()
     WeaponCollision->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
 
 	WeaponCollision->OnComponentBeginOverlap.AddDynamic(this, &AWeapon::OnOverlapBegin);
-	//WeaponCollision->OnComponentEndOverlap.AddDynamic(this, &AWeapon::OnOverlapEnd);
 }
 
 // Called when the game starts or when spawned
@@ -60,12 +59,6 @@ void AWeapon::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* O
 		}
 	}
 }
-
-//void AWeapon::OnOverlapEnd(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComponent, int32 OtherBodyIndex)
-//{
-//	OverlapActors.Empty();
-//	UE_LOG(LogTemp, Log, TEXT("All actors removed from OverlapActors list"));
-//}
 
 void AWeapon::ApplyDamageToActor(AActor* ActorToDamage)
 {

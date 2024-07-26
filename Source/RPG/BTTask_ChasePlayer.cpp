@@ -14,18 +14,19 @@ UBTTask_ChasePlayer::UBTTask_ChasePlayer()
 
 EBTNodeResult::Type UBTTask_ChasePlayer::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
 {
+	FVector PlayerLocation = OwnerComp.GetBlackboardComponent()->GetValueAsVector(GetSelectedBlackboardKey());
+	FVector GoalLocation = PlayerLocation + FVector(50.f, 50.f, 0.f);
+
 	if (bIsSight) {
 		if (auto* MonsterAICSight = Cast<AMonsterAICSight>(OwnerComp.GetAIOwner())) {
-			FVector PlayerLocation = OwnerComp.GetBlackboardComponent()->GetValueAsVector(GetSelectedBlackboardKey());
-			UAIBlueprintHelperLibrary::SimpleMoveToLocation(MonsterAICSight, PlayerLocation);
+			UAIBlueprintHelperLibrary::SimpleMoveToLocation(MonsterAICSight, GoalLocation);
 			FinishLatentTask(OwnerComp, EBTNodeResult::Succeeded);
 			return EBTNodeResult::Succeeded;
 		}
 	}
 	if (bIsHearing) {
 		if (auto* MonsterAICHearing = Cast<AMonsterAICHearing>(OwnerComp.GetAIOwner())) {
-			FVector PlayerLocation = OwnerComp.GetBlackboardComponent()->GetValueAsVector(GetSelectedBlackboardKey());
-			UAIBlueprintHelperLibrary::SimpleMoveToLocation(MonsterAICHearing, PlayerLocation);
+			UAIBlueprintHelperLibrary::SimpleMoveToLocation(MonsterAICHearing, GoalLocation);
 			FinishLatentTask(OwnerComp, EBTNodeResult::Succeeded);
 			return EBTNodeResult::Succeeded;
 		}
