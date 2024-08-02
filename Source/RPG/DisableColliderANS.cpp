@@ -10,7 +10,6 @@ void UDisableColliderANS::NotifyBegin(USkeletalMeshComponent* MeshComp, UAnimSeq
 	if (auto* PlayerCharacter = Cast<AMyCharacter>(MeshComp->GetOwner())) {
 		PlayerCharacter->bIsDodge = true;
 		PlayerCharacter->GetCapsuleComponent()->SetActive(false);
-		GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Green, TEXT("invincibility Start"));
 	}
 }
 
@@ -19,6 +18,5 @@ void UDisableColliderANS::NotifyEnd(USkeletalMeshComponent* MeshComp, UAnimSeque
 	if (auto* PlayerCharacter = Cast<AMyCharacter>(MeshComp->GetOwner())) {
 		PlayerCharacter->bIsDodge = false;
 		PlayerCharacter->GetCapsuleComponent()->SetActive(true);
-		GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Green, TEXT("invincibility End"));
 	}
 }

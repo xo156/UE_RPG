@@ -15,6 +15,9 @@
 #include "Perception/AISense_Sight.h"
 #include "Perception/AISense_Hearing.h"
 #include "PlayerWidget.h"
+#include "InventoryComponent.h"
+#include "ItemBase.h"
+#include "Components/BoxComponent.h"
 
 // Sets default values
 AMyCharacter::AMyCharacter() {
@@ -55,6 +58,12 @@ AMyCharacter::AMyCharacter() {
 
 	//위젯
 	PlayerWidgetClass = UPlayerWidget::StaticClass();
+
+	Inventory = CreateDefaultSubobject<UInventoryComponent>(TEXT("InventoryComponent"));
+	RootItemBoxComponent = CreateDefaultSubobject<UBoxComponent>(TEXT("RootItemBox"));
+	RootItemBoxComponent->SetupAttachment(RootComponent);
+	RootItemBoxComponent->SetCollisionProfileName(TEXT("OverlapAllDynamic"));
+	RootItemBoxComponent->OnComponentBeginOverlap.AddDynamic(this, &AMyCharacter::OnRootItemBoxOverlapBegin);
 }
 
 // Called when the game starts or when spawned
@@ -63,7 +72,6 @@ void AMyCharacter::BeginPlay() {
 
 	//TODO: 지금은 시작할때 장착하지만 나중에는 바꿔보자
 	if (BareHand) {
-		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("BareHand set"));
 		EquipWeapon(BareHand);
 	}
 
@@ -101,7 +109,6 @@ void AMyCharacter::PlayAirboneMontage()
 {
 	if (GetCharacterMovement()->IsFalling()) {
 		PlayAnimMontage(AirboneMontage);
-		GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Red, TEXT("IsFalling()"));
 	}
 }
 
@@ -152,9 +159,6 @@ void AMyCharacter::RunStart()
 		TargetSpeed = RunSpeed;
 		UAISense_Hearing::ReportNoiseEvent(GetWorld(), GetActorLocation(), RunLoudness, this);
 	}
-	else {
-		GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Red, TEXT("Not Enough Stamina to Run"));
-	}
 }
 
 void AMyCharacter::RunEnd()
@@ -174,9 +178,6 @@ void AMyCharacter::AttackStart()
 	if (!bIsDodge && !bIsAttack && bHasEnoughStamina(AttackStaminaCost)) {
 		bIsAttack = true;
 		AttackExecute();
-	}
-	else {
-		GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Red, TEXT("Not Enough to Attack"));
 	}
 }
 
@@ -212,7 +213,6 @@ void AMyCharacter::AttackExecute()
 			AnimInstance->Montage_JumpToSection(FName(*SectionName), CurrentWeapon->AttackMontage);
 		}
 
-		GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Red, FString::Printf(TEXT("CurrentComboCount: %d"), CurrentWeapon->CurrentComboCount));
 		GetWorld()->GetTimerManager().SetTimer(ComboCheckTimerHandle, this, &AMyCharacter::AttackEnd, CurrentWeapon->WaitComboTime, false);
 	}
 }
@@ -249,9 +249,6 @@ void AMyCharacter::Dodge()
 				AnimInstance->Montage_Play(DodgeMontage);
 			}
 		}
-	}
-	else {
-		GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Red, TEXT("Not Enough Stamina to Dodge"));
 	}
 }
 
@@ -330,11 +327,41 @@ void AMyCharacter::LockOnCamera(float DeltaTime)
 
 void AMyCharacter::UnLockOnTarget()
 {
-	GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Cyan, TEXT("UnLockOnTarget"));
 	LockedOnTarget = nullptr;
 	bIsLockOnTarget = false;
 
 	CameraBoom->SocketOffset = FVector(0.f, 0.f, 60.f);
+}
+
+void AMyCharacter::RootItem()
+{
+	if (Inventory) {
+		if (OverlapItems.Num() > 0) {
+			for (AItemBase* RootItem : OverlapItems) {
+				Inventory->AddItem(RootItem);
+				RootItem->Destroy();
+			}
+			OverlapItems.Empty();
+		}
+	}
+	else {
+		UE_LOG(LogTemp, Error, TEXT("Inventory component is not initialized!"));
+		return;
+	}
+}
+
+void AMyCharacter::OnRootItemBoxOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComponent, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+{
+	if (OtherActor && OtherActor->IsA(AItemBase::StaticClass())) {
+		if (AItemBase* Item = Cast<AItemBase>(OtherActor)) {
+			if (!OverlapItems.Contains(Item)) {
+				OverlapItems.Add(Item);
+			}
+		}
+		else {
+			UE_LOG(LogTemp, Warning, TEXT("Failed to cast OtherActor to AItemBase"));
+		}
+	}
 }
 
 void AMyCharacter::EquipWeapon(TSubclassOf<class UWeaponBaseComponent> WeaponClass)
@@ -448,7 +475,6 @@ void AMyCharacter::RecoveryStaminia(float DeltaTime)
 	float StaminaRecoveryRate = 1000.0f;
 	CharacterStatus.CurrentStamina = FMath::Min(CharacterStatus.CurrentStamina + (StaminaRecoveryRate * DeltaTime), CharacterStatus.MaxStamina);
 	OnPlayerUIUpdated.Broadcast(CharacterStatus.CurrentHP, CharacterStatus.CurrentMP, CharacterStatus.CurrentStamina);
-	UE_LOG(LogTemp, Warning, TEXT("RecoveryStamina: %f"), CharacterStatus.CurrentStamina)
 }
 
 void AMyCharacter::SetupStimulusSource()
@@ -463,10 +489,15 @@ void AMyCharacter::SetupStimulusSource()
 
 void AMyCharacter::TEST()
 {
-	CharacterStatus.UseStamina(50.f);
+	/*CharacterStatus.UseStamina(50.f);
 	CharacterStatus.UseMP(3.f);
-	CharacterStatus.UseHP(5.f);
+	CharacterStatus.UseHP(5.f);*/
 	
+	if (Inventory) {
+		for (AItemBase* Item : Inventory->InventoryItems) {
+			UE_LOG(LogTemp, Log, TEXT("Inventory Item: %s"), *Item->GetName());
+		}
+	}
 
 	GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Cyan, TEXT("TEST"));
 }

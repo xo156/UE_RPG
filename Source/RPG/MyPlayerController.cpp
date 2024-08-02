@@ -8,6 +8,7 @@
 #include "GameFramework/Pawn.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "WeaponBaseComponent.h"
+#include "ItemBase.h"
 
 AMyPlayerController::AMyPlayerController() {
 
@@ -55,7 +56,9 @@ void AMyPlayerController::SetupInputComponent() {
 		EnHancedInputComponent->BindAction(DodgeAction, ETriggerEvent::Started, this, &AMyPlayerController::Dodge);
 	
 		EnHancedInputComponent->BindAction(LockOnAction, ETriggerEvent::Started, this, &AMyPlayerController::LockOnTarget);
-	
+		
+		EnHancedInputComponent->BindAction(RootItemAction, ETriggerEvent::Started, this, &AMyPlayerController::RootItem);
+		
 		EnHancedInputComponent->BindAction(TESTSTATUSAction, ETriggerEvent::Started, this, &AMyPlayerController::TEST);
 	}
 	
@@ -94,7 +97,6 @@ void AMyPlayerController::Jump() {
 		if (GetCharacter()->CanJump() && GetCharacter()->bHasEnoughStamina(GetCharacter()->JumpStaminaCost)) {
 			GetCharacter()->ConsumeStaminaForAction(GetCharacter()->JumpStaminaCost);
 			GetCharacter()->Jump();
-			GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Red, TEXT("JumpUpMontage"));
 		}
 	}
 }
@@ -130,6 +132,13 @@ void AMyPlayerController::LockOnTarget()
 {
 	if (GetCharacter() != nullptr) {
 		GetCharacter()->LockOnTarget();
+	}
+}
+
+void AMyPlayerController::RootItem()
+{
+	if (GetCharacter() != nullptr) {
+		GetCharacter()->RootItem();
 	}
 }
 

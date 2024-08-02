@@ -107,6 +107,9 @@ public:
 	AActor* FindNewTarget();
 	void LockOnCamera(float DeltaTime);
 	void UnLockOnTarget();
+	void RootItem();
+	UFUNCTION()
+	void OnRootItemBoxOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComponent, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 
 	//무기
 	UFUNCTION(BlueprintCallable, Category = "Weapon")
@@ -158,7 +161,7 @@ public:
 
 	//락온
 	AActor* LockedOnTarget = nullptr; 
-	
+		
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -223,4 +226,10 @@ private:
 	float MaxLockOnDist = 300.f;
 	FVector PreviousLocation;
 	FVector CurrentLocation;
+
+	//아이템
+	class UInventoryComponent* Inventory;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Inventory", meta = (AllowPrivateAccess = "true"))
+	class UBoxComponent* RootItemBoxComponent;
+	TArray<class AItemBase*> OverlapItems;
 };

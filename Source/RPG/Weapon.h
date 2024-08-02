@@ -3,11 +3,11 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "GameFramework/Actor.h"
+#include "ItemBase.h"
 #include "Weapon.generated.h"
 
 UCLASS()
-class RPG_API AWeapon : public AActor
+class RPG_API AWeapon : public AItemBase
 {
 	GENERATED_BODY()
 	
@@ -36,6 +36,11 @@ public:
 	class UBoxComponent* GetWeaponCollision() const;
 	TArray<AActor*>& GetOverlapActors();
 
+	virtual void Use() override;
+	void ResetPlayerDamage();
+
+	FTimerHandle DamageUPHandle;
+
 //º¯¼öµé
 private:	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon", meta = (AllowPrivateAccess = "true"))
@@ -45,4 +50,7 @@ private:
 
 	class AMyCharacter* OwnerCharacter;
 	TArray<AActor*> OverlapActors;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon", meta = (AllowPrivateAccess = "true"))
+	float DamageUPAmount;
 };

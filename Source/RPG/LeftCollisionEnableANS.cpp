@@ -15,14 +15,7 @@ void ULeftCollisionEnableANS::NotifyBegin(USkeletalMeshComponent* MeshComp, UAni
                 if (WeaponInstance->GetWeaponCollision()) {
                     WeaponInstance->GetWeaponCollision()->SetCollisionProfileName("Weapon");
                     WeaponInstance->GetWeaponCollision()->SetNotifyRigidBodyCollision(true);
-                    UE_LOG(LogTemp, Warning, TEXT("Left Collision Enabled"));
                 }
-                else {
-                    UE_LOG(LogTemp, Error, TEXT("WeaponCollision is null"));
-                }
-            }
-            else {
-                UE_LOG(LogTemp, Error, TEXT("WeaponInstance is null"));
             }
         }
     }
@@ -36,14 +29,7 @@ void ULeftCollisionEnableANS::NotifyEnd(USkeletalMeshComponent* MeshComp, UAnimS
                 if (WeaponInstance->GetWeaponCollision()) {
                     WeaponInstance->GetWeaponCollision()->SetCollisionProfileName("NoCollision");
                     WeaponInstance->GetWeaponCollision()->SetNotifyRigidBodyCollision(false);
-                    UE_LOG(LogTemp, Warning, TEXT("Left Collision Disabled"));
                 }
-                else {
-                    UE_LOG(LogTemp, Error, TEXT("WeaponCollision is null"));
-                }
-            }
-            else {
-                UE_LOG(LogTemp, Error, TEXT("WeaponInstance is null"));
             }
         }
     }

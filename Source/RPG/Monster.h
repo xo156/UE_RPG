@@ -106,5 +106,10 @@ private:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UI", meta = (AllowPrivateAccess = "true"))
 	class UWidgetComponent* MonsterWidgetComponent;
 
+	//몬스터가 때릴 때 콜리전 검출하기
 	TArray<AActor*> OverlapActors;
+
+	//드롭할 아이템 목록
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item", meta = (AllowPrivateAccess = "true"))
+	TArray<TSubclassOf<class AItemBase>> DropItems;
 };

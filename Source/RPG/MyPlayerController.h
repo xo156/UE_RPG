@@ -43,6 +43,7 @@ protected:
 	void Guard();
 	void Dodge();
 	void LockOnTarget();
+	void RootItem();
 	void TEST();
 
 protected:
@@ -65,6 +66,9 @@ protected:
 	class UInputAction* DodgeAction;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input", meta = (AllowPrivateAccess = "true"))
 	class UInputAction* LockOnAction;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input", meta = (AllowPrivateAccess = "true"))
+	class UInputAction* RootItemAction;
+
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input", meta = (AllowPrivateAccess = "true"))
 	class UInputAction* TESTSTATUSAction;
 

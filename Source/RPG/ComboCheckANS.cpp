@@ -9,7 +9,6 @@ void UComboCheckANS::NotifyBegin(USkeletalMeshComponent* MeshComp, UAnimSequence
 {
 	if (AMyCharacter* Character = Cast<AMyCharacter>(MeshComp->GetOwner())) {
 		Character->bIsAttack = true;
-		GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Green, TEXT("NotifyBegin"));
 	}
 }
 
@@ -17,6 +16,5 @@ void UComboCheckANS::NotifyEnd(USkeletalMeshComponent* MeshComp, UAnimSequenceBa
 {
 	if (AMyCharacter* Character = Cast<AMyCharacter>(MeshComp->GetOwner())) {
 		Character->bIsAttack = false;
-		GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Green, TEXT("NotifyEnd"));
 	}
 }

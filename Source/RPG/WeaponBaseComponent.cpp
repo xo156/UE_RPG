@@ -54,14 +54,12 @@ void UWeaponBaseComponent::AttachToCharacter()
             if (RightHandWeaponInstance = GetWorld()->SpawnActor<AWeapon>(RightHandWeapon)) {
                 RightHandWeaponInstance->AttachToComponent(OwnerCharacter->GetMesh(), FAttachmentTransformRules::SnapToTargetIncludingScale, FName(TEXT("Socket_R")));
                 RightHandWeaponInstance->SetOwnerCharacter(OwnerCharacter);
-                GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Black, TEXT("RightWeaponAttach"));
             }
         }
         if (LeftHandWeapon) {
             if (LeftHandWeaponInstance = GetWorld()->SpawnActor<AWeapon>(LeftHandWeapon)) {
                 LeftHandWeaponInstance->AttachToComponent(OwnerCharacter->GetMesh(), FAttachmentTransformRules::SnapToTargetIncludingScale, FName(TEXT("Socket_L")));
                 LeftHandWeaponInstance->SetOwnerCharacter(OwnerCharacter);
-                GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Black, TEXT("LeftWeaponAttach"));
             }
         }
     }

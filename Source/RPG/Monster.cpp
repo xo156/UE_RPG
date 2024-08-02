@@ -10,6 +10,8 @@
 #include "Components/WidgetComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Engine/DamageEvents.h"
+#include "ItemBase.h"
+#include "Weapon.h"
 
 // Sets default values
 AMonster::AMonster()
@@ -124,7 +126,6 @@ void AMonster::MonsterAttack()
 			MontageEndedDelegate.BindUObject(this, &AMonster::OnAttackMontageEnd);
 			AnimInstance->Montage_SetEndDelegate(MontageEndedDelegate, MonsterAttackMontage);
 			
-			GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Yellow, TEXT("MonsterAttackMontage"));
 		}
 	}
 }
@@ -144,7 +145,6 @@ void AMonster::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* 
 		if (!OverlapActors.Contains(OtherActor)) {
 			OverlapActors.Add(OtherActor);
 			ApplyDamageToActor(OtherActor);
-			UE_LOG(LogTemp, Log, TEXT("Monster attacked Player!"));
 		}
 	}
 }
@@ -165,8 +165,27 @@ float AMonster::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, 
 	}
 	else {
 		//체력이 없어서 죽을때
-		ConsumeHPForAction(DamageAmount);
 		UE_LOG(LogTemp, Log, TEXT("Monster Die"));
+		ConsumeHPForAction(DamageAmount); //체력을 0으로 하기
+
+		//아이템 Drop하기
+		for (const TSubclassOf<AItemBase>& DropItem : DropItems) {
+			AItemBase* Item = Cast<AItemBase>(DropItem->GetDefaultObject());
+			if (Item && FMath::FRand() <= Item->ItemData.DropRate) {
+				FActorSpawnParameters SpawnParams;
+				SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
+
+				FVector SpawnLocation = GetActorLocation();
+				FRotator SpawnRotation = GetActorRotation();
+
+				if (Item->ItemData.ItemType == EItemType::Weapon) {
+					//TODO: AWeapon은 왼손, 오른손용으로 2개를 어떻게 할지
+				}
+				else if (Item->ItemData.ItemType == EItemType::Consumable) {
+					AItemBase* SpawnItem = GetWorld()->SpawnActor<AItemBase>(DropItem, SpawnLocation, SpawnRotation, SpawnParams);
+				}
+			}
+		}
 	}
 
 	return DamageAmount;

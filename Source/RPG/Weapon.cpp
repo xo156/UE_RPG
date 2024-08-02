@@ -54,7 +54,6 @@ void AWeapon::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* O
 			if (!OverlapActors.Contains(OtherActor)) {
 				OverlapActors.Add(OtherActor);
 				ApplyDamageToActor(OtherActor);
-				UE_LOG(LogTemp, Log, TEXT("DamageActor: %s"), *OtherActor->GetName());
 			}
 		}
 	}
@@ -65,14 +64,13 @@ void AWeapon::ApplyDamageToActor(AActor* ActorToDamage)
 	//UE_LOG(LogTemp, Log, TEXT("ApplyDamageToActor Call, ActorToDamage: %s"), *ActorToDamage->GetName());
 
 	if (OwnerCharacter == nullptr) {
-		UE_LOG(LogTemp, Error, TEXT("OnwerCharacter is Null"));
 		return;
 	}
 
 	float Damage = OwnerCharacter->CharacterStatus.Damage;
 	FDamageEvent DamageEvent;
 	if (GetInstigator() == nullptr) {
-		UE_LOG(LogTemp, Warning, TEXT("Instigator is not set"));
+		return;
 	}
 	else {
 		ActorToDamage->TakeDamage(Damage, DamageEvent, GetInstigatorController(), this);
@@ -105,4 +103,24 @@ UBoxComponent* AWeapon::GetWeaponCollision() const
 TArray<AActor*>& AWeapon::GetOverlapActors()
 {
 	return OverlapActors;
+}
+
+void AWeapon::Use()
+{
+	if (auto* PlayerController = UGameplayStatics::GetPlayerController(GetWorld(), 0)) {
+		if (auto* Player = Cast<AMyCharacter>(PlayerController->GetPawn())) {
+			Player->CharacterStatus.Damage += DamageUPAmount;
+			GetWorld()->GetTimerManager().SetTimer(DamageUPHandle, this, &AWeapon::ResetPlayerDamage, 60.f, false);
+		}
+	}
+}
+
+void AWeapon::ResetPlayerDamage()
+{
+	if (auto* PlayerController = UGameplayStatics::GetPlayerController(GetWorld(), 0)) {
+		if (auto* Player = Cast<AMyCharacter>(PlayerController->GetPawn())) {
+			Player->CharacterStatus.Damage -= DamageUPAmount;
+			GetWorld()->GetTimerManager().ClearTimer(DamageUPHandle);
+		}
+	}
 }
