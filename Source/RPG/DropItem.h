@@ -3,17 +3,17 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "ItemBase.h"
-#include "HPPotion.generated.h"
+#include "GameFramework/Actor.h"
+#include "DropItem.generated.h"
 
 UCLASS()
-class RPG_API AHPPotion : public AItemBase
+class RPG_API ADropItem : public AActor
 {
 	GENERATED_BODY()
 	
 public:	
 	// Sets default values for this actor's properties
-	AHPPotion();
+	ADropItem();
 
 protected:
 	// Called when the game starts or when spawned
@@ -23,8 +23,10 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item")
+	class UBoxComponent* ItemCollision;
 
-private:
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "VALUE", meta = (AllowPrivateAccess = "true"))
-	float HPRecoveryAmount;
+	void SetDropItems();
+
+	TArray<ADropItem> DropItems;
 };

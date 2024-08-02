@@ -31,6 +31,7 @@ AWeapon::AWeapon()
     WeaponCollision->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
 
 	WeaponCollision->OnComponentBeginOverlap.AddDynamic(this, &AWeapon::OnOverlapBegin);
+
 }
 
 // Called when the game starts or when spawned
@@ -105,11 +106,11 @@ TArray<AActor*>& AWeapon::GetOverlapActors()
 	return OverlapActors;
 }
 
-void AWeapon::Use()
+void AWeapon::IncreasePlayerDamage()
 {
 	if (auto* PlayerController = UGameplayStatics::GetPlayerController(GetWorld(), 0)) {
 		if (auto* Player = Cast<AMyCharacter>(PlayerController->GetPawn())) {
-			Player->CharacterStatus.Damage += DamageUPAmount;
+			Player->CharacterStatus.Damage += ItemData.ItemValue;
 			GetWorld()->GetTimerManager().SetTimer(DamageUPHandle, this, &AWeapon::ResetPlayerDamage, 60.f, false);
 		}
 	}
@@ -119,8 +120,9 @@ void AWeapon::ResetPlayerDamage()
 {
 	if (auto* PlayerController = UGameplayStatics::GetPlayerController(GetWorld(), 0)) {
 		if (auto* Player = Cast<AMyCharacter>(PlayerController->GetPawn())) {
-			Player->CharacterStatus.Damage -= DamageUPAmount;
+			Player->CharacterStatus.Damage -= ItemData.ItemValue;
 			GetWorld()->GetTimerManager().ClearTimer(DamageUPHandle);
 		}
 	}
 }
+

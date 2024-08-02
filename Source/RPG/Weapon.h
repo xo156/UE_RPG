@@ -36,13 +36,12 @@ public:
 	class UBoxComponent* GetWeaponCollision() const;
 	TArray<AActor*>& GetOverlapActors();
 
-	virtual void Use() override;
+	void IncreasePlayerDamage();
 	void ResetPlayerDamage();
 
 	FTimerHandle DamageUPHandle;
 
-//º¯¼öµé
-private:	
+private:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon", meta = (AllowPrivateAccess = "true"))
 	class USkeletalMeshComponent* WeaponMesh;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon", meta = (AllowPrivateAccess = "true"))
@@ -51,6 +50,4 @@ private:
 	class AMyCharacter* OwnerCharacter;
 	TArray<AActor*> OverlapActors;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon", meta = (AllowPrivateAccess = "true"))
-	float DamageUPAmount;
 };

@@ -231,5 +231,5 @@ private:
 	class UInventoryComponent* Inventory;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Inventory", meta = (AllowPrivateAccess = "true"))
 	class UBoxComponent* RootItemBoxComponent;
-	TArray<class AItemBase*> OverlapItems;
+	TArray<class ADropItem*> OverlapItems;
 };

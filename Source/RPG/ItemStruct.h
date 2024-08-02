@@ -13,36 +13,58 @@ enum class EItemType : uint8
     Consumable UMETA(DisplayName = "Consumable")
 };
 
+USTRUCT()
+struct FItemNums
+{
+    GENERATED_USTRUCT_BODY()
+
+    UPROPERTY(EditAnywhere)
+    int32 MaxStackSize;
+    UPROPERTY(EditAnywhere)
+    int32 CurrentStackSize;
+    UPROPERTY(EditAnywhere)
+    bool bIsStackable;
+};
+
 USTRUCT(BlueprintType)
 struct RPG_API FItemStruct : public FTableRowBase
 {
     GENERATED_USTRUCT_BODY()
 
 public:
-    //아이템의 타입
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item")
+    //아이템 ID
+    UPROPERTY(EditAnywhere)
+    FName ItemID;
+
+    //아이템 타입
+    UPROPERTY(EditAnywhere)
     EItemType ItemType;
 
-    //아이템의 이름
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item")
+    //아이템 이름
+    UPROPERTY(EditAnywhere)
     FString ItemName;
 
     //아이템 설명
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item")
+    UPROPERTY(EditAnywhere)
     FString ItemDescription;
 
     //아이템 아이콘
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item")
+    UPROPERTY(EditAnywhere)
     class UTexture2D* ItemIcon;
 
+    //아이템 메쉬
+    UPROPERTY(EditAnywhere)
+    class UStaticMesh* ItemMesh;
+
+    //아이템 벨류
+    UPROPERTY(EditAnywhere)
+    float ItemValue;
+
     //아이템 수량
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item")
-    int32 MaxStackSize;
-    int32 CurrentStackSize;
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item")
-    bool bIsStackable;
+    UPROPERTY(EditAnywhere)
+    FItemNums ItemNum;
 
     //아이템 드롭 확률 (0.0 - 1.0 범위)
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item")
+    UPROPERTY(EditAnywhere)
     float DropRate = 1.f;
 };

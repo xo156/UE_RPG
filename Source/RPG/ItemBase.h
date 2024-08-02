@@ -24,15 +24,8 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
-	UFUNCTION(BlueprintCallable, Category = "Item")
-	virtual void Use();
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item")
 	FItemStruct ItemData;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item")
-	class UBoxComponent* ItemCollision;
+	void InitializeItemData(const FItemStruct& NewItemData);
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item")
-	class UStaticMeshComponent* ItemMesh;
 };

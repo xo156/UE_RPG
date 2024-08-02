@@ -11,7 +11,6 @@
 #include "Kismet/GameplayStatics.h"
 #include "Engine/DamageEvents.h"
 #include "ItemBase.h"
-#include "Weapon.h"
 
 // Sets default values
 AMonster::AMonster()
@@ -169,25 +168,28 @@ float AMonster::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, 
 		ConsumeHPForAction(DamageAmount); //체력을 0으로 하기
 
 		//아이템 Drop하기
-		for (const TSubclassOf<AItemBase>& DropItem : DropItems) {
-			AItemBase* Item = Cast<AItemBase>(DropItem->GetDefaultObject());
-			if (Item && FMath::FRand() <= Item->ItemData.DropRate) {
-				FActorSpawnParameters SpawnParams;
-				SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
+		//for (const TSubclassOf<AItemBase>& DropItem : DropItems) {
+		//	AItemBase* Item = Cast<AItemBase>(DropItem->GetDefaultObject());
+		//	if (Item && FMath::FRand() <= Item->ItemData.DropRate) {
+		//		FActorSpawnParameters SpawnParams;
+		//		SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
 
-				FVector SpawnLocation = GetActorLocation();
-				FRotator SpawnRotation = GetActorRotation();
+		//		FVector SpawnLocation = GetActorLocation();
+		//		FRotator SpawnRotation = GetActorRotation();
 
-				if (Item->ItemData.ItemType == EItemType::Weapon) {
-					//TODO: AWeapon은 왼손, 오른손용으로 2개를 어떻게 할지
-				}
-				else if (Item->ItemData.ItemType == EItemType::Consumable) {
-					AItemBase* SpawnItem = GetWorld()->SpawnActor<AItemBase>(DropItem, SpawnLocation, SpawnRotation, SpawnParams);
-				}
-			}
-		}
+		//		if (Item->ItemData.ItemType == EItemType::Weapon) {
+		//			//TODO: 무기 클래스는 AWeapon만이고 에디터에서 BP2개로 손에 하나씩인데 이거 어카냐
+		//			AItemBase* SpawnFirstWeapon = GetWorld()->SpawnActor<AItemBase>(DropItem, SpawnLocation, SpawnRotation, SpawnParams);
+		//			
+		//		}
+		//		else if (Item->ItemData.ItemType == EItemType::Consumable) {
+		//			//소모품은 그냥 떨구기
+		//			AItemBase* SpawnConsumable = GetWorld()->SpawnActor<AItemBase>(DropItem, SpawnLocation, SpawnRotation, SpawnParams);
+		//		}
+		//	}
+		//}
 	}
-
+	
 	return DamageAmount;
 }
 

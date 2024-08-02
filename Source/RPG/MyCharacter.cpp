@@ -15,8 +15,8 @@
 #include "Perception/AISense_Sight.h"
 #include "Perception/AISense_Hearing.h"
 #include "PlayerWidget.h"
-#include "InventoryComponent.h"
-#include "ItemBase.h"
+//#include "InventoryComponent.h"
+#include "DropItem.h"
 #include "Components/BoxComponent.h"
 
 // Sets default values
@@ -59,7 +59,7 @@ AMyCharacter::AMyCharacter() {
 	//À§Á¬
 	PlayerWidgetClass = UPlayerWidget::StaticClass();
 
-	Inventory = CreateDefaultSubobject<UInventoryComponent>(TEXT("InventoryComponent"));
+	//Inventory = CreateDefaultSubobject<UInventoryComponent>(TEXT("InventoryComponent"));
 	RootItemBoxComponent = CreateDefaultSubobject<UBoxComponent>(TEXT("RootItemBox"));
 	RootItemBoxComponent->SetupAttachment(RootComponent);
 	RootItemBoxComponent->SetCollisionProfileName(TEXT("OverlapAllDynamic"));
@@ -335,9 +335,9 @@ void AMyCharacter::UnLockOnTarget()
 
 void AMyCharacter::RootItem()
 {
-	if (Inventory) {
+	/*if (Inventory) {
 		if (OverlapItems.Num() > 0) {
-			for (AItemBase* RootItem : OverlapItems) {
+			for (ADropItem* RootItem : OverlapItems) {
 				Inventory->AddItem(RootItem);
 				RootItem->Destroy();
 			}
@@ -347,19 +347,19 @@ void AMyCharacter::RootItem()
 	else {
 		UE_LOG(LogTemp, Error, TEXT("Inventory component is not initialized!"));
 		return;
-	}
+	}*/
 }
 
 void AMyCharacter::OnRootItemBoxOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComponent, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	if (OtherActor && OtherActor->IsA(AItemBase::StaticClass())) {
-		if (AItemBase* Item = Cast<AItemBase>(OtherActor)) {
+	if (OtherActor && OtherActor->IsA(ADropItem::StaticClass())) {
+		if (ADropItem* Item = Cast<ADropItem>(OtherActor)) {
 			if (!OverlapItems.Contains(Item)) {
 				OverlapItems.Add(Item);
 			}
 		}
 		else {
-			UE_LOG(LogTemp, Warning, TEXT("Failed to cast OtherActor to AItemBase"));
+			UE_LOG(LogTemp, Warning, TEXT("Failed to cast OtherActor to ADropItem"));
 		}
 	}
 }
@@ -493,11 +493,11 @@ void AMyCharacter::TEST()
 	CharacterStatus.UseMP(3.f);
 	CharacterStatus.UseHP(5.f);*/
 	
-	if (Inventory) {
+	/*if (Inventory) {
 		for (AItemBase* Item : Inventory->InventoryItems) {
 			UE_LOG(LogTemp, Log, TEXT("Inventory Item: %s"), *Item->GetName());
 		}
-	}
+	}*/
 
 	GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Cyan, TEXT("TEST"));
 }

@@ -55,5 +55,5 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon")
 	TSubclassOf<class AWeapon> LeftHandWeapon;
 	class AWeapon* LeftHandWeaponInstance;
-	
+		
 };

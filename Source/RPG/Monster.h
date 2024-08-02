@@ -110,6 +110,9 @@ private:
 	TArray<AActor*> OverlapActors;
 
 	//드롭할 아이템 목록
+	/*UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item", meta = (AllowPrivateAccess = "true"))
+	TArray<TSubclassOf<class AItemBase>> DropItems;*/
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item", meta = (AllowPrivateAccess = "true"))
-	TArray<TSubclassOf<class AItemBase>> DropItems;
+	TSet<FString> DropableItemIDs;
 };

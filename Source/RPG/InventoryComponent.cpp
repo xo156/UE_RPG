@@ -2,6 +2,7 @@
 
 
 #include "InventoryComponent.h"
+#include "DropItem.h"
 #include "ItemBase.h"
 
 // Sets default values for this component's properties
@@ -32,27 +33,4 @@ void UInventoryComponent::TickComponent(float DeltaTime, ELevelTick TickType, FA
 
 
 	// ...
-}
-
-void UInventoryComponent::AddItem(AItemBase* ItemBase)
-{
-	if (ItemBase) {
-		InventoryItems.Add(ItemBase);
-		UE_LOG(LogTemp, Log, TEXT("Item Add : %s"), *ItemBase->GetName());
-	}
-}
-
-void UInventoryComponent::UseItem(AItemBase* ItemBase)
-{
-	if (ItemBase) {
-		ItemBase->Use();
-	}
-}
-
-void UInventoryComponent::DestroyItem(AItemBase* ItemBase)
-{
-	if (ItemBase) {
-		InventoryItems.Remove(ItemBase);
-		ItemBase->Destroy();
-	}
 }
