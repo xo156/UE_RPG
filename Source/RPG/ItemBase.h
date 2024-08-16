@@ -28,6 +28,9 @@ public:
 
 	virtual void Use();
 
+	FItemStruct GetItemStruct();
+
+
 private:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item", meta = (AllowPrivateAccess = "true"))
 	FString ItemName;

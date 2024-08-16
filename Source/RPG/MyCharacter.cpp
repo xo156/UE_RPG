@@ -15,7 +15,7 @@
 #include "Perception/AISense_Sight.h"
 #include "Perception/AISense_Hearing.h"
 #include "PlayerWidget.h"
-//#include "InventoryComponent.h"
+#include "InventoryComponent.h"
 #include "DropItem.h"
 #include "Components/BoxComponent.h"
 
@@ -335,25 +335,16 @@ void AMyCharacter::UnLockOnTarget()
 
 void AMyCharacter::RootItem()
 {
-	/*if (Inventory) {
-		if (OverlapItems.Num() > 0) {
-			for (ADropItem* RootItem : OverlapItems) {
-				Inventory->AddItem(RootItem);
-				RootItem->Destroy();
-			}
-			OverlapItems.Empty();
-		}
+	if (Inventory && OverlapItems.Num() > 0) {
+		Inventory->AddItem(OverlapItems);
+		OverlapItems.Empty();
 	}
-	else {
-		UE_LOG(LogTemp, Error, TEXT("Inventory component is not initialized!"));
-		return;
-	}*/
 }
 
 void AMyCharacter::OnRootItemBoxOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComponent, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
 	if (OtherActor && OtherActor->IsA(ADropItem::StaticClass())) {
-		if (ADropItem* Item = Cast<ADropItem>(OtherActor)) {
+		if (auto* Item = Cast<ADropItem>(OtherActor)) {
 			if (!OverlapItems.Contains(Item)) {
 				OverlapItems.Add(Item);
 			}

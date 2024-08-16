@@ -38,3 +38,8 @@ void AItemBase::Use()
 {
 
 }
+
+FItemStruct AItemBase::GetItemStruct()
+{
+	return FItemStruct();
+}

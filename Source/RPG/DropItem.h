@@ -34,6 +34,8 @@ public:
 	void CalcDropItems(TArray<int32> DropableItemIDS, UDataTable* ItemTable, TArray<FItemDrop>& OutItemsToDrop);
 	void InitDropItems(const TArray<FItemDrop>& Items);
 
+	FItemDrop GetItemDrop();
+
 private:
 	TArray<FItemDrop> ItemsToDrop;
 };

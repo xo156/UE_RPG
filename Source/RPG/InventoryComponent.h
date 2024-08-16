@@ -25,13 +25,12 @@ public:
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
-	void AddItem(const FInventoryItemData& NewItem);
-	void UseItem(int32 ItemUID, int32 Quantity = 1);
-	void RemoveItem(int32 ItemUID, int32 Quantity = 1);
+	void AddItem(TArray<class ADropItem*> Items);
+	void UseItem(class ADropItem* InventoryItem, int32 Quantity = 1);
+	void RemoveItem(class ADropItem* InventoryItem, int32 Quantity = 1);
 
-private:
-	TArray<FInventoryItemData> Inventory;
-	
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item", meta = (AllowPrivateAccess = "true"))
-	UDataTable* ItemDataTable;
+	int32 GetInventoryItemAmount(class ADropItem* Item);
+	FInventoryItemData* GetInventoryItem(class ADropItem* Item);
+
+	TArray<class ADropItem*> Inventory;
 };

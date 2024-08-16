@@ -58,3 +58,8 @@ void ADropItem::InitDropItems(const TArray<FItemDrop>& Items)
 {
 	ItemsToDrop = Items;
 }
+
+FItemDrop ADropItem::GetItemDrop()
+{
+    return FItemDrop();
+}
