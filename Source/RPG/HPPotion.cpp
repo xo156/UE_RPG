@@ -4,7 +4,6 @@
 
 #include "HPPotion.h"
 #include "MyCharacter.h"
-#include "Kismet/GameplayStatics.h"
 
 // Sets default values
 AHPPotion::AHPPotion()
@@ -26,4 +25,16 @@ void AHPPotion::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+}
+
+void AHPPotion::Use()
+{
+	if (auto* PlayerCharacter = Cast<AMyCharacter>(GetWorld()->GetFirstPlayerController()->GetPawn())) {
+		if (PlayerCharacter->CharacterStatus.CurrentHP + HPRecoveryAmount >= PlayerCharacter->CharacterStatus.MaxHP) {
+			PlayerCharacter->CharacterStatus.CurrentHP = PlayerCharacter->CharacterStatus.MaxHP;
+		}
+		else {
+			PlayerCharacter->CharacterStatus.CurrentHP += HPRecoveryAmount;
+		}
+	}
 }

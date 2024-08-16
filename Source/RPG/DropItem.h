@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+#include "ItemDrop.h"
 #include "DropItem.generated.h"
 
 UCLASS()
@@ -24,9 +25,15 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item")
-	class UBoxComponent* ItemCollision;
+	class UBoxComponent* DropItemCollision;
 
-	void SetDropItems();
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item")
+	class UStaticMeshComponent* DropItemMesh;
 
-	TArray<ADropItem> DropItems;
+	//아이템 드랍
+	void CalcDropItems(TArray<int32> DropableItemIDS, UDataTable* ItemTable, TArray<FItemDrop>& OutItemsToDrop);
+	void InitDropItems(const TArray<FItemDrop>& Items);
+
+private:
+	TArray<FItemDrop> ItemsToDrop;
 };

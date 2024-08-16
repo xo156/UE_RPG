@@ -105,24 +105,3 @@ TArray<AActor*>& AWeapon::GetOverlapActors()
 {
 	return OverlapActors;
 }
-
-void AWeapon::IncreasePlayerDamage()
-{
-	if (auto* PlayerController = UGameplayStatics::GetPlayerController(GetWorld(), 0)) {
-		if (auto* Player = Cast<AMyCharacter>(PlayerController->GetPawn())) {
-			Player->CharacterStatus.Damage += ItemData.ItemValue;
-			GetWorld()->GetTimerManager().SetTimer(DamageUPHandle, this, &AWeapon::ResetPlayerDamage, 60.f, false);
-		}
-	}
-}
-
-void AWeapon::ResetPlayerDamage()
-{
-	if (auto* PlayerController = UGameplayStatics::GetPlayerController(GetWorld(), 0)) {
-		if (auto* Player = Cast<AMyCharacter>(PlayerController->GetPawn())) {
-			Player->CharacterStatus.Damage -= ItemData.ItemValue;
-			GetWorld()->GetTimerManager().ClearTimer(DamageUPHandle);
-		}
-	}
-}
-

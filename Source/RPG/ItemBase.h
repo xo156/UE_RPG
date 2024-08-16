@@ -24,8 +24,23 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
-	FItemStruct ItemData;
+	void InitItem(const FItemStruct& ItemData);
 
-	void InitializeItemData(const FItemStruct& NewItemData);
+	virtual void Use();
 
+private:
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item", meta = (AllowPrivateAccess = "true"))
+	FString ItemName;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item", meta = (AllowPrivateAccess = "true"))
+	class UTexture2D* ItemIcon;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item", meta = (AllowPrivateAccess = "true"))
+	EItemType ItemType;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item", meta = (AllowPrivateAccess = "true"))
+	FString ItemDescription;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item", meta = (AllowPrivateAccess = "true"))
+	int32 ItemAttackPoint;
 };

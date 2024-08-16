@@ -23,8 +23,9 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
+	virtual void Use();
 
 private:
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "VALUE", meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Value", meta = (AllowPrivateAccess = "true"))
 	float HPRecoveryAmount;
 };

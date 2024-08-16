@@ -25,7 +25,16 @@ void AItemBase::Tick(float DeltaTime)
 
 }
 
-void AItemBase::InitializeItemData(const FItemStruct& NewItemData)
+void AItemBase::InitItem(const FItemStruct& ItemData)
 {
-	ItemData = NewItemData;
+	ItemName = ItemData.ItemName;
+	ItemIcon = ItemData.ItemIcon;
+	ItemType = ItemData.ItemType;
+	ItemDescription = ItemData.ItemDescription;
+	ItemAttackPoint = ItemData.ItemAttackPoint;
+}
+
+void AItemBase::Use()
+{
+
 }

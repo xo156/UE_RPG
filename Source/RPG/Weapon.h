@@ -36,9 +36,6 @@ public:
 	class UBoxComponent* GetWeaponCollision() const;
 	TArray<AActor*>& GetOverlapActors();
 
-	void IncreasePlayerDamage();
-	void ResetPlayerDamage();
-
 	FTimerHandle DamageUPHandle;
 
 private:

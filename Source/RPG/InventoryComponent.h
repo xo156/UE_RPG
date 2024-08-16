@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
+#include "InventoryItemData.h"
 #include "InventoryComponent.generated.h"
 
 
@@ -24,7 +25,13 @@ public:
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
+	void AddItem(const FInventoryItemData& NewItem);
+	void UseItem(int32 ItemUID, int32 Quantity = 1);
+	void RemoveItem(int32 ItemUID, int32 Quantity = 1);
 
-	UPROPERTY()
-	TArray<class ADropItem*> InventoryItems;
+private:
+	TArray<FInventoryItemData> Inventory;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item", meta = (AllowPrivateAccess = "true"))
+	UDataTable* ItemDataTable;
 };

@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
+#include "ItemDrop.h"
 #include "Monster.generated.h"
 
 USTRUCT(BlueprintType)
@@ -20,9 +21,6 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Status")
 	float Damage;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Status")
-	float DropMoney;
 
 	float UseHP(float HPCost) {
 		if (HPCost >= 0) {
@@ -109,10 +107,13 @@ private:
 	//몬스터가 때릴 때 콜리전 검출하기
 	TArray<AActor*> OverlapActors;
 
-	//드롭할 아이템 목록
-	/*UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item", meta = (AllowPrivateAccess = "true"))
-	TArray<TSubclassOf<class AItemBase>> DropItems;*/
+	//몬스터가 드랍 가능한 아이템 ID리스트
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item", meta = (AllowPrivateAccess = "true"))
+	TArray<int32> DropableItemIDS;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item", meta = (AllowPrivateAccess = "true"))
-	TSet<FString> DropableItemIDs;
+	UDataTable* ItemDropTable;
+
+	UPROPERTY(EditAnywhere, Category = "Item")
+	TSubclassOf<class ADropItem> DropItemClass;
 };

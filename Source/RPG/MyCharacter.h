@@ -60,19 +60,6 @@ public:
 		UE_LOG(LogTemp, Warning, TEXT("CurrentHP: %f"), CurrentHP);
 		return CurrentHP;
 	}
-	float UseMoney(float AddMoney) {
-		if (AddMoney) {
-			if (CurrentMoney + AddMoney <= 0) {
-				UE_LOG(LogTemp, Warning, TEXT("Can Not Use CurrentMoney"));
-				return CurrentMoney;
-			}
-			else {
-				CurrentMoney = FMath::Max(CurrentMoney + AddMoney, 0.0f);
-			}
-		}
-		UE_LOG(LogTemp, Warning, TEXT("CurrentMoney: %f"), CurrentMoney);
-		return CurrentMoney;
-	}
 };
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FOnPlayerUIUpdated, float, NewHP, float, NewMP, float, NewStamina);
