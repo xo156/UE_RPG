@@ -25,21 +25,12 @@ void AItemBase::Tick(float DeltaTime)
 
 }
 
-void AItemBase::InitItem(const FItemStruct& ItemData)
-{
-	ItemName = ItemData.ItemName;
-	ItemIcon = ItemData.ItemIcon;
-	ItemType = ItemData.ItemType;
-	ItemDescription = ItemData.ItemDescription;
-	ItemAttackPoint = ItemData.ItemAttackPoint;
-}
-
 void AItemBase::Use()
 {
 
 }
 
-FItemStruct AItemBase::GetItemStruct()
+FItemData AItemBase::GetItemData()
 {
-	return FItemStruct();
+	return FItemData();
 }

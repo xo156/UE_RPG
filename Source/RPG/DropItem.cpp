@@ -12,19 +12,25 @@ ADropItem::ADropItem()
 	PrimaryActorTick.bCanEverTick = true;
 
 	DropItemCollision = CreateDefaultSubobject<UBoxComponent>(TEXT("ItemCollision"));
-	RootComponent = DropItemCollision;
 	DropItemCollision->SetCollisionProfileName(TEXT("OverlapAll"));
+	RootComponent = DropItemCollision;
 
 	DropItemMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("ItemMesh"));
 	DropItemMesh->SetCollisionProfileName(TEXT("NoCollision"));
+	DropItemMesh->SetVisibility(true);
+	DropItemMesh->SetupAttachment(RootComponent);
 }
 
 // Called when the game starts or when spawned
 void ADropItem::BeginPlay()
 {
 	Super::BeginPlay();
-	
-	InitDropItems(ItemsToDrop);
+
+	//UE_LOG(LogTemp, Warning, TEXT("DropItem BeginPlay: Location: %s"), *GetActorLocation().ToString());
+	//UE_LOG(LogTemp, Warning, TEXT("DropItemMesh Visibility: %s"), DropItemMesh->IsVisible() ? TEXT("Visible") : TEXT("Not Visible"));
+
+	UE_LOG(LogTemp, Warning, TEXT("ADropItem BeginPlay: Location: %s"), *GetActorLocation().ToString());
+
 }
 
 // Called every frame
@@ -32,34 +38,22 @@ void ADropItem::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+	DrawDebugBox(GetWorld(), GetActorLocation(), FVector(50.f), FColor::Red, false, -1.f, 0, 2.f);
+
 }
 
-void ADropItem::CalcDropItems(TArray<int32> DropableItemIDS, UDataTable* ItemTable, TArray<FItemDrop>& OutItemsToDrop)
+void ADropItem::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
-    static const FString ContextString(TEXT("Item Drop Context"));
+	UE_LOG(LogTemp, Warning, TEXT("ADropItem EndPlay: Reason: %d"), (int32)EndPlayReason);
 
-    for (int32 DropItemID : DropableItemIDS) {
-        FItemDrop* ItemRow = ItemTable->FindRow<FItemDrop>(FName(*FString::FromInt(DropItemID)), ContextString);
-
-        if (ItemRow) {
-            float RandomValue = FMath::FRandRange(0.0f, 100.0f);
-            if (RandomValue <= ItemRow->ItemRate) {
-                int32 DropAmount = FMath::RandRange(ItemRow->MinDropItemAmount, ItemRow->MaxDropItemAmount);
-
-                for (int32 i = 0; i < DropAmount; ++i) {
-                    OutItemsToDrop.Add(*ItemRow);
-                }
-            }
-        }
-    }
 }
 
-void ADropItem::InitDropItems(const TArray<FItemDrop>& Items)
+void ADropItem::SetDropItem(const FDropItemData& NewDropItemData)
 {
-	ItemsToDrop = Items;
-}
+	DropItemData = NewDropItemData;
 
-FItemDrop ADropItem::GetItemDrop()
-{
-    return FItemDrop();
+	UE_LOG(LogTemp, Warning, TEXT("Drop DropItem ID: %d, Amount: %d, Counterble: %s"),
+		   DropItemData.ItemID,
+		   DropItemData.Amount,
+		   DropItemData.bCounterble ? TEXT("True") : TEXT("False"));
 }

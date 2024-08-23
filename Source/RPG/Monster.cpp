@@ -10,6 +10,7 @@
 #include "Components/WidgetComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Engine/DamageEvents.h"
+#include "ItemData.h"
 #include "DropItem.h"
 
 // Sets default values
@@ -43,6 +44,7 @@ AMonster::AMonster()
 	MonsterStatus.MaxMonsterHP = 100.0f;
 	MonsterStatus.CurrentMonsterHP = MonsterStatus.MaxMonsterHP;
 	MonsterStatus.Damage = 10.f;
+	MonsterStatus.DropSoul = 100;
 }
 
 void AMonster::ConsumeHPForAction(float HPCost)
@@ -166,12 +168,36 @@ float AMonster::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, 
 		UE_LOG(LogTemp, Log, TEXT("Monster Die"));
 		ConsumeHPForAction(DamageAmount); //체력을 0으로 하기
 
-		//아이템 드랍하기
-		if (DropItemClass && DropableItemIDS.Num() > 0) {
-			auto* DropItem = GetWorld()->SpawnActor<ADropItem>(DropItemClass, GetActorLocation(), GetActorRotation());
-			if (DropItem) {
-				TArray<FItemDrop> ItemsToDrop;
-				DropItem->CalcDropItems(DropableItemIDS, ItemDropTable, ItemsToDrop);
+		//아이템 드랍
+		if (ItemDropTable) {
+			static const FString ContextString(TEXT("Item Drop Context"));
+			for (const FDropRate& DropRate : MonsterStatus.DropRates) {
+				FDropRate* FoundItem = ItemDropTable->FindRow<FDropRate>(FName(*FString::FromInt(DropRate.ItemID)), ContextString);
+				if (FoundItem) {
+					float RandomNumber = FMath::FRandRange(0.f, 100.f);
+					if (RandomNumber <= FoundItem->Rate) {
+						int32 DropAmount = FMath::RandRange(FoundItem->MinAmount, FoundItem->MaxAmount);
+
+						FVector SpawnLocation = GetActorLocation();
+						FRotator SpawnRotation = FRotator::ZeroRotator;
+
+						if (ADropItem* DropItemActor = GetWorld()->SpawnActor<ADropItem>(DropItemClass, SpawnLocation, SpawnRotation)) {
+							FDropItemData DropItemData;
+							DropItemData.ItemID =DropRate.ItemID;
+							DropItemData.Amount = DropAmount;
+							DropItemData.bCounterble = DropRate.bCounterble;
+
+							DropItemActor->SetDropItem(DropItemData);
+							UE_LOG(LogTemp, Warning, TEXT("Successfully spawned DropItemActor with ID %d."), DropRate.ItemID);
+						}
+					}
+					else {
+						UE_LOG(LogTemp, Warning, TEXT("Item ID %d did not pass the rate check."),DropRate.ItemID);
+					}
+				}
+				else {
+					UE_LOG(LogTemp, Warning, TEXT("Item ID %d does not exist in ItemDropTable."), DropRate.ItemID);
+				}
 			}
 		}
 	}

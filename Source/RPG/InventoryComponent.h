@@ -25,12 +25,22 @@ public:
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
-	void AddItem(TArray<class ADropItem*> Items);
-	void UseItem(class ADropItem* InventoryItem, int32 Quantity = 1);
-	void RemoveItem(class ADropItem* InventoryItem, int32 Quantity = 1);
+	int32 FindSlotIndex(class ADropItem* AddItem);
+	void StackItem(class ADropItem* AddItem, int32 SlotIndex);
+	void AddItem(class ADropItem* AddItem);
+	int32 MakeUID();
 
-	int32 GetInventoryItemAmount(class ADropItem* Item);
-	FInventoryItemData* GetInventoryItem(class ADropItem* Item);
+	//void CreateInventoryWidget();
+	//void OpenInventoryWidget();
+	//void CloseInventoryWidget();
 
-	TArray<class ADropItem*> Inventory;
+private:
+	FInventoryItemData InventoryItemData;
+	TArray<FInventoryItemData> Inventory;
+
+	int32 MaxSlotCounter = 20;
+	int32 CurrentSlotCounter = 0;
+	int32 UIDCounter = 0;
+
+	bool bIsOpen = false;
 };

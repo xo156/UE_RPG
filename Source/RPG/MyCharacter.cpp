@@ -64,6 +64,7 @@ AMyCharacter::AMyCharacter() {
 	RootItemBoxComponent->SetupAttachment(RootComponent);
 	RootItemBoxComponent->SetCollisionProfileName(TEXT("OverlapAllDynamic"));
 	RootItemBoxComponent->OnComponentBeginOverlap.AddDynamic(this, &AMyCharacter::OnRootItemBoxOverlapBegin);
+	RootItemBoxComponent->OnComponentEndOverlap.AddDynamic(this, &AMyCharacter::OnRootItemBoxOverlapEnd);
 }
 
 // Called when the game starts or when spawned
@@ -336,8 +337,9 @@ void AMyCharacter::UnLockOnTarget()
 void AMyCharacter::RootItem()
 {
 	if (Inventory && OverlapItems.Num() > 0) {
-		Inventory->AddItem(OverlapItems);
-		OverlapItems.Empty();
+		for (ADropItem* Item : OverlapItems) {
+			Inventory->AddItem(Item);
+		}
 	}
 }
 
@@ -347,11 +349,16 @@ void AMyCharacter::OnRootItemBoxOverlapBegin(UPrimitiveComponent* OverlappedComp
 		if (auto* Item = Cast<ADropItem>(OtherActor)) {
 			if (!OverlapItems.Contains(Item)) {
 				OverlapItems.Add(Item);
+				GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Blue, TEXT("Item Overlaped"));
 			}
 		}
-		else {
-			UE_LOG(LogTemp, Warning, TEXT("Failed to cast OtherActor to ADropItem"));
-		}
+	}
+}
+
+void AMyCharacter::OnRootItemBoxOverlapEnd(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComponent, int32 OtherBodyIndex)
+{
+	if (OverlapItems.Num() > 0) {
+		OverlapItems.Empty();
 	}
 }
 

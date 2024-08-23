@@ -9,27 +9,26 @@
 /**
  * 
  */
-
 USTRUCT(BlueprintType)
 struct RPG_API FInventoryItemData : public FTableRowBase
 {
 	GENERATED_USTRUCT_BODY()
 
 public:
-	//아이템 ID
+	//아이템 UID
+	UPROPERTY(EditAnywhere)
+	int32 ItemUID;	
+
+	//아이템 테이블 ID
 	UPROPERTY(EditAnywhere)
 	int32 ItemTableID;
 
-	//아이템 현재 수량
+	//아이템 수량
 	UPROPERTY(EditAnywhere)
-	int32 ItemCurrentAmount;
+	int32 ItemAmount;
 
-	//아이템 최대 수량
+	//아이템 누적 여부
 	UPROPERTY(EditAnywhere)
-	int32 ItemMaxAmount;
-
-	//셀 수 있는 아이템인가
-	UPROPERTY(EditAnywhere)
-	bool bIsCountable;
+	bool bCounterble;
 
 };

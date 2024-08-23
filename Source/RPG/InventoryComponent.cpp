@@ -2,8 +2,6 @@
 
 
 #include "InventoryComponent.h"
-#include "ItemBase.h"
-#include "ItemDrop.h"
 #include "DropItem.h"
 
 // Sets default values for this component's properties
@@ -36,60 +34,56 @@ void UInventoryComponent::TickComponent(float DeltaTime, ELevelTick TickType, FA
 	// ...
 }
 
-void UInventoryComponent::AddItem(TArray<ADropItem*> Items)
+int32 UInventoryComponent::FindSlotIndex(ADropItem* AddItem)
 {
-	for (auto* Item : Items) {
-		if (Inventory.Contains(Item->GetItemDrop().ItemID)) { //contain 안됨
-			if (auto* ItemBase = Cast<AItemBase>(Item)) { //cast 의미 없음
-				if (Item->GetItemDrop().bIsCountable) {
-					if (GetInventoryItemAmount(Item) <= GetInventoryItem(Item)->ItemMaxAmount) {
-						GetInventoryItem(Item)->ItemCurrentAmount++;
-					}
-					else {
-						Inventory[Inventory.Num()] = Item;
-					}
-				}
-				else {
-					Inventory[Inventory.Num()] = Item;
-				}
+	int32 Index = -1;
+	for (int32 i = 0; i < Inventory.Num(); i++) {
+		if (AddItem->DropItemData.ItemID == Inventory[i].ItemTableID) {
+			return i;
+		}
+	}
+	
+	return INDEX_NONE;
+}
+
+void UInventoryComponent::StackItem(ADropItem* AddItem, int32 SlotIndex)
+{
+	if (Inventory.IsValidIndex(SlotIndex)) {
+		FInventoryItemData& SlotItemData = Inventory[SlotIndex];
+
+		SlotItemData.ItemAmount += AddItem->DropItemData.Amount;
+	}
+}
+
+void UInventoryComponent::AddItem(ADropItem* AddItem)
+{
+	if (AddItem) {
+		if (AddItem->DropItemData.bCounterble) {
+			int32 SlotIndex = FindSlotIndex(AddItem);
+			if (SlotIndex != INDEX_NONE) {
+				StackItem(AddItem, SlotIndex);
 			}
 		}
 		else {
+			if (MaxSlotCounter > CurrentSlotCounter) {
+				FInventoryItemData NewInventoryItemData;
 
-		}
-	}
-}
+				NewInventoryItemData.ItemUID = MakeUID();
+				NewInventoryItemData.ItemTableID = AddItem->DropItemData.ItemID;
+				NewInventoryItemData.ItemAmount = AddItem->DropItemData.Amount;
+				NewInventoryItemData.bCounterble = AddItem->DropItemData.bCounterble;
 
-void UInventoryComponent::UseItem(ADropItem* InventoryItem, int32 Quantity)
-{
-	if (GetInventoryItem(InventoryItem)->ItemMaxAmount <= Quantity && Quantity < 0) {
-		for (int32 UseItemCount = 0; UseItemCount < Quantity; UseItemCount++) {
-			if (auto* Item = Cast<AItemBase>(InventoryItem)) {
-				Item->Use();
+				Inventory.Add(NewInventoryItemData);
+			}
+			else {
+				UE_LOG(LogTemp, Warning, TEXT("Inventory Is Full"));
 			}
 		}
+		
 	}
 }
 
-void UInventoryComponent::RemoveItem(ADropItem* InventoryItem, int32 Quantity)
+int32 UInventoryComponent::MakeUID()
 {
-	if (GetInventoryItem(InventoryItem)->ItemMaxAmount <= Quantity && Quantity < 0) {
-		for (int32 RemoveItemCount = 0; RemoveItemCount < Quantity; RemoveItemCount++) {
-			GetInventoryItem(InventoryItem)->ItemCurrentAmount--;
-		}
-	}
-}
-
-
-int32 UInventoryComponent::GetInventoryItemAmount(ADropItem* Item)
-{
-	if (Item)
-		return Item->GetItemDrop().DropItemAmount;
-}
-
-FInventoryItemData* UInventoryComponent::GetInventoryItem(ADropItem* Item)
-{
-	if (auto* InventoryItem = Cast<FInventoryItemData>(Item))
-		return InventoryItem;
-	return nullptr;
+	return UIDCounter++;
 }
