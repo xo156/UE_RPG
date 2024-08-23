@@ -1,0 +1,44 @@
+// Fill out your copyright notice in the Description page of Project Settings.
+
+#pragma once
+
+#include "CoreMinimal.h"
+#include "Blueprint/UserWidget.h"
+#include "InventorySlotWidget.generated.h"
+
+/**
+ * 
+ */
+UCLASS()
+class RPG_API UInventorySlotWidget : public UUserWidget
+{
+	GENERATED_BODY()
+
+public:
+	virtual void NativeConstruct() override;
+
+	UFUNCTION()
+	void OnThumbnailHovered();
+
+	UFUNCTION()
+	void OnThumbnailUnhovered();
+
+	void RefreshSlot(int32 SlotIndex, struct FInventoryItemData InventoryItemData);
+	void ClearSlot();
+
+	UPROPERTY(meta = (BindWidget))
+	class UButton* Thumbnail;
+	
+	UPROPERTY(meta = (BindWidget))
+	class UTextBlock* AmountText;
+
+	int32 CurrentSlotIndex;
+	FInventoryItemData CurrentInventoryItemData;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item")
+	UDataTable* ItemDataTable;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item")
+	TSubclassOf<class UInventoryTooltip> InventoryTooltipClass;
+	class UInventoryTooltip* InventoryTooltipInstance;
+};

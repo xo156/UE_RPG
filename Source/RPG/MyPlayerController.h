@@ -44,6 +44,7 @@ protected:
 	void Dodge();
 	void LockOnTarget();
 	void RootItem();
+	void OpenInventory();
 	void TEST();
 
 protected:

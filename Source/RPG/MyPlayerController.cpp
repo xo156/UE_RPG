@@ -142,6 +142,13 @@ void AMyPlayerController::RootItem()
 	}
 }
 
+void AMyPlayerController::OpenInventory()
+{
+	if (GetCharacter() != nullptr) {
+		GetCharacter()->OpenInventory();
+	}
+}
+
 void AMyPlayerController::TEST()
 {
 	if (GetCharacter() != nullptr) {

@@ -95,6 +95,7 @@ public:
 	void LockOnCamera(float DeltaTime);
 	void UnLockOnTarget();
 	void RootItem();
+	void OpenInventory();
 	UFUNCTION()
 	void OnRootItemBoxOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComponent, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 	UFUNCTION()
@@ -221,4 +222,6 @@ private:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Inventory", meta = (AllowPrivateAccess = "true"))
 	class UBoxComponent* RootItemBoxComponent;
 	TArray<class ADropItem*> OverlapItems;
+
+
 };

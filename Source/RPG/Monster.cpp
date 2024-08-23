@@ -183,7 +183,7 @@ float AMonster::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, 
 
 						if (ADropItem* DropItemActor = GetWorld()->SpawnActor<ADropItem>(DropItemClass, SpawnLocation, SpawnRotation)) {
 							FDropItemData DropItemData;
-							DropItemData.ItemID =DropRate.ItemID;
+							DropItemData.ItemID = DropRate.ItemID;
 							DropItemData.Amount = DropAmount;
 							DropItemData.bCounterble = DropRate.bCounterble;
 
@@ -192,7 +192,7 @@ float AMonster::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, 
 						}
 					}
 					else {
-						UE_LOG(LogTemp, Warning, TEXT("Item ID %d did not pass the rate check."),DropRate.ItemID);
+						UE_LOG(LogTemp, Warning, TEXT("Item ID %d did not pass the rate check."), DropRate.ItemID);
 					}
 				}
 				else {

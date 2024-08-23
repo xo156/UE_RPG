@@ -30,11 +30,10 @@ public:
 	void AddItem(class ADropItem* AddItem);
 	int32 MakeUID();
 
-	//void CreateInventoryWidget();
-	//void OpenInventoryWidget();
-	//void CloseInventoryWidget();
+	void CreateInventoryWidget();
+	void OpenInventoryWidget();
+	void CloseInventoryWidget();
 
-private:
 	FInventoryItemData InventoryItemData;
 	TArray<FInventoryItemData> Inventory;
 
