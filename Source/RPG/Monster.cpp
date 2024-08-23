@@ -179,7 +179,7 @@ float AMonster::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, 
 						int32 DropAmount = FMath::RandRange(FoundItem->MinAmount, FoundItem->MaxAmount);
 
 						FVector SpawnLocation = GetActorLocation();
-						FRotator SpawnRotation = FRotator::ZeroRotator;
+						FRotator SpawnRotation = GetActorRotation();
 
 						if (ADropItem* DropItemActor = GetWorld()->SpawnActor<ADropItem>(DropItemClass, SpawnLocation, SpawnRotation)) {
 							FDropItemData DropItemData;
@@ -210,6 +210,7 @@ void AMonster::ApplyDamageToActor(AActor* ActorToDamage)
 	float Damage = MonsterStatus.Damage;
 	FDamageEvent DamageEvent;
 	ActorToDamage->TakeDamage(Damage, DamageEvent, GetInstigatorController(), this);
+	OverlapActors.Empty();
 }
 
 UBehaviorTree* AMonster::GetBehaviorTree() const

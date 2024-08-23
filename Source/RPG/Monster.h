@@ -27,6 +27,7 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Status")
 	TArray<FDropRate> DropRates;
+	//UDataTable* DropRates;
 
 	float UseHP(float HPCost) {
 		if (HPCost >= 0) {
