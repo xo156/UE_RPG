@@ -38,9 +38,6 @@ void UInventoryWidget::CreateInventory(UInventoryComponent* InventoryComponent)
             InventorySlots->AddChildToUniformGrid(InventorySlotWidgetInstance, Index / 6, Index % 6);
 
             UE_LOG(LogTemp, Log, TEXT("Successfully added slot at index %d"), Index);
-
-            FLinearColor RandomColor = FLinearColor::MakeRandomColor();
-            InventorySlotWidgetInstance->SetColorAndOpacity(RandomColor);
         }
         else {
             UE_LOG(LogTemp, Error, TEXT("Failed to create InventorySlotWidgetInstance at index %d"), Index);
@@ -67,14 +64,15 @@ void UInventoryWidget::UpdateInventory(UInventoryComponent* InventoryComponent)
         return;
     }
 
+    UE_LOG(LogTemp, Log, TEXT("Starting to update inventory with %d slots"), InventoryComponent->MaxSlotCounter);
+
 	for (int32 Index = 0; Index < InventoryComponent->MaxSlotCounter; Index++) {
 		InventorySlotWidgetInstance = Cast<UInventorySlotWidget>(InventorySlots->GetChildAt(Index));
 		if (InventorySlotWidgetInstance->CurrentInventoryItemData.ItemAmount > 0) {
-			InventorySlotWidgetInstance->RefreshSlot(Index, InventorySlotWidgetInstance->CurrentInventoryItemData);
+			InventorySlotWidgetInstance->RefreshSlot(InventorySlotWidgetInstance->CurrentInventoryItemData);
 		}
 		else {
 			InventorySlotWidgetInstance->ClearSlot();
 		}
-
 	}
 }

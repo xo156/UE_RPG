@@ -75,14 +75,15 @@ AMyCharacter::AMyCharacter() {
 void AMyCharacter::BeginPlay() {
 	Super::BeginPlay();
 
-	//TODO: 지금은 시작할때 장착하지만 나중에는 바꿔보자
 	if (BareHand) {
 		EquipWeapon(BareHand);
 	}
 
 	SetupWidget();
 
-	Inventory->CreateInventoryWidget();
+	if (Inventory) {
+		Inventory->CreateInventoryWidget();
+	}
 }
 
 // Called every frame
@@ -361,6 +362,7 @@ void AMyCharacter::RootItem()
 				}
 			}
 			for (ADropItem* DestroyItem : ItemsToRemove) {
+				ItemsToRemove.Remove(DestroyItem);
 				DestroyItem->Destroy();
 			}
 		}
@@ -376,16 +378,11 @@ void AMyCharacter::RootItem()
 void AMyCharacter::OpenInventory()
 {
 	if (Inventory) {
-		if (!Inventory->InventoryWidget) {
-			Inventory->CreateInventoryWidget();
+		if (Inventory->bIsOpen) {
+			Inventory->CloseInventoryWidget();
 		}
 		else {
-			if (Inventory->bIsOpen) {
-				Inventory->CloseInventoryWidget();
-			}
-			else {
-				Inventory->OpenInventoryWidget();
-			}
+			Inventory->OpenInventoryWidget();
 		}
 	}
 }
@@ -542,7 +539,7 @@ void AMyCharacter::TEST()
 	if (Inventory) {
 		UE_LOG(LogTemp, Log, TEXT("----- Inventory Items -----"));
 
-		for (const FInventoryItemData& Item : Inventory->Inventory) {
+		for (const FInventoryItemData& Item : Inventory->InventoryItems) {
 			UE_LOG(LogTemp, Log, TEXT("UID: %d, ItemID: %d, Amount: %d, bCounterble: %s"),
 				   Item.ItemUID,
 				   Item.ItemTableID,

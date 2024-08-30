@@ -23,7 +23,7 @@ public:
 	UFUNCTION()
 	void OnThumbnailUnhovered();
 
-	void RefreshSlot(int32 SlotIndex, struct FInventoryItemData InventoryItemData);
+	void RefreshSlot(struct FInventoryItemData InventoryItemData);
 	void ClearSlot();
 
 	UPROPERTY(meta = (BindWidget))
@@ -32,7 +32,6 @@ public:
 	UPROPERTY(meta = (BindWidget))
 	class UTextBlock* AmountText;
 
-	int32 CurrentSlotIndex;
 	FInventoryItemData CurrentInventoryItemData;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item")

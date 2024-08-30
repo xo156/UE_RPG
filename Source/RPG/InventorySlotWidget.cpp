@@ -13,6 +13,12 @@ void UInventorySlotWidget::NativeConstruct()
 	Super::NativeConstruct();
 
 	if (Thumbnail) {
+		FLinearColor RedColor(1.0f, 0.0f, 0.0f, 1.0f);
+		FButtonStyle ButtonStyle = Thumbnail->WidgetStyle;
+		FSlateBrush RedBrush;
+		RedBrush.TintColor = FSlateColor(RedColor);
+		Thumbnail->WidgetStyle = ButtonStyle;
+
 		Thumbnail->OnHovered.AddDynamic(this, &UInventorySlotWidget::OnThumbnailHovered);
 		Thumbnail->OnUnhovered.AddDynamic(this, &UInventorySlotWidget::OnThumbnailUnhovered);
 	}
@@ -36,11 +42,10 @@ void UInventorySlotWidget::OnThumbnailUnhovered()
 	}
 }
 
-void UInventorySlotWidget::RefreshSlot(int32 SlotIndex, FInventoryItemData InventoryItemData)
+void UInventorySlotWidget::RefreshSlot(FInventoryItemData InventoryItemData)
 {
-	UE_LOG(LogTemp, Log, TEXT("Refreshing slot with SlotIndex: %d, ItemID: %d, Amount: %d"), SlotIndex, InventoryItemData.ItemTableID, InventoryItemData.ItemAmount);
+	UE_LOG(LogTemp, Log, TEXT("Refreshing slot with SlotIndex: ItemID: %d, Amount: %d"), InventoryItemData.ItemTableID, InventoryItemData.ItemAmount);
 
-	CurrentSlotIndex = SlotIndex;
 	CurrentInventoryItemData = InventoryItemData;
 
 	if (ItemDataTable) {
@@ -48,7 +53,9 @@ void UInventorySlotWidget::RefreshSlot(int32 SlotIndex, FInventoryItemData Inven
 		FItemData* ItemData = ItemDataTable->FindRow<FItemData>(FName(*FString::FromInt(CurrentInventoryItemData.ItemTableID)), ContextString);
 		if (ItemData) {
 			FButtonStyle ButtonStyle = Thumbnail->WidgetStyle;
-			ButtonStyle.Normal.SetResourceObject(ItemData->ItemIcon);
+			FSlateBrush NewBrush;
+			NewBrush.SetResourceObject(ItemData->ItemIcon);
+			ButtonStyle.SetNormal(NewBrush);
 			Thumbnail->SetStyle(ButtonStyle);
 
 			AmountText->SetText(FText::AsNumber(InventoryItemData.ItemAmount));
@@ -61,8 +68,15 @@ void UInventorySlotWidget::RefreshSlot(int32 SlotIndex, FInventoryItemData Inven
 
 void UInventorySlotWidget::ClearSlot()
 {
+	if (Thumbnail == nullptr) {
+		UE_LOG(LogTemp, Error, TEXT("Thumbnail is null"));
+		return;
+	}	
+	
 	FButtonStyle ButtonStyle = Thumbnail->WidgetStyle;
-	ButtonStyle.Normal.SetResourceObject(nullptr);
+	FSlateBrush NewBrush;
+	NewBrush.SetResourceObject(nullptr);
+	ButtonStyle.SetNormal(NewBrush);
 	Thumbnail->SetStyle(ButtonStyle);
 
 	AmountText->SetText(FText::AsNumber(0));

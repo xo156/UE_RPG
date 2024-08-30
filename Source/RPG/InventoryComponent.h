@@ -35,16 +35,15 @@ public:
 	void CloseInventoryWidget();
 
 	FInventoryItemData InventoryItemData;
-	TArray<FInventoryItemData> Inventory;
+	TArray<FInventoryItemData> InventoryItems;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UI")
 	TSubclassOf<class UInventoryWidget> InventoryWidgetClass;
-
 	class UInventoryWidget* InventoryWidget;
 
 	int32 MaxSlotCounter;
 	int32 CurrentSlotCounter;
 	int32 UIDCounter;
 
-	bool bIsOpen = false;
+	bool bIsOpen;
 };
