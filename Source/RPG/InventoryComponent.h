@@ -27,7 +27,7 @@ public:
 
 	int32 FindSlotIndex(class ADropItem* AddItem);
 	void StackItem(class ADropItem* AddItem, int32 SlotIndex);
-	void AddItem(class ADropItem* AddItem);
+	bool AddItem(class ADropItem* AddItem);
 	int32 MakeUID();
 
 	void CreateInventoryWidget();
@@ -37,9 +37,14 @@ public:
 	FInventoryItemData InventoryItemData;
 	TArray<FInventoryItemData> Inventory;
 
-	int32 MaxSlotCounter = 20;
-	int32 CurrentSlotCounter = 0;
-	int32 UIDCounter = 0;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UI")
+	TSubclassOf<class UInventoryWidget> InventoryWidgetClass;
+
+	class UInventoryWidget* InventoryWidget;
+
+	int32 MaxSlotCounter;
+	int32 CurrentSlotCounter;
+	int32 UIDCounter;
 
 	bool bIsOpen = false;
 };

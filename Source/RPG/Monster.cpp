@@ -12,6 +12,7 @@
 #include "Engine/DamageEvents.h"
 #include "ItemData.h"
 #include "DropItem.h"
+#include "BrainComponent.h"
 
 // Sets default values
 AMonster::AMonster()
@@ -24,6 +25,7 @@ AMonster::AMonster()
 	bUseControllerRotationYaw = false;
 	bUseControllerRotationRoll = false;
 
+	GetCharacterMovement()->bOrientRotationToMovement = true;
 	GetCharacterMovement()->MaxWalkSpeed = 500.f;
 	GetCapsuleComponent()->SetCollisionProfileName(TEXT("Enemy"));
 	GetMesh()->SetCollisionProfileName(TEXT("NoCollision"));
@@ -112,30 +114,50 @@ void AMonster::WidgetFaceToPlayer()
 	}
 }
 
+void AMonster::MonsterAttackStart()
+{
+	GetCharacterMovement()->bOrientRotationToMovement = false;
+}
+
 void AMonster::MonsterAttack()
 {
 	if (UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance()) {
 		if (MonsterAttackMontage) {
-			bIsMonsterAttack = true;
-			GetCharacterMovement()->DisableMovement();
-			GetCharacterMovement()->bOrientRotationToMovement = false;
+			if (!bIsMonsterAttack) {
+				bIsMonsterAttack = true;
+				UE_LOG(LogTemp, Log, TEXT("Montage_Play is called"));
+				AnimInstance->Montage_Play(MonsterAttackMontage);
 
-			AnimInstance->Montage_Play(MonsterAttackMontage);
-
-			FOnMontageEnded MontageEndedDelegate;
-			MontageEndedDelegate.BindUObject(this, &AMonster::OnAttackMontageEnd);
-			AnimInstance->Montage_SetEndDelegate(MontageEndedDelegate, MonsterAttackMontage);
-			
+				FOnMontageEnded MontageEndedDelegate;
+				MontageEndedDelegate.BindUObject(this, &AMonster::OnAttackMontageEnded);
+				AnimInstance->Montage_SetEndDelegate(MontageEndedDelegate, MonsterAttackMontage);
+			}
+			else {
+				UE_LOG(LogTemp, Warning, TEXT("Monster is already attacking"));
+			}
 		}
+		else {
+			UE_LOG(LogTemp, Warning, TEXT("MonsterAttackMontage is nullptr"));
+		}
+	}
+	else {
+		UE_LOG(LogTemp, Warning, TEXT("AnimInstance is nullptr"));
 	}
 }
 
-void AMonster::OnAttackMontageEnd(UAnimMontage* Montage, bool bInterrupted)
+void AMonster::MonsterAttackEnd()
+{
+	UE_LOG(LogTemp, Warning, TEXT("AMonster::MonsterAttackEnd()"));
+
+	GetCharacterMovement()->bOrientRotationToMovement = true;
+	bIsMonsterAttack = false;
+	OverlapActors.Empty();
+}
+
+void AMonster::OnAttackMontageEnded(UAnimMontage* Montage, bool bInterrupted)
 {
 	if (Montage == MonsterAttackMontage) {
-		bIsMonsterAttack = false;
-		GetCharacterMovement()->SetMovementMode(MOVE_Walking);
-		GetCharacterMovement()->bOrientRotationToMovement = true;
+		MonsterAttackEnd();
 	}
 }
 
@@ -207,10 +229,11 @@ float AMonster::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, 
 
 void AMonster::ApplyDamageToActor(AActor* ActorToDamage)
 {
-	float Damage = MonsterStatus.Damage;
-	FDamageEvent DamageEvent;
-	ActorToDamage->TakeDamage(Damage, DamageEvent, GetInstigatorController(), this);
-	OverlapActors.Empty();
+	if (ActorToDamage) {
+		float Damage = MonsterStatus.Damage;
+		FDamageEvent DamageEvent;
+		ActorToDamage->TakeDamage(Damage, DamageEvent, GetInstigatorController(), this);
+	}
 }
 
 UBehaviorTree* AMonster::GetBehaviorTree() const

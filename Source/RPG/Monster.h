@@ -55,8 +55,10 @@ public:
 
 	void WidgetFaceToPlayer();
 
+	void MonsterAttackStart();
 	void MonsterAttack();
-	void OnAttackMontageEnd(class UAnimMontage* Montage, bool bInterrupted);
+	void MonsterAttackEnd();
+	void OnAttackMontageEnded(UAnimMontage* Montage, bool bInterrupted);
 	UFUNCTION()
 	void OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, 
 						 UPrimitiveComponent* OtherComponent, int32 OtherBodyIndex, 

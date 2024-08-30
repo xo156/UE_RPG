@@ -18,6 +18,7 @@
 #include "InventoryComponent.h"
 #include "DropItem.h"
 #include "Components/BoxComponent.h"
+#include "InventoryWidget.h"
 
 // Sets default values
 AMyCharacter::AMyCharacter() {
@@ -59,7 +60,10 @@ AMyCharacter::AMyCharacter() {
 	//위젯
 	PlayerWidgetClass = UPlayerWidget::StaticClass();
 
-	//Inventory = CreateDefaultSubobject<UInventoryComponent>(TEXT("InventoryComponent"));
+	//인벤토리
+	Inventory = CreateDefaultSubobject<UInventoryComponent>(TEXT("InventoryComponent"));
+
+	//아이템 줍기
 	RootItemBoxComponent = CreateDefaultSubobject<UBoxComponent>(TEXT("RootItemBox"));
 	RootItemBoxComponent->SetupAttachment(RootComponent);
 	RootItemBoxComponent->SetCollisionProfileName(TEXT("OverlapAllDynamic"));
@@ -77,6 +81,8 @@ void AMyCharacter::BeginPlay() {
 	}
 
 	SetupWidget();
+
+	Inventory->CreateInventoryWidget();
 }
 
 // Called every frame
@@ -336,17 +342,52 @@ void AMyCharacter::UnLockOnTarget()
 
 void AMyCharacter::RootItem()
 {
-	if (Inventory && OverlapItems.Num() > 0) {
-		for (ADropItem* Item : OverlapItems) {
-			Inventory->AddItem(Item);
+	if (Inventory) {
+		TArray<ADropItem*> ItemsToRemove;
+		UE_LOG(LogTemp, Log, TEXT("RootItem called. OverlapItems Count: %d"), OverlapItems.Num());
+
+		if (OverlapItems.Num() > 0) {
+			for (ADropItem* Item : OverlapItems) {
+				if (Item) {
+					UE_LOG(LogTemp, Log, TEXT("Adding item with ID: %d to inventory"), Item->DropItemData.ItemID);
+					bool bAdded = Inventory->AddItem(Item);
+					if (!bAdded) {
+						UE_LOG(LogTemp, Warning, TEXT("Failed to add item with ID: %d to inventory"), Item->DropItemData.ItemID);
+					}
+					ItemsToRemove.Add(Item);
+				}
+				else {
+					UE_LOG(LogTemp, Warning, TEXT("Overlap item is null."));
+				}
+			}
+			for (ADropItem* DestroyItem : ItemsToRemove) {
+				DestroyItem->Destroy();
+			}
 		}
+		else {
+			UE_LOG(LogTemp, Warning, TEXT("No items to root."));
+		}
+	}
+	else {
+		UE_LOG(LogTemp, Error, TEXT("Inventory component is null."));
 	}
 }
 
 void AMyCharacter::OpenInventory()
 {
-	
-
+	if (Inventory) {
+		if (!Inventory->InventoryWidget) {
+			Inventory->CreateInventoryWidget();
+		}
+		else {
+			if (Inventory->bIsOpen) {
+				Inventory->CloseInventoryWidget();
+			}
+			else {
+				Inventory->OpenInventoryWidget();
+			}
+		}
+	}
 }
 
 void AMyCharacter::OnRootItemBoxOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComponent, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
@@ -355,7 +396,7 @@ void AMyCharacter::OnRootItemBoxOverlapBegin(UPrimitiveComponent* OverlappedComp
 		if (auto* Item = Cast<ADropItem>(OtherActor)) {
 			if (!OverlapItems.Contains(Item)) {
 				OverlapItems.Add(Item);
-				GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Blue, TEXT("Item Overlaped"));
+				UE_LOG(LogTemp, Log, TEXT("Item added to overlap list."));
 			}
 		}
 	}
@@ -363,8 +404,13 @@ void AMyCharacter::OnRootItemBoxOverlapBegin(UPrimitiveComponent* OverlappedComp
 
 void AMyCharacter::OnRootItemBoxOverlapEnd(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComponent, int32 OtherBodyIndex)
 {
-	if (OverlapItems.Num() > 0) {
-		OverlapItems.Empty();
+	if (OtherActor && OtherActor->IsA(ADropItem::StaticClass())) {
+		if (auto* Item = Cast<ADropItem>(OtherActor)) {
+			if (OverlapItems.Contains(Item)) {
+				OverlapItems.Remove(Item);
+				UE_LOG(LogTemp, Log, TEXT("Item removed from overlap list."));
+			}
+		}
 	}
 }
 
@@ -492,16 +538,29 @@ void AMyCharacter::SetupStimulusSource()
 }
 
 void AMyCharacter::TEST()
-{
-	/*CharacterStatus.UseStamina(50.f);
-	CharacterStatus.UseMP(3.f);
-	CharacterStatus.UseHP(5.f);*/
-	
-	/*if (Inventory) {
-		for (AItemBase* Item : Inventory->InventoryItems) {
-			UE_LOG(LogTemp, Log, TEXT("Inventory Item: %s"), *Item->GetName());
+{	
+	if (Inventory) {
+		UE_LOG(LogTemp, Log, TEXT("----- Inventory Items -----"));
+
+		for (const FInventoryItemData& Item : Inventory->Inventory) {
+			UE_LOG(LogTemp, Log, TEXT("UID: %d, ItemID: %d, Amount: %d, bCounterble: %s"),
+				   Item.ItemUID,
+				   Item.ItemTableID,
+				   Item.ItemAmount,
+				   Item.bCounterble ? TEXT("True") : TEXT("False")
+			);
 		}
-	}*/
+
+		UE_LOG(LogTemp, Log, TEXT("----------------------------"));
+	}
+
+	if (OverlapItems.Num() > 0) {
+		UE_LOG(LogTemp, Log, TEXT("Current OverlapItems Count : %d"), OverlapItems.Num());
+
+	}
+	else {
+		UE_LOG(LogTemp, Error, TEXT("Current OverlapItems Count is Zero"));
+	}
 
 	GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Cyan, TEXT("TEST"));
 }

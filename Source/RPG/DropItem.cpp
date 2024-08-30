@@ -26,11 +26,17 @@ void ADropItem::BeginPlay()
 {
 	Super::BeginPlay();
 
-	//UE_LOG(LogTemp, Warning, TEXT("DropItem BeginPlay: Location: %s"), *GetActorLocation().ToString());
-	//UE_LOG(LogTemp, Warning, TEXT("DropItemMesh Visibility: %s"), DropItemMesh->IsVisible() ? TEXT("Visible") : TEXT("Not Visible"));
+	FDropItemData BeginData;
+	BeginData.Amount = 1;
+	BeginData.bCounterble = true;
+	BeginData.ItemID = 2001;
+	SetDropItem(BeginData);
 
 	UE_LOG(LogTemp, Warning, TEXT("ADropItem BeginPlay: Location: %s"), *GetActorLocation().ToString());
 
+	UE_LOG(LogTemp, Log, TEXT("DropItemData initialized with ItemID: %d, Amount: %d, IsCountable: %s"),
+		   DropItemData.ItemID, DropItemData.Amount,
+		   DropItemData.bCounterble ? TEXT("True") : TEXT("False"));
 }
 
 // Called every frame
@@ -46,6 +52,9 @@ void ADropItem::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
 	UE_LOG(LogTemp, Warning, TEXT("ADropItem EndPlay: Reason: %d"), (int32)EndPlayReason);
 
+	if (DropItemData.Amount > 0) {
+		UE_LOG(LogTemp, Warning, TEXT("Item with ID: %d, Amount: %d is about to be destroyed."), DropItemData.ItemID, DropItemData.Amount);
+	}
 }
 
 void ADropItem::SetDropItem(const FDropItemData& NewDropItemData)

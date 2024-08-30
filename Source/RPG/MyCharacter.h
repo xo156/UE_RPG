@@ -218,10 +218,9 @@ private:
 	FVector CurrentLocation;
 
 	//æ∆¿Ã≈€
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Inventory", meta = (AllowPrivateAccess = "true"))
 	class UInventoryComponent* Inventory;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Inventory", meta = (AllowPrivateAccess = "true"))
 	class UBoxComponent* RootItemBoxComponent;
 	TArray<class ADropItem*> OverlapItems;
-
-
 };

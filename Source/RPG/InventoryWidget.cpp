@@ -14,30 +14,66 @@ void UInventoryWidget::NativeConstruct()
 
 void UInventoryWidget::CreateInventory(UInventoryComponent* InventoryComponent)
 {
-	if (!InventoryComponent || !InventorySlots || !InventorySlotWidgetClass)
-		return;
+    if (!InventoryComponent) {
+        UE_LOG(LogTemp, Warning, TEXT("InventoryComponent is null."));
+        return;
+    }
 
-	for (int32 Index = 0; Index < InventoryComponent->MaxSlotCounter; Index++) {
-		UInventorySlotWidget* InventorySlot = CreateWidget<UInventorySlotWidget>(this, InventorySlotWidgetClass);
-		if (InventorySlot) {
-			InventorySlots->AddChildToUniformGrid(InventorySlot, Index / 6, Index % 6);
-		}
-	}
+    if (!InventorySlots) {
+        UE_LOG(LogTemp, Warning, TEXT("InventorySlots is null."));
+        return;
+    }
 
+    if (!InventorySlotWidgetClass) {
+        UE_LOG(LogTemp, Warning, TEXT("InventorySlotWidgetClass is null."));
+        return;
+    }
+
+    UE_LOG(LogTemp, Log, TEXT("Starting to create inventory with %d slots"), InventoryComponent->MaxSlotCounter);
+
+    for (int32 Index = 0; Index < InventoryComponent->MaxSlotCounter; Index++) {
+        InventorySlotWidgetInstance = CreateWidget<UInventorySlotWidget>(GetWorld(), InventorySlotWidgetClass);
+
+        if (InventorySlotWidgetInstance) {
+            InventorySlots->AddChildToUniformGrid(InventorySlotWidgetInstance, Index / 6, Index % 6);
+
+            UE_LOG(LogTemp, Log, TEXT("Successfully added slot at index %d"), Index);
+
+            FLinearColor RandomColor = FLinearColor::MakeRandomColor();
+            InventorySlotWidgetInstance->SetColorAndOpacity(RandomColor);
+        }
+        else {
+            UE_LOG(LogTemp, Error, TEXT("Failed to create InventorySlotWidgetInstance at index %d"), Index);
+        }
+    }
+
+    UE_LOG(LogTemp, Log, TEXT("Inventory creation completed."));
 }
 
 void UInventoryWidget::UpdateInventory(UInventoryComponent* InventoryComponent)
 {
-	if (!InventoryComponent || !InventorySlots || !InventorySlotWidgetClass)
-		return;
+    if (!InventoryComponent) {
+        UE_LOG(LogTemp, Warning, TEXT("InventoryComponent is null."));
+        return;
+    }
+
+    if (!InventorySlots) {
+        UE_LOG(LogTemp, Warning, TEXT("InventorySlots is null."));
+        return;
+    }
+
+    if (!InventorySlotWidgetClass) {
+        UE_LOG(LogTemp, Warning, TEXT("InventorySlotWidgetClass is null."));
+        return;
+    }
 
 	for (int32 Index = 0; Index < InventoryComponent->MaxSlotCounter; Index++) {
-		UInventorySlotWidget* InventorySlot = Cast<UInventorySlotWidget>(InventorySlots->GetChildAt(Index));
-		if (InventorySlot->CurrentInventoryItemData.ItemAmount > 0) {
-			InventorySlot->RefreshSlot(Index, InventorySlot->CurrentInventoryItemData);
+		InventorySlotWidgetInstance = Cast<UInventorySlotWidget>(InventorySlots->GetChildAt(Index));
+		if (InventorySlotWidgetInstance->CurrentInventoryItemData.ItemAmount > 0) {
+			InventorySlotWidgetInstance->RefreshSlot(Index, InventorySlotWidgetInstance->CurrentInventoryItemData);
 		}
 		else {
-			InventorySlot->ClearSlot();
+			InventorySlotWidgetInstance->ClearSlot();
 		}
 
 	}

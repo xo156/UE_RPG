@@ -28,4 +28,5 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Inventory")
 	TSubclassOf<class UInventorySlotWidget> InventorySlotWidgetClass;
+	class UInventorySlotWidget* InventorySlotWidgetInstance;
 };

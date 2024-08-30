@@ -38,6 +38,8 @@ void UInventorySlotWidget::OnThumbnailUnhovered()
 
 void UInventorySlotWidget::RefreshSlot(int32 SlotIndex, FInventoryItemData InventoryItemData)
 {
+	UE_LOG(LogTemp, Log, TEXT("Refreshing slot with SlotIndex: %d, ItemID: %d, Amount: %d"), SlotIndex, InventoryItemData.ItemTableID, InventoryItemData.ItemAmount);
+
 	CurrentSlotIndex = SlotIndex;
 	CurrentInventoryItemData = InventoryItemData;
 
@@ -50,6 +52,9 @@ void UInventorySlotWidget::RefreshSlot(int32 SlotIndex, FInventoryItemData Inven
 			Thumbnail->SetStyle(ButtonStyle);
 
 			AmountText->SetText(FText::AsNumber(InventoryItemData.ItemAmount));
+
+			Thumbnail->SetVisibility(ESlateVisibility::Visible);
+			AmountText->SetVisibility(ESlateVisibility::Visible);
 		}
 	}
 }
@@ -57,9 +62,11 @@ void UInventorySlotWidget::RefreshSlot(int32 SlotIndex, FInventoryItemData Inven
 void UInventorySlotWidget::ClearSlot()
 {
 	FButtonStyle ButtonStyle = Thumbnail->WidgetStyle;
-	//TODO: visibilty¸¦ hiddenÀ¸·Î
+	ButtonStyle.Normal.SetResourceObject(nullptr);
+	Thumbnail->SetStyle(ButtonStyle);
 
-	AmountText->SetText(FText::AsNumber(00));
+	AmountText->SetText(FText::AsNumber(0));
+
+	Thumbnail->SetVisibility(ESlateVisibility::Hidden);
+	AmountText->SetVisibility(ESlateVisibility::Hidden);
 }
-
-

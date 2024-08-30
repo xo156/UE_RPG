@@ -59,6 +59,8 @@ void AMyPlayerController::SetupInputComponent() {
 		
 		EnHancedInputComponent->BindAction(RootItemAction, ETriggerEvent::Started, this, &AMyPlayerController::RootItem);
 		
+		EnHancedInputComponent->BindAction(InventoryAction, ETriggerEvent::Started, this, &AMyPlayerController::OpenInventory);
+
 		EnHancedInputComponent->BindAction(TESTSTATUSAction, ETriggerEvent::Started, this, &AMyPlayerController::TEST);
 	}
 	

@@ -3,6 +3,8 @@
 
 #include "InventoryComponent.h"
 #include "DropItem.h"
+#include "InventoryWidget.h"
+#include "Kismet/GameplayStatics.h"
 
 // Sets default values for this component's properties
 UInventoryComponent::UInventoryComponent()
@@ -11,6 +13,9 @@ UInventoryComponent::UInventoryComponent()
 	// off to improve performance if you don't need them.
 	PrimaryComponentTick.bCanEverTick = true;
 
+	MaxSlotCounter = 20;
+	CurrentSlotCounter = 0;
+	UIDCounter = 0;
 	// ...
 }
 
@@ -55,35 +60,94 @@ void UInventoryComponent::StackItem(ADropItem* AddItem, int32 SlotIndex)
 	}
 }
 
-void UInventoryComponent::AddItem(ADropItem* AddItem)
+bool UInventoryComponent::AddItem(ADropItem* AddItem)
 {
-	if (AddItem) {
-		if (AddItem->DropItemData.bCounterble) {
-			int32 SlotIndex = FindSlotIndex(AddItem);
-			if (SlotIndex != INDEX_NONE) {
-				StackItem(AddItem, SlotIndex);
-			}
-		}
-		else {
-			if (MaxSlotCounter > CurrentSlotCounter) {
-				FInventoryItemData NewInventoryItemData;
+    if (AddItem) {
+        if (AddItem->DropItemData.bCounterble) {
+            int32 SlotIndex = FindSlotIndex(AddItem);
+            if (SlotIndex != INDEX_NONE) {
+                StackItem(AddItem, SlotIndex);
 
-				NewInventoryItemData.ItemUID = MakeUID();
-				NewInventoryItemData.ItemTableID = AddItem->DropItemData.ItemID;
-				NewInventoryItemData.ItemAmount = AddItem->DropItemData.Amount;
-				NewInventoryItemData.bCounterble = AddItem->DropItemData.bCounterble;
+                FInventoryItemData NewInventoryItemData;
 
-				Inventory.Add(NewInventoryItemData);
-			}
-			else {
-				UE_LOG(LogTemp, Warning, TEXT("Inventory Is Full"));
-			}
-		}
-		
-	}
+                NewInventoryItemData.ItemUID = MakeUID();
+                NewInventoryItemData.ItemTableID = AddItem->DropItemData.ItemID;
+                NewInventoryItemData.ItemAmount = AddItem->DropItemData.Amount;
+                NewInventoryItemData.bCounterble = AddItem->DropItemData.bCounterble;
+
+                UE_LOG(LogTemp, Log, TEXT("Adding item with UID: %d, ItemID: %d, Amount: %d, IsCountable: %s"),
+                       NewInventoryItemData.ItemUID, NewInventoryItemData.ItemTableID,
+                       NewInventoryItemData.ItemAmount,
+                       NewInventoryItemData.bCounterble ? TEXT("True") : TEXT("False"));
+
+                Inventory.Add(NewInventoryItemData);
+
+                UE_LOG(LogTemp, Log, TEXT("Current inventory size: %d"), Inventory.Num());
+
+                CurrentSlotCounter++;
+                return true;
+            }
+        }
+        else {
+            if (MaxSlotCounter > CurrentSlotCounter) {
+                FInventoryItemData NewInventoryItemData;
+
+                NewInventoryItemData.ItemUID = MakeUID();
+                NewInventoryItemData.ItemTableID = AddItem->DropItemData.ItemID;
+                NewInventoryItemData.ItemAmount = AddItem->DropItemData.Amount;
+                NewInventoryItemData.bCounterble = AddItem->DropItemData.bCounterble;
+
+                UE_LOG(LogTemp, Log, TEXT("Adding item with UID: %d, ItemID: %d, Amount: %d, IsCountable: %s"),
+                       NewInventoryItemData.ItemUID, NewInventoryItemData.ItemTableID,
+                       NewInventoryItemData.ItemAmount,
+                       NewInventoryItemData.bCounterble ? TEXT("True") : TEXT("False"));
+
+                Inventory.Add(NewInventoryItemData);
+
+                UE_LOG(LogTemp, Log, TEXT("Current inventory size: %d"), Inventory.Num());
+
+                CurrentSlotCounter++;
+                return true;
+            }
+            else {
+                UE_LOG(LogTemp, Warning, TEXT("Inventory Is Full"));
+                return false;
+            }
+        }
+    }
+    return false;
 }
 
 int32 UInventoryComponent::MakeUID()
 {
-	return UIDCounter++;
+	return ++UIDCounter;
+}
+
+void UInventoryComponent::CreateInventoryWidget()
+{
+	if (InventoryWidgetClass) {
+		InventoryWidget = CreateWidget<UInventoryWidget>(UGameplayStatics::GetPlayerController(this, 0), InventoryWidgetClass);
+		if (InventoryWidget) {
+			InventoryWidget->AddToViewport();
+			InventoryWidget->SetVisibility(ESlateVisibility::Hidden);
+		}
+	}
+}
+
+void UInventoryComponent::OpenInventoryWidget()
+{
+	if (InventoryWidget && !bIsOpen) {
+		InventoryWidget->SetVisibility(ESlateVisibility::Visible);
+		UGameplayStatics::GetPlayerController(this, 0)->bShowMouseCursor = true;
+		bIsOpen = true;
+	}
+}
+
+void UInventoryComponent::CloseInventoryWidget()
+{
+	if (InventoryWidget && bIsOpen) {
+		InventoryWidget->SetVisibility(ESlateVisibility::Hidden);
+		UGameplayStatics::GetPlayerController(this, 0)->bShowMouseCursor = false;
+		bIsOpen = false;
+	}
 }

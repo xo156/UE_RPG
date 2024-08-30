@@ -23,10 +23,33 @@ EBTNodeResult::Type UBTTask_MonsterAttack::ExecuteTask(UBehaviorTreeComponent& O
 	if (bIsSight) {
 		if (auto* MonsterAICSight = Cast<AMonsterAICSight>(OwnerComp.GetAIOwner())) {
 			if (auto* Monster = Cast<AMonster>(MonsterAICSight->GetPawn())) {
+				Monster->MonsterAttackStart();
+				Monster->MonsterAttack();
+				FinishLatentTask(OwnerComp, EBTNodeResult::InProgress);
+			}
+		}
+	}
+
+	if (bIsHearing) {
+		if (auto* MonsterAICHearing = Cast<AMonsterAICHearing>(OwnerComp.GetAIOwner())) {
+			if (auto* Monster = Cast<AMonster>(MonsterAICHearing->GetPawn())) {
+				Monster->MonsterAttackStart();
+				Monster->MonsterAttack();
+				FinishLatentTask(OwnerComp, EBTNodeResult::InProgress);
+			}
+		}
+	}
+	return EBTNodeResult::Failed;
+}
+
+void UBTTask_MonsterAttack::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, float DeltaTime)
+{
+	if (bIsSight) {
+		if (auto* MonsterAICSight = Cast<AMonsterAICSight>(OwnerComp.GetAIOwner())) {
+			if (auto* Monster = Cast<AMonster>(MonsterAICSight->GetPawn())) {
 				if (bMontageHasFinished(Monster)) {
-					Monster->MonsterAttack();
+					Monster->MonsterAttackEnd();
 					FinishLatentTask(OwnerComp, EBTNodeResult::Succeeded);
-					return EBTNodeResult::Succeeded;
 				}
 			}
 		}
@@ -36,17 +59,20 @@ EBTNodeResult::Type UBTTask_MonsterAttack::ExecuteTask(UBehaviorTreeComponent& O
 		if (auto* MonsterAICHearing = Cast<AMonsterAICHearing>(OwnerComp.GetAIOwner())) {
 			if (auto* Monster = Cast<AMonster>(MonsterAICHearing->GetPawn())) {
 				if (bMontageHasFinished(Monster)) {
-					Monster->MonsterAttack();
+					Monster->MonsterAttackEnd();
 					FinishLatentTask(OwnerComp, EBTNodeResult::Succeeded);
-					return EBTNodeResult::Succeeded;
 				}
 			}
 		}
 	}
-	return EBTNodeResult::Failed;
 }
 
 bool UBTTask_MonsterAttack::bMontageHasFinished(AMonster* Monster)
 {
-	return Monster->GetMesh()->GetAnimInstance()->Montage_GetIsStopped(Monster->GetMonsterAttackMontage());
+	if (!Monster || !Monster->GetMesh()->GetAnimInstance()) {
+		return false;
+	}
+
+	UAnimInstance* AnimInstance = Monster->GetMesh()->GetAnimInstance();
+	return !AnimInstance->Montage_IsPlaying(Monster->GetMonsterAttackMontage());
 }
