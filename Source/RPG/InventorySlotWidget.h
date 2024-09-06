@@ -23,7 +23,7 @@ public:
 	UFUNCTION()
 	void OnThumbnailUnhovered();
 
-	void RefreshSlot(struct FInventoryItemData InventoryItemData);
+	void RefreshSlot(struct FInventoryItemData InventoryItemData, int32 SlotIndex);
 	void ClearSlot();
 
 	UPROPERTY(meta = (BindWidget))

@@ -13,7 +13,7 @@ UInventoryComponent::UInventoryComponent()
 	// off to improve performance if you don't need them.
 	PrimaryComponentTick.bCanEverTick = true;
 
-	MaxSlotCounter = 20;
+	MaxSlotCounter = 36;
 	CurrentSlotCounter = 0;
 	UIDCounter = 0;
     bIsOpen = false;
@@ -39,85 +39,85 @@ void UInventoryComponent::TickComponent(float DeltaTime, ELevelTick TickType, FA
 	// ...
 }
 
+bool UInventoryComponent::TryAddItem(ADropItem* AddedItem)
+{
+	if (AddedItem) {
+		if (CurrentSlotCounter >= MaxSlotCounter) {
+			UE_LOG(LogTemp, Error, TEXT("Inventory Full"));
+			return false;
+		}
+
+		if (AddedItem->DropItemData.bCounterble) {
+			int32 SlotIndex = FindSlotIndex(AddedItem);
+			if (SlotIndex != INDEX_NONE) {
+				StackItem(AddedItem, SlotIndex);
+				return true;
+			}
+			else {
+				AddItem(AddedItem);
+				return true;
+			}
+		}
+		else {
+			AddItem(AddedItem);
+			return true;
+		}
+	}
+	return false;
+}
+
 int32 UInventoryComponent::FindSlotIndex(ADropItem* AddItem)
 {
 	int32 Index = -1;
 	for (int32 i = 0; i < InventoryItems.Num(); i++) {
 		if (AddItem->DropItemData.ItemID == InventoryItems[i].ItemTableID) {
+            UE_LOG(LogTemp, Log, TEXT("Can Find Slot Index : %d"), i);
 			return i;
 		}
 	}
-	
 	return INDEX_NONE;
 }
 
-void UInventoryComponent::StackItem(ADropItem* AddItem, int32 SlotIndex)
+void UInventoryComponent::StackItem(ADropItem* AddedItem, int32 SlotIndex)
 {
-	if (InventoryItems.IsValidIndex(SlotIndex)) {
+	if (InventoryItems.IsValidIndex(SlotIndex) && AddedItem) {
 		FInventoryItemData& SlotItemData = InventoryItems[SlotIndex];
 
-		SlotItemData.ItemAmount += AddItem->DropItemData.Amount;
+        SlotItemData.ItemUID = MakeUID();
+		SlotItemData.ItemAmount += AddedItem->DropItemData.Amount;
+        /*SlotItemData.ItemTableID = AddedItem->DropItemData.ItemID;
+        SlotItemData.bCounterble = AddedItem->DropItemData.bCounterble;*/
+
+        UE_LOG(LogTemp, Log, TEXT("Add Item With UID: %d, ItemID: %d, Amount: %d, Couterble: %s"),
+               SlotItemData.ItemUID, SlotItemData.ItemTableID, SlotItemData.ItemAmount, 
+               SlotItemData.bCounterble ? TEXT("True") : TEXT("False"));
+
+        UE_LOG(LogTemp, Log, TEXT("Current inventory size: %d"), InventoryItems.Num());
 	}
 }
 
-bool UInventoryComponent::AddItem(ADropItem* AddItem)
+void UInventoryComponent::AddItem(ADropItem* AddedItem)
 {
-    if (AddItem) {
-        if (AddItem->DropItemData.bCounterble) {
-            int32 SlotIndex = FindSlotIndex(AddItem);
-            if (SlotIndex != INDEX_NONE) {
-                StackItem(AddItem, SlotIndex);
+	if (AddedItem) {
+		FInventoryItemData NewInventoryItemData;
+		NewInventoryItemData.ItemUID = MakeUID();
+		NewInventoryItemData.bCounterble = AddedItem->DropItemData.bCounterble;
+		NewInventoryItemData.ItemAmount = AddedItem->DropItemData.Amount;
+		NewInventoryItemData.ItemTableID = AddedItem->DropItemData.ItemID;
 
-                FInventoryItemData NewInventoryItemData;
+		UE_LOG(LogTemp, Log, TEXT("Add Item With UID: %d, ItemID: %d, Amount: %d, Couterble: %s"),
+			   NewInventoryItemData.ItemUID, NewInventoryItemData.ItemTableID, 
+			   NewInventoryItemData.ItemAmount,
+			   NewInventoryItemData.bCounterble ? TEXT("True") : TEXT("False"));
 
-                NewInventoryItemData.ItemUID = MakeUID();
-                NewInventoryItemData.ItemTableID = AddItem->DropItemData.ItemID;
-                NewInventoryItemData.ItemAmount = AddItem->DropItemData.Amount;
-                NewInventoryItemData.bCounterble = AddItem->DropItemData.bCounterble;
+		InventoryItems.Add(NewInventoryItemData);
+		for (FInventoryItemData CheckItem : InventoryItems) {
+			UE_LOG(LogTemp, Log, TEXT("CheckItem: %d"), CheckItem.ItemTableID);
+		}
+		CurrentSlotCounter++;
+		UE_LOG(LogTemp, Log, TEXT("Current inventory size: %d"), InventoryItems.Num());
+	}
 
-                UE_LOG(LogTemp, Log, TEXT("Adding item with UID: %d, ItemID: %d, Amount: %d, IsCountable: %s"),
-                       NewInventoryItemData.ItemUID, NewInventoryItemData.ItemTableID,
-                       NewInventoryItemData.ItemAmount,
-                       NewInventoryItemData.bCounterble ? TEXT("True") : TEXT("False"));
-
-                InventoryItems.Add(NewInventoryItemData);
-                if (InventoryWidget) {
-                    InventoryWidget->UpdateInventory(this);
-                }
-                UE_LOG(LogTemp, Log, TEXT("Current inventory size: %d"), InventoryItems.Num());
-
-                return true;
-            }
-        }
-        else {
-            if (MaxSlotCounter > CurrentSlotCounter) {
-                FInventoryItemData NewInventoryItemData;
-
-                NewInventoryItemData.ItemUID = MakeUID();
-                NewInventoryItemData.ItemTableID = AddItem->DropItemData.ItemID;
-                NewInventoryItemData.ItemAmount = AddItem->DropItemData.Amount;
-                NewInventoryItemData.bCounterble = AddItem->DropItemData.bCounterble;
-
-                UE_LOG(LogTemp, Log, TEXT("Adding item with UID: %d, ItemID: %d, Amount: %d, IsCountable: %s"),
-                       NewInventoryItemData.ItemUID, NewInventoryItemData.ItemTableID,
-                       NewInventoryItemData.ItemAmount,
-                       NewInventoryItemData.bCounterble ? TEXT("True") : TEXT("False"));
-
-                InventoryItems.Add(NewInventoryItemData);
-                if (InventoryWidget) {
-                    InventoryWidget->UpdateInventory(this);
-                }
-                UE_LOG(LogTemp, Log, TEXT("Current inventory size: %d"), InventoryItems.Num());
-
-                return true;
-            }
-            else {
-                UE_LOG(LogTemp, Warning, TEXT("Inventory Is Full"));
-                return false;
-            }
-        }
-    }
-    return false;
 }
 
 int32 UInventoryComponent::MakeUID()
@@ -127,13 +127,10 @@ int32 UInventoryComponent::MakeUID()
 
 void UInventoryComponent::CreateInventoryWidget()
 {
-    UE_LOG(LogTemp, Log, TEXT("UInventoryComponent::CreateInventoryWidget()"));
 	if (InventoryWidgetClass) {
 		InventoryWidget = CreateWidget<UInventoryWidget>(UGameplayStatics::GetPlayerController(this, 0), InventoryWidgetClass);
 		if (InventoryWidget) {
-            UE_LOG(LogTemp, Error, TEXT("Inventory Widget Create"));
-            InventoryWidget->CreateInventory(this);
-
+            InventoryWidget->CreateInventoryWidget(this);
 			InventoryWidget->AddToViewport();
 			InventoryWidget->SetVisibility(ESlateVisibility::Hidden);
 		}
@@ -143,7 +140,8 @@ void UInventoryComponent::CreateInventoryWidget()
 void UInventoryComponent::OpenInventoryWidget()
 {
 	if (InventoryWidget && !bIsOpen) {
-        UE_LOG(LogTemp, Error, TEXT("Inventory Widget Open"));
+        UE_LOG(LogTemp, Error, TEXT("UInventoryComponent::OpenInventoryWidget()"));
+		InventoryWidget->UpdateInventoryWidget(this);
 		InventoryWidget->SetVisibility(ESlateVisibility::Visible);
 		UGameplayStatics::GetPlayerController(this, 0)->bShowMouseCursor = true;
 		bIsOpen = true;
@@ -153,7 +151,7 @@ void UInventoryComponent::OpenInventoryWidget()
 void UInventoryComponent::CloseInventoryWidget()
 {
 	if (InventoryWidget && bIsOpen) {
-        UE_LOG(LogTemp, Error, TEXT("Inventory Widget Close"));
+        UE_LOG(LogTemp, Error, TEXT("CloseInventoryWidget()"));
 		InventoryWidget->SetVisibility(ESlateVisibility::Hidden);
 		UGameplayStatics::GetPlayerController(this, 0)->bShowMouseCursor = false;
 		bIsOpen = false;

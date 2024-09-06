@@ -15,7 +15,7 @@ class RPG_API UInventoryTooltip : public UUserWidget
 	GENERATED_BODY()
 	
 public:
-	//virtual void NativeConstruct() override;
+	virtual void NativeConstruct() override;
 
 	UPROPERTY(meta = (BindWidget))
 	class UTextBlock* ItemName;
@@ -25,4 +25,6 @@ public:
 
 	UPROPERTY(meta = (BindWidget))
 	class UTextBlock* ItemDescription;
+
+	struct FItemData ItemData;
 };

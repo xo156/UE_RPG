@@ -17,8 +17,8 @@ class RPG_API UInventoryWidget : public UUserWidget
 public:
 	virtual void NativeConstruct() override;
 
-	void CreateInventory(class UInventoryComponent* InventoryComponent);
-	void UpdateInventory(class UInventoryComponent* InventoryComponent);
+	void CreateInventoryWidget(class UInventoryComponent* InventoryComponent);
+	void UpdateInventoryWidget(class UInventoryComponent* InventoryComponent);
 
 	UPROPERTY(meta = (BindWidget))
 	class UTextBlock* InventoryName;

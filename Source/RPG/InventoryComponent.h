@@ -25,9 +25,10 @@ public:
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
-	int32 FindSlotIndex(class ADropItem* AddItem);
-	void StackItem(class ADropItem* AddItem, int32 SlotIndex);
-	bool AddItem(class ADropItem* AddItem);
+	bool TryAddItem(class ADropItem* AddedItem);
+	int32 FindSlotIndex(class ADropItem* AddedItem);
+	void StackItem(class ADropItem* AddedItem, int32 SlotIndex);
+	void AddItem(class ADropItem* AddedItem);
 	int32 MakeUID();
 
 	void CreateInventoryWidget();

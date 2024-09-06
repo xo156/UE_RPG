@@ -31,15 +31,16 @@ AMyCharacter::AMyCharacter() {
 	bUseControllerRotationRoll = false;
 
 	GetCharacterMovement()->bOrientRotationToMovement = true; //이동하는 방향으로 캐릭터를 회전
-	GetCharacterMovement()->RotationRate = FRotator(0.f, 540.f, 0.f);
+	GetCharacterMovement()->RotationRate = FRotator(0.f, 500.f, 0.f);
 	GetCharacterMovement()->JumpZVelocity = 500.0f;
 	GetCharacterMovement()->MaxWalkSpeed = WalkSpeed;
+	//GetCharacterMovement()->BrakingDecelerationWalking = 2000.f;
 
 	CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));
 	CameraBoom->SetupAttachment(RootComponent);
 	CameraBoom->SetUsingAbsoluteRotation(true);
 	CameraBoom->TargetArmLength = 300.f;
-	CameraBoom->SocketOffset = FVector(0.f, 0.f, 60.f);
+	CameraBoom->SocketOffset = FVector(0.f, 55.f, 65.f);
 	CameraBoom->bDoCollisionTest = true;
 	CameraBoom->bUsePawnControlRotation = false;
 
@@ -345,20 +346,15 @@ void AMyCharacter::RootItem()
 {
 	if (Inventory) {
 		TArray<ADropItem*> ItemsToRemove;
-		UE_LOG(LogTemp, Log, TEXT("RootItem called. OverlapItems Count: %d"), OverlapItems.Num());
-
 		if (OverlapItems.Num() > 0) {
 			for (ADropItem* Item : OverlapItems) {
 				if (Item) {
 					UE_LOG(LogTemp, Log, TEXT("Adding item with ID: %d to inventory"), Item->DropItemData.ItemID);
-					bool bAdded = Inventory->AddItem(Item);
+					bool bAdded = Inventory->TryAddItem(Item);
 					if (!bAdded) {
 						UE_LOG(LogTemp, Warning, TEXT("Failed to add item with ID: %d to inventory"), Item->DropItemData.ItemID);
 					}
 					ItemsToRemove.Add(Item);
-				}
-				else {
-					UE_LOG(LogTemp, Warning, TEXT("Overlap item is null."));
 				}
 			}
 			for (ADropItem* DestroyItem : ItemsToRemove) {
@@ -366,12 +362,6 @@ void AMyCharacter::RootItem()
 				DestroyItem->Destroy();
 			}
 		}
-		else {
-			UE_LOG(LogTemp, Warning, TEXT("No items to root."));
-		}
-	}
-	else {
-		UE_LOG(LogTemp, Error, TEXT("Inventory component is null."));
 	}
 }
 
@@ -549,14 +539,6 @@ void AMyCharacter::TEST()
 		}
 
 		UE_LOG(LogTemp, Log, TEXT("----------------------------"));
-	}
-
-	if (OverlapItems.Num() > 0) {
-		UE_LOG(LogTemp, Log, TEXT("Current OverlapItems Count : %d"), OverlapItems.Num());
-
-	}
-	else {
-		UE_LOG(LogTemp, Error, TEXT("Current OverlapItems Count is Zero"));
 	}
 
 	GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Cyan, TEXT("TEST"));

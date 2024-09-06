@@ -4,75 +4,76 @@
 #include "InventoryWidget.h"
 #include "InventoryComponent.h"
 #include "InventorySlotWidget.h"
+#include "Components/TextBlock.h"
 #include "Components/UniformGridPanel.h"
 
 void UInventoryWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
 
+    InventoryName->SetText(FText::FromString(TEXT("Inventory")));
+    
 }
 
-void UInventoryWidget::CreateInventory(UInventoryComponent* InventoryComponent)
+void UInventoryWidget::CreateInventoryWidget(UInventoryComponent* InventoryComponent)
 {
-    if (!InventoryComponent) {
-        UE_LOG(LogTemp, Warning, TEXT("InventoryComponent is null."));
-        return;
-    }
-
-    if (!InventorySlots) {
-        UE_LOG(LogTemp, Warning, TEXT("InventorySlots is null."));
-        return;
-    }
-
-    if (!InventorySlotWidgetClass) {
-        UE_LOG(LogTemp, Warning, TEXT("InventorySlotWidgetClass is null."));
+    if (!InventoryComponent || !InventorySlots || !InventorySlotWidgetClass) {
         return;
     }
 
     UE_LOG(LogTemp, Log, TEXT("Starting to create inventory with %d slots"), InventoryComponent->MaxSlotCounter);
 
     for (int32 Index = 0; Index < InventoryComponent->MaxSlotCounter; Index++) {
-        InventorySlotWidgetInstance = CreateWidget<UInventorySlotWidget>(GetWorld(), InventorySlotWidgetClass);
+        InventorySlotWidgetInstance = CreateWidget<UInventorySlotWidget>(this, InventorySlotWidgetClass);
 
         if (InventorySlotWidgetInstance) {
             InventorySlots->AddChildToUniformGrid(InventorySlotWidgetInstance, Index / 6, Index % 6);
-
             UE_LOG(LogTemp, Log, TEXT("Successfully added slot at index %d"), Index);
-        }
-        else {
-            UE_LOG(LogTemp, Error, TEXT("Failed to create InventorySlotWidgetInstance at index %d"), Index);
+            if (InventorySlotWidgetInstance->Thumbnail) {
+                UE_LOG(LogTemp, Warning, TEXT("Thumbnail is vaild"));
+            }
+            else{
+                UE_LOG(LogTemp, Warning, TEXT("Thumbnail is not vaild"));
+            }
         }
     }
 
-    UE_LOG(LogTemp, Log, TEXT("Inventory creation completed."));
+    UE_LOG(LogTemp, Log, TEXT("Inventory Widget creation completed."));
 }
 
-void UInventoryWidget::UpdateInventory(UInventoryComponent* InventoryComponent)
+void UInventoryWidget::UpdateInventoryWidget(UInventoryComponent* InventoryComponent)
 {
-    if (!InventoryComponent) {
-        UE_LOG(LogTemp, Warning, TEXT("InventoryComponent is null."));
-        return;
-    }
-
-    if (!InventorySlots) {
-        UE_LOG(LogTemp, Warning, TEXT("InventorySlots is null."));
-        return;
-    }
-
-    if (!InventorySlotWidgetClass) {
-        UE_LOG(LogTemp, Warning, TEXT("InventorySlotWidgetClass is null."));
+    if (!InventoryComponent || !InventorySlots || !InventorySlotWidgetClass) {
         return;
     }
 
     UE_LOG(LogTemp, Log, TEXT("Starting to update inventory with %d slots"), InventoryComponent->MaxSlotCounter);
 
-	for (int32 Index = 0; Index < InventoryComponent->MaxSlotCounter; Index++) {
-		InventorySlotWidgetInstance = Cast<UInventorySlotWidget>(InventorySlots->GetChildAt(Index));
-		if (InventorySlotWidgetInstance->CurrentInventoryItemData.ItemAmount > 0) {
-			InventorySlotWidgetInstance->RefreshSlot(InventorySlotWidgetInstance->CurrentInventoryItemData);
-		}
-		else {
-			InventorySlotWidgetInstance->ClearSlot();
-		}
-	}
+    for (int32 Index = 0; Index < InventoryComponent->MaxSlotCounter; Index++) {
+        InventorySlotWidgetInstance = Cast<UInventorySlotWidget>(InventorySlots->GetChildAt(Index));
+
+        if (InventorySlotWidgetInstance) {
+            UE_LOG(LogTemp, Log, TEXT("Widget instance created for slot index %d"), Index);
+
+            // Thumbnail 초기화 상태 로그
+            if (InventorySlotWidgetInstance->Thumbnail == nullptr) {
+                UE_LOG(LogTemp, Warning, TEXT("Thumbnail is null at slot index %d"), Index);
+            }
+            else {
+                UE_LOG(LogTemp, Log, TEXT("Thumbnail is valid at slot index %d"), Index);
+            }
+
+            if (Index < InventoryComponent->InventoryItems.Num()) {
+                InventorySlotWidgetInstance->RefreshSlot(InventorySlotWidgetInstance->CurrentInventoryItemData, Index);
+            }
+            else {
+                UE_LOG(LogTemp, Log, TEXT("Clearing slot at index %d"), Index);
+                InventorySlotWidgetInstance->ClearSlot();
+            }
+        }
+        else {
+            UE_LOG(LogTemp, Error, TEXT("Failed to create widget instance at index %d"), Index);
+        }
+    }
 }
+

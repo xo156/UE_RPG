@@ -68,17 +68,8 @@ void AMonster::BeginPlay()
 
 	if (MonsterWidgetComponent) {
 		if (auto* HealthWidget = Cast<UMonsterWidget>(MonsterWidgetComponent->GetUserWidgetObject())) {
-			//HealthWidget->UpdateHP(MonsterStatus.CurrentMonsterHP, MonsterStatus.MaxMonsterHP);
-			UE_LOG(LogTemp, Log, TEXT("BeginPlay: HealthWidget Initialized with HP: %f / %f"), MonsterStatus.CurrentMonsterHP, MonsterStatus.MaxMonsterHP);
-		
 			HealthWidget->SetOwnerMonster(this);
 		}
-		else {
-			UE_LOG(LogTemp, Warning, TEXT("BeginPlay: HealthWidget is nullptr"));
-		}
-	}
-	else {
-		UE_LOG(LogTemp, Warning, TEXT("BeginPlay: WidgetComponent is nullptr"));
 	}
 }
 

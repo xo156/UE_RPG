@@ -13,14 +13,12 @@ void UInventorySlotWidget::NativeConstruct()
 	Super::NativeConstruct();
 
 	if (Thumbnail) {
-		FLinearColor RedColor(1.0f, 0.0f, 0.0f, 1.0f);
-		FButtonStyle ButtonStyle = Thumbnail->WidgetStyle;
-		FSlateBrush RedBrush;
-		RedBrush.TintColor = FSlateColor(RedColor);
-		Thumbnail->WidgetStyle = ButtonStyle;
-
+		UE_LOG(LogTemp, Error, TEXT("Thumbnail in NativeConstruct()"));
 		Thumbnail->OnHovered.AddDynamic(this, &UInventorySlotWidget::OnThumbnailHovered);
 		Thumbnail->OnUnhovered.AddDynamic(this, &UInventorySlotWidget::OnThumbnailUnhovered);
+	}
+	else {
+		UE_LOG(LogTemp, Error, TEXT("Thumbnail is null in NativeConstruct()"));
 	}
 }
 
@@ -38,13 +36,14 @@ void UInventorySlotWidget::OnThumbnailHovered()
 void UInventorySlotWidget::OnThumbnailUnhovered()
 {
 	if (InventoryTooltipInstance) {
-		InventoryTooltipInstance->SetVisibility(ESlateVisibility::Hidden);
+		InventoryTooltipInstance->RemoveFromParent();
+		InventoryTooltipInstance = nullptr;
 	}
 }
 
-void UInventorySlotWidget::RefreshSlot(FInventoryItemData InventoryItemData)
+void UInventorySlotWidget::RefreshSlot(FInventoryItemData InventoryItemData, int32 Index)
 {
-	UE_LOG(LogTemp, Log, TEXT("Refreshing slot with SlotIndex: ItemID: %d, Amount: %d"), InventoryItemData.ItemTableID, InventoryItemData.ItemAmount);
+	UE_LOG(LogTemp, Log, TEXT("UInventorySlotWidget::RefreshSlot(): ItemID: %d, Amount: %d"), InventoryItemData.ItemTableID, InventoryItemData.ItemAmount);
 
 	CurrentInventoryItemData = InventoryItemData;
 
@@ -56,6 +55,8 @@ void UInventorySlotWidget::RefreshSlot(FInventoryItemData InventoryItemData)
 			FSlateBrush NewBrush;
 			NewBrush.SetResourceObject(ItemData->ItemIcon);
 			ButtonStyle.SetNormal(NewBrush);
+			ButtonStyle.SetHovered(NewBrush);
+			ButtonStyle.SetPressed(NewBrush);
 			Thumbnail->SetStyle(ButtonStyle);
 
 			AmountText->SetText(FText::AsNumber(InventoryItemData.ItemAmount));
@@ -63,20 +64,28 @@ void UInventorySlotWidget::RefreshSlot(FInventoryItemData InventoryItemData)
 			Thumbnail->SetVisibility(ESlateVisibility::Visible);
 			AmountText->SetVisibility(ESlateVisibility::Visible);
 		}
+		else {
+			UE_LOG(LogTemp, Error, TEXT("ItemData Not Found"));
+			ClearSlot();
+		}
 	}
 }
 
 void UInventorySlotWidget::ClearSlot()
 {
 	if (Thumbnail == nullptr) {
-		UE_LOG(LogTemp, Error, TEXT("Thumbnail is null"));
+		UE_LOG(LogTemp, Error, TEXT("InventorySlotWidget ClearSlot() Thumbnail is null"));
+		
 		return;
-	}	
+	}
+	UE_LOG(LogTemp, Log, TEXT("ClearSlot() called for widget"));
 	
 	FButtonStyle ButtonStyle = Thumbnail->WidgetStyle;
 	FSlateBrush NewBrush;
 	NewBrush.SetResourceObject(nullptr);
 	ButtonStyle.SetNormal(NewBrush);
+	ButtonStyle.SetHovered(NewBrush);
+	ButtonStyle.SetPressed(NewBrush);
 	Thumbnail->SetStyle(ButtonStyle);
 
 	AmountText->SetText(FText::AsNumber(0));
