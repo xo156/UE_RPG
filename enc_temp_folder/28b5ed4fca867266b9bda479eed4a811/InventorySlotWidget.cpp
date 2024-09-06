@@ -20,7 +20,6 @@ void UInventorySlotWidget::NativeConstruct()
 
 void UInventorySlotWidget::OnThumbnailHovered()
 {
-	UE_LOG(LogTemp, Log, TEXT("Thumbnail Hover"));
 	if (InventoryTooltipClass) {
 		InventoryTooltipInstance = CreateWidget<UInventoryTooltip>(GetWorld(), InventoryTooltipClass);
 		if (InventoryTooltipInstance) {
@@ -32,7 +31,6 @@ void UInventorySlotWidget::OnThumbnailHovered()
 
 void UInventorySlotWidget::OnThumbnailUnhovered()
 {
-	UE_LOG(LogTemp, Log, TEXT("Thumbnail UnHover"));
 	if (InventoryTooltipInstance) {
 		InventoryTooltipInstance->RemoveFromParent();
 		InventoryTooltipInstance = nullptr;

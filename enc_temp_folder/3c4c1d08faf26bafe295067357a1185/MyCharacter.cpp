@@ -179,7 +179,7 @@ void AMyCharacter::RunEnd()
 void AMyCharacter::Look(FVector2D InputValue)
 {
 	if (Inventory->bIsOpen) {
-		//열려있으면 화면은 안 돌아가도록
+		//TODO:인벤토리가 열려있으면 마우스 움직임에 따라 화면 안 돌아가도록
 	}
 	else {
 		AddControllerPitchInput(InputValue.Y);

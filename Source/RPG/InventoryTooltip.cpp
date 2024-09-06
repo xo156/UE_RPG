@@ -12,4 +12,7 @@ void UInventoryTooltip::NativeConstruct()
 	ItemName->SetText(ItemData.ItemName);
 	ItemValue->SetText(FText::Format(FText::FromString(TEXT("°ø°Ý·Â: {0}")), FText::AsNumber(ItemData.ItemAttackValue)));
 	ItemDescription->SetText(FText::FromString(ItemData.ItemDescription));
+
+
+	UE_LOG(LogTemp, Log, TEXT("Tooltip Open"));
 }

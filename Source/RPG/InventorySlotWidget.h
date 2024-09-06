@@ -23,11 +23,11 @@ public:
 	UFUNCTION()
 	void OnThumbnailUnhovered();
 
-	void RefreshSlot(struct FInventoryItemData InventoryItemData, int32 SlotIndex);
+	void RefreshSlot(TArray<FInventoryItemData> InventoryItem, int32 SlotIndex);
 	void ClearSlot();
 
 	UPROPERTY(meta = (BindWidget))
-	class UButton* Thumbnail;
+	class UButton* Thumbnail555;
 	
 	UPROPERTY(meta = (BindWidget))
 	class UTextBlock* AmountText;

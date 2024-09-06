@@ -29,12 +29,6 @@ void UInventoryWidget::CreateInventoryWidget(UInventoryComponent* InventoryCompo
         if (InventorySlotWidgetInstance) {
             InventorySlots->AddChildToUniformGrid(InventorySlotWidgetInstance, Index / 6, Index % 6);
             UE_LOG(LogTemp, Log, TEXT("Successfully added slot at index %d"), Index);
-            if (InventorySlotWidgetInstance->Thumbnail) {
-                UE_LOG(LogTemp, Warning, TEXT("Thumbnail is vaild"));
-            }
-            else{
-                UE_LOG(LogTemp, Warning, TEXT("Thumbnail is not vaild"));
-            }
         }
     }
 
@@ -55,16 +49,8 @@ void UInventoryWidget::UpdateInventoryWidget(UInventoryComponent* InventoryCompo
         if (InventorySlotWidgetInstance) {
             UE_LOG(LogTemp, Log, TEXT("Widget instance created for slot index %d"), Index);
 
-            // Thumbnail 초기화 상태 로그
-            if (InventorySlotWidgetInstance->Thumbnail == nullptr) {
-                UE_LOG(LogTemp, Warning, TEXT("Thumbnail is null at slot index %d"), Index);
-            }
-            else {
-                UE_LOG(LogTemp, Log, TEXT("Thumbnail is valid at slot index %d"), Index);
-            }
-
             if (Index < InventoryComponent->InventoryItems.Num()) {
-                InventorySlotWidgetInstance->RefreshSlot(InventorySlotWidgetInstance->CurrentInventoryItemData, Index);
+                InventorySlotWidgetInstance->RefreshSlot(InventoryComponent->InventoryItems, Index);
             }
             else {
                 UE_LOG(LogTemp, Log, TEXT("Clearing slot at index %d"), Index);

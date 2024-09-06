@@ -83,12 +83,12 @@ void UInventoryComponent::StackItem(ADropItem* AddedItem, int32 SlotIndex)
 	if (InventoryItems.IsValidIndex(SlotIndex) && AddedItem) {
 		FInventoryItemData& SlotItemData = InventoryItems[SlotIndex];
 
-        SlotItemData.ItemUID = MakeUID();
+        //SlotItemData.ItemUID = MakeUID();
 		SlotItemData.ItemAmount += AddedItem->DropItemData.Amount;
-        /*SlotItemData.ItemTableID = AddedItem->DropItemData.ItemID;
-        SlotItemData.bCounterble = AddedItem->DropItemData.bCounterble;*/
+        SlotItemData.ItemTableID = AddedItem->DropItemData.ItemID;
+        SlotItemData.bCounterble = AddedItem->DropItemData.bCounterble;
 
-        UE_LOG(LogTemp, Log, TEXT("Add Item With UID: %d, ItemID: %d, Amount: %d, Couterble: %s"),
+        UE_LOG(LogTemp, Log, TEXT("Stack Item With UID: %d, ItemID: %d, Amount: %d, Couterble: %s"),
                SlotItemData.ItemUID, SlotItemData.ItemTableID, SlotItemData.ItemAmount, 
                SlotItemData.bCounterble ? TEXT("True") : TEXT("False"));
 
@@ -101,9 +101,9 @@ void UInventoryComponent::AddItem(ADropItem* AddedItem)
 	if (AddedItem) {
 		FInventoryItemData NewInventoryItemData;
 		NewInventoryItemData.ItemUID = MakeUID();
-		NewInventoryItemData.bCounterble = AddedItem->DropItemData.bCounterble;
 		NewInventoryItemData.ItemAmount = AddedItem->DropItemData.Amount;
 		NewInventoryItemData.ItemTableID = AddedItem->DropItemData.ItemID;
+		NewInventoryItemData.bCounterble = AddedItem->DropItemData.bCounterble;
 
 		UE_LOG(LogTemp, Log, TEXT("Add Item With UID: %d, ItemID: %d, Amount: %d, Couterble: %s"),
 			   NewInventoryItemData.ItemUID, NewInventoryItemData.ItemTableID, 
