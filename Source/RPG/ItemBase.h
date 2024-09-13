@@ -26,6 +26,7 @@ public:
 
 	virtual void Use();
 
-	FItemData GetItemData();
+	virtual void DeleteItem();
 
+	FItemData GetItemData();
 };

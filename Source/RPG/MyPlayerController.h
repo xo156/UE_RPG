@@ -23,6 +23,12 @@ public:
 	//플레이어 유효성 체크
 	AMyCharacter* GetCharacter();
 
+	//UI
+	void ShowTooltipAtMousePosition(class UInventoryTooltip* TooltipWidget);
+	void HideTooltip();
+	void ShotItemActionMousePosition(class UInventoryItemAction* ItemActionWidget);
+	void HideItemAction();
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -45,6 +51,7 @@ protected:
 	void LockOnTarget();
 	void RootItem();
 	void OpenInventory();
+	void Close();
 	void TEST();
 
 protected:
@@ -71,6 +78,8 @@ protected:
 	class UInputAction* RootItemAction;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input", meta = (AllowPrivateAccess = "true"))
 	class UInputAction* InventoryAction;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input", meta = (AllowPrivateAccess = "true"))
+	class UInputAction* CloseAction;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input", meta = (AllowPrivateAccess = "true"))
 	class UInputAction* TESTSTATUSAction;
@@ -78,4 +87,9 @@ protected:
 private:
 	class AMyCharacter* MyCharacter;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UI", meta = (AllowPrivateAccess = "true"))
+	class UInventoryTooltip* CurrentTooltip;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UI", meta = (AllowPrivateAccess = "true"))
+	class UInventoryItemAction* InventoryItemAction;
 };

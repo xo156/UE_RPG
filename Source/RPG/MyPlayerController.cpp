@@ -9,6 +9,8 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "WeaponBaseComponent.h"
 #include "ItemBase.h"
+#include "InventoryTooltip.h"
+#include "InventoryItemAction.h"
 
 AMyPlayerController::AMyPlayerController() {
 
@@ -20,6 +22,66 @@ AMyCharacter* AMyPlayerController::GetCharacter() {
 	}
 
 	return MyCharacter;
+}
+
+void AMyPlayerController::ShowTooltipAtMousePosition(UInventoryTooltip* TooltipWidget)
+{
+	if (!TooltipWidget)
+		return;
+
+	if (CurrentTooltip) {
+		CurrentTooltip->RemoveFromParent();
+		CurrentTooltip = nullptr;
+	}
+
+	CurrentTooltip = TooltipWidget;
+	if (CurrentTooltip) {
+		CurrentTooltip->AddToViewport();
+
+		FVector2D MousePos;
+		GetMousePosition(MousePos.X, MousePos.Y);
+
+		FVector2D TooltipOffset(15.f, 15.f);
+		CurrentTooltip->SetPositionInViewport(MousePos + TooltipOffset);
+	}
+}
+
+void AMyPlayerController::HideTooltip()
+{
+	if (CurrentTooltip) {
+		CurrentTooltip->RemoveFromParent();
+		CurrentTooltip = nullptr;
+	}
+}
+
+void AMyPlayerController::ShotItemActionMousePosition(UInventoryItemAction* ItemActionWidget)
+{
+	if (!ItemActionWidget)
+		return;
+
+	if (InventoryItemAction) {
+		InventoryItemAction->RemoveFromParent();
+		InventoryItemAction = nullptr;
+	}
+
+	InventoryItemAction = ItemActionWidget;
+	if (InventoryItemAction) {
+		InventoryItemAction->AddToViewport();
+
+		FVector2D MousePos;
+		GetMousePosition(MousePos.X, MousePos.Y);
+
+		FVector2D TooltipOffset(15.f, 15.f);
+		InventoryItemAction->SetPositionInViewport(MousePos + TooltipOffset);
+	}
+}
+
+void AMyPlayerController::HideItemAction()
+{
+	if (InventoryItemAction) {
+		InventoryItemAction->RemoveFromParent();
+		InventoryItemAction = nullptr;
+	}
 }
 
 void AMyPlayerController::BeginPlay() {
@@ -54,16 +116,16 @@ void AMyPlayerController::SetupInputComponent() {
 		EnHancedInputComponent->BindAction(BlockAction, ETriggerEvent::Triggered, this, &AMyPlayerController::Guard);
 		
 		EnHancedInputComponent->BindAction(DodgeAction, ETriggerEvent::Started, this, &AMyPlayerController::Dodge);
-	
+
 		EnHancedInputComponent->BindAction(LockOnAction, ETriggerEvent::Started, this, &AMyPlayerController::LockOnTarget);
-		
+
 		EnHancedInputComponent->BindAction(RootItemAction, ETriggerEvent::Started, this, &AMyPlayerController::RootItem);
-		
+
 		EnHancedInputComponent->BindAction(InventoryAction, ETriggerEvent::Started, this, &AMyPlayerController::OpenInventory);
 
 		EnHancedInputComponent->BindAction(TESTSTATUSAction, ETriggerEvent::Started, this, &AMyPlayerController::TEST);
 	}
-	
+
 }
 
 void AMyPlayerController::Move(const FInputActionValue& Value)
@@ -148,6 +210,13 @@ void AMyPlayerController::OpenInventory()
 {
 	if (GetCharacter() != nullptr) {
 		GetCharacter()->OpenInventory();
+	}
+}
+
+void AMyPlayerController::Close()
+{
+	if (GetCharacter() != nullptr){
+		GetCharacter()->Close();
 	}
 }
 

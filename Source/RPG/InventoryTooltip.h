@@ -15,7 +15,9 @@ class RPG_API UInventoryTooltip : public UUserWidget
 	GENERATED_BODY()
 	
 public:
-	virtual void NativeConstruct() override;
+	virtual void PreConstruct(bool bIsDesignTime); //원래 여기 overried 있었음
+
+	void InitTooltip(const struct FItemData& InItemData);
 
 	UPROPERTY(meta = (BindWidget))
 	class UTextBlock* ItemName;
@@ -26,5 +28,5 @@ public:
 	UPROPERTY(meta = (BindWidget))
 	class UTextBlock* ItemDescription;
 
-	struct FItemData ItemData;
+	//struct FItemData ItemData;
 };

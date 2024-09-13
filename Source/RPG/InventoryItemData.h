@@ -30,5 +30,4 @@ public:
 	//아이템 누적 여부
 	UPROPERTY(EditAnywhere)
 	bool bCounterble;
-
 };

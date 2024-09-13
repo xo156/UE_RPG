@@ -27,7 +27,15 @@ void AItemBase::Tick(float DeltaTime)
 
 void AItemBase::Use()
 {
+	//사용시
+	UE_LOG(LogTemp, Log, TEXT("AItemBase::Use()"));
 
+}
+
+void AItemBase::DeleteItem()
+{
+	//버릴시
+	UE_LOG(LogTemp, Log, TEXT("AItemBase::DeleteItem()"));
 }
 
 FItemData AItemBase::GetItemData()

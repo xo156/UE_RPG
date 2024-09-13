@@ -23,11 +23,13 @@ public:
 	UFUNCTION()
 	void OnThumbnailUnhovered();
 
+	virtual FReply NativeOnMouseButtonDown(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent) override;
+
 	void RefreshSlot(TArray<FInventoryItemData> InventoryItem, int32 SlotIndex);
 	void ClearSlot();
 
 	UPROPERTY(meta = (BindWidget))
-	class UButton* Thumbnail555;
+	class UButton* Thumbnail;
 	
 	UPROPERTY(meta = (BindWidget))
 	class UTextBlock* AmountText;
@@ -40,4 +42,10 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item")
 	TSubclassOf<class UInventoryTooltip> InventoryTooltipClass;
 	class UInventoryTooltip* InventoryTooltipInstance;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item")
+	TSubclassOf<class UInventoryItemAction> InventoryItemActionClass;
+	class UInventoryItemAction* InventoryItemActionInstance;
+
+	bool bIsHover = false;
 };

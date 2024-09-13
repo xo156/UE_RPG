@@ -96,10 +96,12 @@ public:
 	void UnLockOnTarget();
 	void RootItem();
 	void OpenInventory();
+	UInventoryComponent* GetInventory();
 	UFUNCTION()
 	void OnRootItemBoxOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComponent, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 	UFUNCTION()
 	void OnRootItemBoxOverlapEnd(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComponent, int32 OtherBodyIndex);
+	void Close();
 
 	//무기
 	UFUNCTION(BlueprintCallable, Category = "Weapon")
@@ -201,6 +203,7 @@ private:
 	//이동속도
 	float TargetSpeed;
 	float TimeWithoutAction = 0.f; //스테미나 회복 시작까지 걸리는 시간 체크용도
+
 	//구조체 추가 고민중
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Status", meta = (AllowPrivateAccess = "true"))
 	float WalkSpeed = 600.f;
