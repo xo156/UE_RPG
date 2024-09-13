@@ -27,6 +27,4 @@ public:
 
 	UPROPERTY(meta = (BindWidget))
 	class UTextBlock* ItemDescription;
-
-	//struct FItemData ItemData;
 };

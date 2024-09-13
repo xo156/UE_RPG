@@ -15,10 +15,10 @@
 #include "Perception/AISense_Sight.h"
 #include "Perception/AISense_Hearing.h"
 #include "PlayerWidget.h"
-#include "InventoryComponent.h"
 #include "DropItem.h"
 #include "Components/BoxComponent.h"
 #include "InventoryWidget.h"
+#include "InventoryItemAction.h"
 
 // Sets default values
 AMyCharacter::AMyCharacter() {
@@ -62,7 +62,7 @@ AMyCharacter::AMyCharacter() {
 	PlayerWidgetClass = UPlayerWidget::StaticClass();
 
 	//인벤토리
-	Inventory = CreateDefaultSubobject<UInventoryComponent>(TEXT("InventoryComponent"));
+	InventoryComponent = CreateDefaultSubobject<UInventoryComponent>(TEXT("InventoryComponent"));
 
 	//아이템 줍기
 	RootItemBoxComponent = CreateDefaultSubobject<UBoxComponent>(TEXT("RootItemBox"));
@@ -82,8 +82,8 @@ void AMyCharacter::BeginPlay() {
 
 	SetupWidget();
 
-	if (Inventory) {
-		Inventory->CreateInventoryWidget();
+	if (InventoryComponent) {
+		InventoryComponent->CreateInventoryWidget();
 	}
 }
 
@@ -178,7 +178,7 @@ void AMyCharacter::RunEnd()
 
 void AMyCharacter::Look(FVector2D InputValue)
 {
-	if (Inventory->bIsOpen) {
+	if (InventoryComponent->bIsOpen) {
 		//열려있으면 화면은 안 돌아가도록
 	}
 	else {
@@ -349,13 +349,13 @@ void AMyCharacter::UnLockOnTarget()
 
 void AMyCharacter::RootItem()
 {
-	if (Inventory) {
+	if (InventoryComponent) {
 		TArray<ADropItem*> ItemsToRemove;
 		if (OverlapItems.Num() > 0) {
 			for (ADropItem* Item : OverlapItems) {
 				if (Item) {
 					UE_LOG(LogTemp, Log, TEXT("Adding item with ID: %d to inventory"), Item->DropItemData.ItemID);
-					bool bAdded = Inventory->TryAddItem(Item);
+					bool bAdded = InventoryComponent->TryAddItem(Item);
 					if (!bAdded) {
 						UE_LOG(LogTemp, Warning, TEXT("Failed to add item with ID: %d to inventory"), Item->DropItemData.ItemID);
 					}
@@ -372,19 +372,22 @@ void AMyCharacter::RootItem()
 
 void AMyCharacter::OpenInventory()
 {
-	if (Inventory) {
-		if (Inventory->bIsOpen) {
-			Inventory->CloseInventoryWidget();
+	if (InventoryComponent) {
+		if (InventoryComponent->bIsOpen) {
+			InventoryComponent->CloseInventoryWidget();
+			if (auto* PlayerController = Cast<AMyPlayerController>(GetController())) {
+				PlayerController->HideItemAction();
+			}
 		}
 		else {
-			Inventory->OpenInventoryWidget();
+			InventoryComponent->OpenInventoryWidget();
 		}
 	}
 }
 
 UInventoryComponent* AMyCharacter::GetInventory()
 {
-	return Inventory;
+	return InventoryComponent;
 }
 
 void AMyCharacter::OnRootItemBoxOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComponent, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
@@ -413,8 +416,8 @@ void AMyCharacter::OnRootItemBoxOverlapEnd(UPrimitiveComponent* OverlappedCompon
 
 void AMyCharacter::Close()
 {
-	if (Inventory->InventoryWidget) {
-		Inventory->InventoryWidget->SetVisibility(ESlateVisibility::Hidden);
+	if (InventoryComponent->InventoryWidget) {
+		InventoryComponent->InventoryWidget->SetVisibility(ESlateVisibility::Hidden);
 		//TODO:나중에 여기에 게임 종료까지 이어지도록
 	}
 }
@@ -544,10 +547,10 @@ void AMyCharacter::SetupStimulusSource()
 
 void AMyCharacter::TEST()
 {	
-	if (Inventory) {
+	if (InventoryComponent) {
 		UE_LOG(LogTemp, Log, TEXT("----- Inventory Items -----"));
 
-		for (const FInventoryItemData& Item : Inventory->InventoryItems) {
+		for (const FInventoryItemData& Item : InventoryComponent->InventoryItems) {
 			UE_LOG(LogTemp, Log, TEXT("UID: %d, ItemID: %d, Amount: %d, bCounterble: %s"),
 				   Item.ItemUID,
 				   Item.ItemTableID,

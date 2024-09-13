@@ -62,8 +62,6 @@ void AWeapon::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* O
 
 void AWeapon::ApplyDamageToActor(AActor* ActorToDamage)
 {
-	//UE_LOG(LogTemp, Log, TEXT("ApplyDamageToActor Call, ActorToDamage: %s"), *ActorToDamage->GetName());
-
 	if (OwnerCharacter == nullptr) {
 		return;
 	}
@@ -75,7 +73,6 @@ void AWeapon::ApplyDamageToActor(AActor* ActorToDamage)
 	}
 	else {
 		ActorToDamage->TakeDamage(Damage, DamageEvent, GetInstigatorController(), this);
-		//UE_LOG(LogTemp, Log, TEXT("Try TakeDamage Call"));
 	}
 }
 

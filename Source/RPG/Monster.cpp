@@ -53,7 +53,6 @@ void AMonster::ConsumeHPForAction(float HPCost)
 {
 	MonsterStatus.UseHP(HPCost);
 	OnMonsterUIUpdated.Broadcast(MonsterStatus.CurrentMonsterHP);
-	UE_LOG(LogTemp, Log, TEXT("Monster HP Updated: %f"), MonsterStatus.CurrentMonsterHP);
 }
 
 bool AMonster::bHasEnoughHP(float HPCost) const
@@ -116,30 +115,18 @@ void AMonster::MonsterAttack()
 		if (MonsterAttackMontage) {
 			if (!bIsMonsterAttack) {
 				bIsMonsterAttack = true;
-				UE_LOG(LogTemp, Log, TEXT("Montage_Play is called"));
 				AnimInstance->Montage_Play(MonsterAttackMontage);
 
 				FOnMontageEnded MontageEndedDelegate;
 				MontageEndedDelegate.BindUObject(this, &AMonster::OnAttackMontageEnded);
 				AnimInstance->Montage_SetEndDelegate(MontageEndedDelegate, MonsterAttackMontage);
 			}
-			else {
-				UE_LOG(LogTemp, Warning, TEXT("Monster is already attacking"));
-			}
 		}
-		else {
-			UE_LOG(LogTemp, Warning, TEXT("MonsterAttackMontage is nullptr"));
-		}
-	}
-	else {
-		UE_LOG(LogTemp, Warning, TEXT("AnimInstance is nullptr"));
 	}
 }
 
 void AMonster::MonsterAttackEnd()
 {
-	UE_LOG(LogTemp, Warning, TEXT("AMonster::MonsterAttackEnd()"));
-
 	GetCharacterMovement()->bOrientRotationToMovement = true;
 	bIsMonsterAttack = false;
 	OverlapActors.Empty();
@@ -207,9 +194,6 @@ float AMonster::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, 
 					else {
 						UE_LOG(LogTemp, Warning, TEXT("Item ID %d did not pass the rate check."), DropRate.ItemID);
 					}
-				}
-				else {
-					UE_LOG(LogTemp, Warning, TEXT("Item ID %d does not exist in ItemDropTable."), DropRate.ItemID);
 				}
 			}
 		}

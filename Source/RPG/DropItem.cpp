@@ -4,6 +4,7 @@
 #include "DropItem.h"
 #include "Components/BoxComponent.h"
 #include "Components/StaticMeshComponent.h"
+#include "ItemData.h"
 
 // Sets default values
 ADropItem::ADropItem()

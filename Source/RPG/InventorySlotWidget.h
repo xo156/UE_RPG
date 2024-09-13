@@ -25,6 +25,7 @@ public:
 
 	virtual FReply NativeOnMouseButtonDown(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent) override;
 
+
 	void RefreshSlot(TArray<FInventoryItemData> InventoryItem, int32 SlotIndex);
 	void ClearSlot();
 

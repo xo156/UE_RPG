@@ -42,4 +42,9 @@ public:
     //아이템 회복량
     UPROPERTY(EditAnywhere)
     float ItemRecoverValue;
+
+    //아이템 클래스
+    UPROPERTY(EditAnywhere)
+    TArray<TSubclassOf<class AItemBase>> ItemClass;
+
 };

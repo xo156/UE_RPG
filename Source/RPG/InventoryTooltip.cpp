@@ -21,7 +21,7 @@ void UInventoryTooltip::PreConstruct(bool bIsDesignTime)
 		ItemDescription->SetText(FText::FromString("Item Description: (Default)"));
 	}
 
-	UE_LOG(LogTemp, Log, TEXT("Tooltip Open"));
+	UE_LOG(LogTemp, Log, TEXT("UInventoryTooltip::PreConstruct"));
 }
 
 void UInventoryTooltip::InitTooltip(const FItemData& InItemData)

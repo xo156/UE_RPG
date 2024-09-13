@@ -31,7 +31,10 @@ public:
 	class UTextBlock* OnlyDestroyText;
 	
 	void SetItemData(const FInventoryItemData& InItemData);
-	FInventoryItemData ItemData;
+	FInventoryItemData InventoryItemData;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item")
+	UDataTable* ItemDataTable;
 
 	UFUNCTION()
 	void OnOnlyUseClicked();

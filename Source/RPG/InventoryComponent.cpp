@@ -5,6 +5,7 @@
 #include "DropItem.h"
 #include "InventoryWidget.h"
 #include "Kismet/GameplayStatics.h"
+#include "InventoryItemAction.h"
 
 // Sets default values for this component's properties
 UInventoryComponent::UInventoryComponent()
@@ -83,10 +84,7 @@ void UInventoryComponent::StackItem(ADropItem* AddedItem, int32 SlotIndex)
 	if (InventoryItems.IsValidIndex(SlotIndex) && AddedItem) {
 		FInventoryItemData& SlotItemData = InventoryItems[SlotIndex];
 
-        //SlotItemData.ItemUID = MakeUID();
 		SlotItemData.ItemAmount += AddedItem->DropItemData.Amount;
-        SlotItemData.ItemTableID = AddedItem->DropItemData.ItemID;
-        SlotItemData.bCounterble = AddedItem->DropItemData.bCounterble;
 
         UE_LOG(LogTemp, Log, TEXT("Stack Item With UID: %d, ItemID: %d, Amount: %d, Couterble: %s"),
                SlotItemData.ItemUID, SlotItemData.ItemTableID, SlotItemData.ItemAmount, 
@@ -105,7 +103,7 @@ void UInventoryComponent::AddItem(ADropItem* AddedItem)
 		NewInventoryItemData.ItemTableID = AddedItem->DropItemData.ItemID;
 		NewInventoryItemData.bCounterble = AddedItem->DropItemData.bCounterble;
 
-		UE_LOG(LogTemp, Log, TEXT("Add Item With UID: %d, ItemID: %d, Amount: %d, Couterble: %s"),
+		UE_LOG(LogTemp, Log, TEXT("Add Item With UID: %d, ItemID: %d, Amount: %d, Couterble: %s, ItemClass"),
 			   NewInventoryItemData.ItemUID, NewInventoryItemData.ItemTableID, 
 			   NewInventoryItemData.ItemAmount,
 			   NewInventoryItemData.bCounterble ? TEXT("True") : TEXT("False"));
@@ -140,7 +138,6 @@ void UInventoryComponent::CreateInventoryWidget()
 void UInventoryComponent::OpenInventoryWidget()
 {
 	if (InventoryWidget && !bIsOpen) {
-        UE_LOG(LogTemp, Error, TEXT("UInventoryComponent::OpenInventoryWidget()"));
 		InventoryWidget->UpdateInventoryWidget(this);
 		InventoryWidget->SetVisibility(ESlateVisibility::Visible);
 		UGameplayStatics::GetPlayerController(this, 0)->bShowMouseCursor = true;
@@ -151,7 +148,6 @@ void UInventoryComponent::OpenInventoryWidget()
 void UInventoryComponent::CloseInventoryWidget()
 {
 	if (InventoryWidget && bIsOpen) {
-        UE_LOG(LogTemp, Error, TEXT("CloseInventoryWidget()"));
 		InventoryWidget->SetVisibility(ESlateVisibility::Hidden);
 		UGameplayStatics::GetPlayerController(this, 0)->bShowMouseCursor = false;
 		bIsOpen = false;
