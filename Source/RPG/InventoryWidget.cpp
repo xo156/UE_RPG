@@ -28,7 +28,6 @@ void UInventoryWidget::CreateInventoryWidget(UInventoryComponent* InventoryCompo
 
         if (InventorySlotWidgetInstance) {
             InventorySlots->AddChildToUniformGrid(InventorySlotWidgetInstance, Index / 6, Index % 6);
-            UE_LOG(LogTemp, Log, TEXT("Successfully added slot at index %d"), Index);
         }
     }
 
@@ -47,13 +46,10 @@ void UInventoryWidget::UpdateInventoryWidget(UInventoryComponent* InventoryCompo
         InventorySlotWidgetInstance = Cast<UInventorySlotWidget>(InventorySlots->GetChildAt(Index));
 
         if (InventorySlotWidgetInstance) {
-            UE_LOG(LogTemp, Log, TEXT("Widget instance created for slot index %d"), Index);
-
             if (Index < InventoryComponent->InventoryItems.Num()) {
                 InventorySlotWidgetInstance->RefreshSlot(InventoryComponent->InventoryItems, Index);
             }
             else {
-                UE_LOG(LogTemp, Log, TEXT("Clearing slot at index %d"), Index);
                 InventorySlotWidgetInstance->ClearSlot();
             }
         }

@@ -27,11 +27,7 @@ void ADropItem::BeginPlay()
 {
 	Super::BeginPlay();
 
-	FDropItemData BeginData;
-	BeginData.Amount = 1;
-	BeginData.bCounterble = true;
-	BeginData.ItemID = 2001;
-	SetDropItem(BeginData);
+	SetDropItem(DropItemData);
 
 	UE_LOG(LogTemp, Warning, TEXT("ADropItem BeginPlay: Location: %s"), *GetActorLocation().ToString());
 

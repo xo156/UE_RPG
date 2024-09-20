@@ -34,5 +34,6 @@ public:
 	
 	void SetDropItem(const FDropItemData& NewDropItemData);
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item")
 	FDropItemData DropItemData;
 };

@@ -24,10 +24,15 @@ void UInventoryItemAction::NativeConstruct()
 void UInventoryItemAction::SetItemData(const FInventoryItemData& InItemData)
 {
 	InventoryItemData = InItemData;
+
+	UE_LOG(LogTemp, Log, TEXT("UInventoryItemAction::SetItemData"));
+	UE_LOG(LogTemp, Log, TEXT("InventoryItemData.ItemTableID: %d, ItemAmount: %d"), InventoryItemData.ItemTableID, InventoryItemData.ItemAmount);
 }
 
 void UInventoryItemAction::OnOnlyUseClicked()
 {
+	UE_LOG(LogTemp, Error, TEXT("InventoryItemData.ItemTableID: %d, ItemAmount: %d"), InventoryItemData.ItemTableID, InventoryItemData.ItemAmount);
+
 	if (InventoryItemData.ItemAmount > 0) {
 		if (ItemDataTable) {
 			FItemData* ClickedItem = ItemDataTable->FindRow<FItemData>(FName(*FString::FromInt(InventoryItemData.ItemTableID)), TEXT("Item Data Context"));
@@ -37,6 +42,9 @@ void UInventoryItemAction::OnOnlyUseClicked()
 					if (auto* ItemInstance = GetWorld()->SpawnActor<AItemBase>(ClickedItem->ItemClass[0])) {
 						ItemInstance->Use();
 						InventoryItemData.ItemAmount -= 1;
+
+						UE_LOG(LogTemp, Error, TEXT("Updated ItemAmount: %d"), InventoryItemData.ItemAmount);
+
 						if (auto* PlayerController = Cast<AMyPlayerController>(GetWorld()->GetFirstPlayerController())) {
 							if (auto* PlayerCharacter = Cast<AMyCharacter>(PlayerController->GetPawn())) {
 								PlayerCharacter->GetInventory()->InventoryWidget->UpdateInventoryWidget(PlayerCharacter->GetInventory());
@@ -63,6 +71,8 @@ void UInventoryItemAction::OnOnlyUseClicked()
 
 void UInventoryItemAction::OnOnlyDestroyClicked()
 {
+	UE_LOG(LogTemp, Error, TEXT("InventoryItemData.ItemTableID: %d, ItemAmount: %d"), InventoryItemData.ItemTableID, InventoryItemData.ItemAmount);
+
 	if (InventoryItemData.ItemAmount > 0) {
 		if (ItemDataTable) {
 			FItemData* ClickedItem = ItemDataTable->FindRow<FItemData>(FName(*FString::FromInt(InventoryItemData.ItemTableID)), TEXT("Item Data Context"));
@@ -72,6 +82,9 @@ void UInventoryItemAction::OnOnlyDestroyClicked()
 					if (auto* ItemInstance = GetWorld()->SpawnActor<AItemBase>(ClickedItem->ItemClass[0])) {
 						ItemInstance->DeleteItem();
 						InventoryItemData.ItemAmount -= 1;
+
+						UE_LOG(LogTemp, Error, TEXT("Updated ItemAmount: %d"), InventoryItemData.ItemAmount);
+
 						if (auto* PlayerController = Cast<AMyPlayerController>(GetWorld()->GetFirstPlayerController())) {
 							if (auto* PlayerCharacter = Cast<AMyCharacter>(PlayerController->GetPawn())) {
 								PlayerCharacter->GetInventory()->InventoryWidget->UpdateInventoryWidget(PlayerCharacter->GetInventory());
