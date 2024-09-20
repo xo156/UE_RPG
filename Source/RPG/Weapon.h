@@ -32,6 +32,8 @@ public:
 	
 	void SetOwnerCharacter(class AMyCharacter* NewOwnerCharacter);
 
+	virtual void Use() override;
+
 	class USkeletalMeshComponent* GetWeaponMesh() const;
 	class UBoxComponent* GetWeaponCollision() const;
 	TArray<AActor*>& GetOverlapActors();

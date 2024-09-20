@@ -9,6 +9,8 @@
 #include "Engine/DamageEvents.h"
 #include "WeaponBaseComponent.h"
 
+#include "MyPlayerController.h"
+
 // Sets default values
 AWeapon::AWeapon()
 {
@@ -86,6 +88,27 @@ void AWeapon::SetOwnerCharacter(AMyCharacter* NewOwnerCharacter)
 	else {
 		UE_LOG(LogTemp, Error, TEXT("SetOwnerCharacter called with null"));
 	}
+}
+
+void AWeapon::Use()
+{
+	UE_LOG(LogTemp, Log, TEXT("AWeapon::Use()"));
+	/*if (!this) {
+		UE_LOG(LogTemp, Error, TEXT("AWeapon 인스턴스가 널입니다!"));
+		return;
+	}
+	else {
+		if (auto* PlayerController = Cast<AMyPlayerController>(GetWorld()->GetFirstPlayerController())) {
+			if (auto* PlayerCharacter = Cast<AMyCharacter>(PlayerController->GetPawn())) {
+				FVector SpawnLocation = PlayerCharacter->GetActorLocation() + FVector(150.f, 150.f, 0.f);
+				FRotator SpawnRotation = PlayerCharacter->GetActorRotation();
+				GetWorld()->SpawnActor<AWeapon>(GetClass(), SpawnLocation, SpawnRotation);
+			}
+		}
+
+	}*/
+
+
 }
 
 USkeletalMeshComponent* AWeapon::GetWeaponMesh() const

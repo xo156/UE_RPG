@@ -118,6 +118,19 @@ void UInventoryComponent::AddItem(ADropItem* AddedItem)
 
 }
 
+void UInventoryComponent::RemoveItem(int32 ItemTableID, int32 Amount)
+{
+	for (int32 Index = 0; Index < InventoryItems.Num(); Index++) {
+		if (InventoryItems[Index].ItemTableID == ItemTableID) {
+			InventoryItems[Index].ItemAmount = FMath::Max(InventoryItems[Index].ItemAmount - Amount, 0);
+			if (InventoryItems[Index].ItemAmount <= 0) {
+				InventoryItems.RemoveAt(Index);
+			}
+			break;
+		}
+	}
+}
+
 int32 UInventoryComponent::MakeUID()
 {
 	return ++UIDCounter;

@@ -24,46 +24,39 @@ void UInventoryItemAction::NativeConstruct()
 void UInventoryItemAction::SetItemData(const FInventoryItemData& InItemData)
 {
 	InventoryItemData = InItemData;
-
-	UE_LOG(LogTemp, Log, TEXT("UInventoryItemAction::SetItemData"));
-	UE_LOG(LogTemp, Log, TEXT("InventoryItemData.ItemTableID: %d, ItemAmount: %d"), InventoryItemData.ItemTableID, InventoryItemData.ItemAmount);
 }
 
 void UInventoryItemAction::OnOnlyUseClicked()
 {
-	UE_LOG(LogTemp, Error, TEXT("InventoryItemData.ItemTableID: %d, ItemAmount: %d"), InventoryItemData.ItemTableID, InventoryItemData.ItemAmount);
-
 	if (InventoryItemData.ItemAmount > 0) {
 		if (ItemDataTable) {
 			FItemData* ClickedItem = ItemDataTable->FindRow<FItemData>(FName(*FString::FromInt(InventoryItemData.ItemTableID)), TEXT("Item Data Context"));
-			if (ClickedItem->ItemClass.Num() > 0) {
-				switch (ClickedItem->ItemType) {
-				case EItemType::Consumable:
-					if (auto* ItemInstance = GetWorld()->SpawnActor<AItemBase>(ClickedItem->ItemClass[0])) {
-						ItemInstance->Use();
-						InventoryItemData.ItemAmount -= 1;
-
-						UE_LOG(LogTemp, Error, TEXT("Updated ItemAmount: %d"), InventoryItemData.ItemAmount);
-
-						if (auto* PlayerController = Cast<AMyPlayerController>(GetWorld()->GetFirstPlayerController())) {
-							if (auto* PlayerCharacter = Cast<AMyCharacter>(PlayerController->GetPawn())) {
-								PlayerCharacter->GetInventory()->InventoryWidget->UpdateInventoryWidget(PlayerCharacter->GetInventory());
-							}
-							else {
-								UE_LOG(LogTemp, Error, TEXT("playerCharacter failed"));
-							}
-						}
-						else {
-							UE_LOG(LogTemp, Error, TEXT("playercontroller failed"));
+			switch (ClickedItem->ItemType) {
+			case EItemType::Consumable:
+				if (auto* ItemInstance = GetWorld()->SpawnActor<AItemBase>(ClickedItem->ItemClass[0])) {
+					ItemInstance->Use();
+					if (auto* PlayerController = Cast<AMyPlayerController>(GetWorld()->GetFirstPlayerController())) {
+						if (auto* PlayerCharacter = Cast<AMyCharacter>(PlayerController->GetPawn())) {
+							PlayerCharacter->GetInventory()->RemoveItem(InventoryItemData.ItemTableID, 1);
+							PlayerCharacter->GetInventory()->InventoryWidget->UpdateInventoryWidget(PlayerCharacter->GetInventory());
 						}
 					}
-					break;
-				case EItemType::Weapon:
-					//TODO: 이미 장착하고 있는 무기와 서로 위치 변경
-					break;
-				default:
-					break;
 				}
+				break;
+			case EItemType::Weapon:
+				//TODO: 이미 장착하고 있는 무기와 서로 위치 변경
+				if (auto* ItemInstance = GetWorld()->SpawnActor<AItemBase>(ClickedItem->ItemClass[0])) {
+					ItemInstance->Use();
+					/*if (auto* PlayerController = Cast<AMyPlayerController>(GetWorld()->GetFirstPlayerController())) {
+						if (auto* PlayerCharacter = Cast<AMyCharacter>(PlayerController->GetPawn())) {
+							PlayerCharacter->GetInventory()->RemoveItem(InventoryItemData.ItemTableID, 1);
+							PlayerCharacter->GetInventory()->InventoryWidget->UpdateInventoryWidget(PlayerCharacter->GetInventory());
+						}
+					}*/
+				}
+				break;
+			default:
+				break;
 			}
 		}
 	}
@@ -71,39 +64,26 @@ void UInventoryItemAction::OnOnlyUseClicked()
 
 void UInventoryItemAction::OnOnlyDestroyClicked()
 {
-	UE_LOG(LogTemp, Error, TEXT("InventoryItemData.ItemTableID: %d, ItemAmount: %d"), InventoryItemData.ItemTableID, InventoryItemData.ItemAmount);
-
 	if (InventoryItemData.ItemAmount > 0) {
 		if (ItemDataTable) {
 			FItemData* ClickedItem = ItemDataTable->FindRow<FItemData>(FName(*FString::FromInt(InventoryItemData.ItemTableID)), TEXT("Item Data Context"));
-			if (ClickedItem->ItemClass.Num() > 0) {
-				switch (ClickedItem->ItemType) {
-				case EItemType::Consumable:
-					if (auto* ItemInstance = GetWorld()->SpawnActor<AItemBase>(ClickedItem->ItemClass[0])) {
-						ItemInstance->DeleteItem();
-						InventoryItemData.ItemAmount -= 1;
-
-						UE_LOG(LogTemp, Error, TEXT("Updated ItemAmount: %d"), InventoryItemData.ItemAmount);
-
-						if (auto* PlayerController = Cast<AMyPlayerController>(GetWorld()->GetFirstPlayerController())) {
-							if (auto* PlayerCharacter = Cast<AMyCharacter>(PlayerController->GetPawn())) {
-								PlayerCharacter->GetInventory()->InventoryWidget->UpdateInventoryWidget(PlayerCharacter->GetInventory());
-							}
-							else {
-								UE_LOG(LogTemp, Error, TEXT("playerCharacter failed"));
-							}
-						}
-						else {
-							UE_LOG(LogTemp, Error, TEXT("playercontroller failed"));
+			switch (ClickedItem->ItemType) {
+			case EItemType::Consumable:
+				if (auto* ItemInstance = GetWorld()->SpawnActor<AItemBase>(ClickedItem->ItemClass[0])) {
+					ItemInstance->DeleteItem();
+					if (auto* PlayerController = Cast<AMyPlayerController>(GetWorld()->GetFirstPlayerController())) {
+						if (auto* PlayerCharacter = Cast<AMyCharacter>(PlayerController->GetPawn())) {
+							PlayerCharacter->GetInventory()->RemoveItem(InventoryItemData.ItemTableID, 1);
+							PlayerCharacter->GetInventory()->InventoryWidget->UpdateInventoryWidget(PlayerCharacter->GetInventory());
 						}
 					}
-					break;
-				case EItemType::Weapon:
-					//TODO: 무기 세트로 날리기
-					break;
-				default:
-					break;
 				}
+				break;
+			case EItemType::Weapon:
+				//TODO: 무기 세트로 날리기
+				break;
+			default:
+				break;
 			}
 		}
 	}

@@ -29,6 +29,7 @@ public:
 	int32 FindSlotIndex(class ADropItem* AddedItem);
 	void StackItem(class ADropItem* AddedItem, int32 SlotIndex);
 	void AddItem(class ADropItem* AddedItem);
+	void RemoveItem(int32 ItemTableID, int32 Amount);
 	int32 MakeUID();
 
 	void CreateInventoryWidget();
