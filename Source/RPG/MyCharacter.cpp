@@ -422,10 +422,10 @@ void AMyCharacter::Close()
 	}
 }
 
-void AMyCharacter::EquipWeapon(TSubclassOf<class UWeaponBaseComponent> WeaponClass)
+void AMyCharacter::EquipWeapon(TSubclassOf<class UWeaponBaseComponent> WeaponBaseComponentClass)
 {
-	if (WeaponClass) {
-		CurrentWeapon = NewObject<UWeaponBaseComponent>(this, WeaponClass);
+	if (WeaponBaseComponentClass) {
+		CurrentWeapon = NewObject<UWeaponBaseComponent>(this, WeaponBaseComponentClass);
 		if (CurrentWeapon) {
 			CurrentWeapon->SetOwnerCharacter(this);
 			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, FString::Printf(TEXT("Now EquipWeapon : %s"), *CurrentWeapon->GetName()));

@@ -106,7 +106,7 @@ public:
 
 	//¹«±â
 	UFUNCTION(BlueprintCallable, Category = "Weapon")
-	void EquipWeapon(TSubclassOf<class UWeaponBaseComponent> WeaponClass);
+	void EquipWeapon(TSubclassOf<class UWeaponBaseComponent> WeaponBaseComponentClass);
 	class UWeaponBaseComponent* GetCurrentWeapon() const;
 
 	//À§Á¬
