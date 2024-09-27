@@ -495,17 +495,28 @@ void AMyCharacter::Close()
 void AMyCharacter::EquipWeapon(TSubclassOf<class UWeaponBaseComponent> WeaponBaseComponentClass)
 {
 	if (WeaponBaseComponentClass) {
+		if (CurrentWeapon) {
+			if (auto NowEquipWeapon = GetWorld()->SpawnActor<ADropItem>(ADropItem::StaticClass())) {
+				FDropItemData NowEquipWeaponData;
+				NowEquipWeaponData.Amount = 1;
+				NowEquipWeaponData.bCounterble = false;
+				NowEquipWeaponData.ItemID = CurrentWeapon->GetRightHandWeaponInstance()->GetItemData().ItemID;
+				GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, FString::Printf(TEXT("Now EquipWeapon ID : %d"), NowEquipWeaponData.ItemID));
+				NowEquipWeapon->SetDropItem(NowEquipWeaponData);
+				if (InventoryComponent) {
+					InventoryComponent->TryAddItem(NowEquipWeapon);
+				}
+			}
+			CurrentWeapon->GetRightHandWeaponInstance()->Destroy();
+			CurrentWeapon->GetLeftHandWeaponInstance()->Destroy();
+			CurrentWeapon = nullptr;
+		}
+
 		CurrentWeapon = NewObject<UWeaponBaseComponent>(this, WeaponBaseComponentClass);
 		if (CurrentWeapon) {
 			CurrentWeapon->SetOwnerCharacter(this);
 			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, FString::Printf(TEXT("Now EquipWeapon : %s"), *CurrentWeapon->GetName()));
 		}
-		else {
-			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("Failed to spawn weapon"));
-		}
-	}
-	else {
-		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("WeaponClass is not set"));
 	}
 }
 

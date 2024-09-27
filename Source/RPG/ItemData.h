@@ -23,6 +23,10 @@ public:
     UPROPERTY(EditAnywhere)
     FText ItemName;
 
+    //아이템 ID
+    UPROPERTY(EditAnywhere)
+    int32 ItemID;
+
     //아이템 아이콘
     UPROPERTY(EditAnywhere)
     class UTexture2D* ItemIcon;

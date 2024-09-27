@@ -7,6 +7,7 @@
 #include "InventoryWidget.h"
 #include "MyCharacter.h"
 #include "MyPlayerController.h"
+#include "DropItem.h"
 
 void UInventoryItemAction::NativeConstruct()
 {
@@ -30,7 +31,7 @@ void UInventoryItemAction::OnOnlyUseClicked()
 {
 	if (InventoryItemData.ItemAmount > 0) {
 		if (ItemDataTable) {
-			FItemData* ClickedItem = ItemDataTable->FindRow<FItemData>(FName(*FString::FromInt(InventoryItemData.ItemTableID)), TEXT("Item Data Context"));
+			FItemData* ClickedItem = ItemDataTable->FindRow<FItemData>(FName(*FString::FromInt(InventoryItemData.ItemTableID)), TEXT("Item Data Context IvnentoryItemAction"));
 			switch (ClickedItem->ItemType) {
 			case EItemType::Consumable:
 				if (auto* ItemInstance = GetWorld()->SpawnActor<AItemBase>(ClickedItem->ItemClass[0])) {
@@ -44,15 +45,15 @@ void UInventoryItemAction::OnOnlyUseClicked()
 				}
 				break;
 			case EItemType::Weapon:
-				//TODO: 이미 장착하고 있는 무기와 서로 위치 변경
 				if (auto* ItemInstance = GetWorld()->SpawnActor<AItemBase>(ClickedItem->ItemClass[0])) {
-					ItemInstance->Use();
-					/*if (auto* PlayerController = Cast<AMyPlayerController>(GetWorld()->GetFirstPlayerController())) {
+					if (auto* PlayerController = Cast<AMyPlayerController>(GetWorld()->GetFirstPlayerController())) {
 						if (auto* PlayerCharacter = Cast<AMyCharacter>(PlayerController->GetPawn())) {
 							PlayerCharacter->GetInventory()->RemoveItem(InventoryItemData.ItemTableID, 1);
 							PlayerCharacter->GetInventory()->InventoryWidget->UpdateInventoryWidget(PlayerCharacter->GetInventory());
+							ItemInstance->Use();
+							ItemInstance->Destroy();
 						}
-					}*/
+					}
 				}
 				break;
 			default:
@@ -65,25 +66,10 @@ void UInventoryItemAction::OnOnlyUseClicked()
 void UInventoryItemAction::OnOnlyDestroyClicked()
 {
 	if (InventoryItemData.ItemAmount > 0) {
-		if (ItemDataTable) {
-			FItemData* ClickedItem = ItemDataTable->FindRow<FItemData>(FName(*FString::FromInt(InventoryItemData.ItemTableID)), TEXT("Item Data Context"));
-			switch (ClickedItem->ItemType) {
-			case EItemType::Consumable:
-				if (auto* ItemInstance = GetWorld()->SpawnActor<AItemBase>(ClickedItem->ItemClass[0])) {
-					ItemInstance->DeleteItem();
-					if (auto* PlayerController = Cast<AMyPlayerController>(GetWorld()->GetFirstPlayerController())) {
-						if (auto* PlayerCharacter = Cast<AMyCharacter>(PlayerController->GetPawn())) {
-							PlayerCharacter->GetInventory()->RemoveItem(InventoryItemData.ItemTableID, 1);
-							PlayerCharacter->GetInventory()->InventoryWidget->UpdateInventoryWidget(PlayerCharacter->GetInventory());
-						}
-					}
-				}
-				break;
-			case EItemType::Weapon:
-				//TODO: 무기 세트로 날리기
-				break;
-			default:
-				break;
+		if (auto* PlayerController = Cast<AMyPlayerController>(GetWorld()->GetFirstPlayerController())) {
+			if (auto* PlayerCharacter = Cast<AMyCharacter>(PlayerController->GetPawn())) {
+				PlayerCharacter->GetInventory()->RemoveItem(InventoryItemData.ItemTableID, 1);
+				PlayerCharacter->GetInventory()->InventoryWidget->UpdateInventoryWidget(PlayerCharacter->GetInventory());
 			}
 		}
 	}

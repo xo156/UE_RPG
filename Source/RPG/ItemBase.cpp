@@ -32,13 +32,6 @@ void AItemBase::Use()
 
 }
 
-void AItemBase::DeleteItem()
-{
-	//¹ö¸±½Ã
-	UE_LOG(LogTemp, Log, TEXT("AItemBase::DeleteItem()"));
-
-}
-
 FItemData AItemBase::GetItemData()
 {
 	return FItemData();

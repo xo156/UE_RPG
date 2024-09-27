@@ -152,6 +152,10 @@ public:
 
 	//델리게이트
 	FOnPlayerUIUpdated OnPlayerUIUpdated;
+
+	//무기
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Weapon")
+	TSubclassOf<class UWeaponBaseComponent> WeaponComponent;
 		
 protected:
 	// Called when the game starts or when spawned
@@ -178,10 +182,6 @@ protected:
 	class UAnimMontage* HitMontage;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Montage")
 	class UAnimMontage* DieMontage;
-
-	//무기
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Weapon")
-	TSubclassOf<class UWeaponBaseComponent> WeaponComponent;
 
 private:
 	//카메라

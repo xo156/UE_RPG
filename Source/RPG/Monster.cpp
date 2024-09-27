@@ -188,11 +188,7 @@ float AMonster::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, 
 							DropItemData.bCounterble = DropRate.bCounterble;
 
 							DropItemActor->SetDropItem(DropItemData);
-							UE_LOG(LogTemp, Warning, TEXT("Successfully spawned DropItemActor with ID %d."), DropRate.ItemID);
 						}
-					}
-					else {
-						UE_LOG(LogTemp, Warning, TEXT("Item ID %d did not pass the rate check."), DropRate.ItemID);
 					}
 				}
 			}

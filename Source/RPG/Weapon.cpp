@@ -93,7 +93,6 @@ void AWeapon::SetOwnerCharacter(AMyCharacter* NewOwnerCharacter)
 void AWeapon::Use()
 {
 	UE_LOG(LogTemp, Log, TEXT("AWeapon::Use()"));
-
 	if (auto* Player = Cast<AMyCharacter>(GetWorld()->GetFirstPlayerController()->GetPawn())) {
 		Player->EquipWeapon(ThisWeaponComponent);
 	}
