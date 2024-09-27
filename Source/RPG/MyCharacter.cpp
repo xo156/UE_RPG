@@ -19,6 +19,8 @@
 #include "Components/BoxComponent.h"
 #include "InventoryWidget.h"
 #include "InventoryItemAction.h"
+#include "Kismet/KismetMathLibrary.h"
+#include "Monster.h"
 
 // Sets default values
 AMyCharacter::AMyCharacter() {
@@ -34,7 +36,6 @@ AMyCharacter::AMyCharacter() {
 	GetCharacterMovement()->RotationRate = FRotator(0.f, 500.f, 0.f);
 	GetCharacterMovement()->JumpZVelocity = 500.0f;
 	GetCharacterMovement()->MaxWalkSpeed = WalkSpeed;
-	//GetCharacterMovement()->BrakingDecelerationWalking = 2000.f;
 
 	CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));
 	CameraBoom->SetupAttachment(RootComponent);
@@ -76,8 +77,8 @@ AMyCharacter::AMyCharacter() {
 void AMyCharacter::BeginPlay() {
 	Super::BeginPlay();
 
-	if (BareHand) {
-		EquipWeapon(BareHand);
+	if (WeaponComponent) {
+		EquipWeapon(WeaponComponent);
 	}
 
 	SetupWidget();
@@ -85,6 +86,8 @@ void AMyCharacter::BeginPlay() {
 	if (InventoryComponent) {
 		InventoryComponent->CreateInventoryWidget();
 	}
+
+	bIsIdle = true;
 }
 
 // Called every frame
@@ -95,6 +98,9 @@ void AMyCharacter::Tick(float DeltaTime) {
 
 	ChangeMoveSpeed(DeltaTime);
 
+	if (GetVelocity().Y == 0.f && !bIsRoll)
+		bIsIdle = true;
+
 	//플레이어가 움직이는지 확인하기 위함
 	PreviousLocation = CurrentLocation;
 	CurrentLocation = GetActorLocation();
@@ -102,15 +108,38 @@ void AMyCharacter::Tick(float DeltaTime) {
 	// 이전 위치와 현재 위치가 다른 경우 움직임이 있음
 	bIsMove = (CurrentLocation != PreviousLocation);
 
-	//락온 시 카메라
-	if (bIsLockOnTarget && LockedOnTarget) {
-		float TargetDist = FVector::Dist(LockedOnTarget->GetActorLocation(), GetActorLocation());
-		if (TargetDist > MaxLockOnDist) {
-			UnLockOnTarget();
+	//락 온 중이면
+	if (bIsLockon && CurrentTarget) {
+		UpdateTargetVisibility();
+		if (!IsTargetInView(CurrentTarget)) {
+			ChangeTarget(nullptr);
+			UpdateLockonEffect();
+			return;
 		}
-		else {
-			LockOnCamera(DeltaTime);
+
+		if (GetDistanceTo(CurrentTarget) > TargetRange) {
+			ChangeTarget(nullptr);
+			UpdateLockonEffect();
+			return;
 		}
+
+		bUseControllerRotationYaw = true;
+		GetCharacterMovement()->bOrientRotationToMovement = false;
+
+		//타겟 방향으로 바라보게 함
+		if (bIsMove || bIsAttack || bIsGuard) {
+			FRotator LookAtRotation = UKismetMathLibrary::FindLookAtRotation(GetActorLocation(), CurrentTarget->GetActorLocation());
+			LookAtRotation.Pitch -= TargetHeightOffset;
+			GetController()->SetControlRotation(LookAtRotation);
+		}
+
+		if (LockonWidgetInstance)
+			UpdateLockonEffect();
+	}
+	else {
+		UpdateLockonEffect();
+		bUseControllerRotationYaw = false;
+		GetCharacterMovement()->bOrientRotationToMovement = true;
 	}
 }
 
@@ -146,7 +175,7 @@ float AMyCharacter::TakeDamage(float DamageAmount, FDamageEvent const& DamageEve
 
 void AMyCharacter::Move(FVector2D InputValue)
 {
-	if (!bIsDodge) {
+	if (!bIsRoll) {
 		const FRotator YawRotation(0.f, GetControlRotation().Yaw, 0.f);
 		const FVector ForwardDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);
 		const FVector RightDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
@@ -189,19 +218,25 @@ void AMyCharacter::Look(FVector2D InputValue)
 
 void AMyCharacter::AttackStart()
 {
-	if (!bIsDodge && !bIsAttack && bHasEnoughStamina(AttackStaminaCost)) {
+	if (!bIsRoll && !bIsAttack && bHasEnoughStamina(AttackStaminaCost)) {
 		bIsAttack = true;
+		GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Blue, TEXT("AMyCharacter::AttackStart()"));
+
 		AttackExecute();
 	}
 }
 
 void AMyCharacter::AttackExecute()
 {
+
 	if (UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance()) {
 		if (CurrentWeapon == nullptr) {
 			bIsAttack = false;
 			return;
 		}
+
+		GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Blue, TEXT("AMyCharacter::AttackExecute()"));
+
 		//오버랩 액터 리스트 비우기
 		CurrentWeapon->GetRightHandWeaponInstance()->GetOverlapActors().Empty();
 		CurrentWeapon->GetLeftHandWeaponInstance()->GetOverlapActors().Empty();
@@ -237,6 +272,8 @@ void AMyCharacter::AttackEnd()
 		CurrentWeapon->CurrentComboCount = 0;
 		CurrentWeapon->GetRightHandWeaponInstance()->GetOverlapActors().Empty();
 		CurrentWeapon->GetLeftHandWeaponInstance()->GetOverlapActors().Empty();
+		GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Blue, TEXT("AMyCharacter::AttackEnd()"));
+
 	}
 	bIsAttack = false;
 }
@@ -254,13 +291,24 @@ void AMyCharacter::Guard()
 	}
 }
 
-void AMyCharacter::Dodge()
+void AMyCharacter::Roll()
 {
-	if (bHasEnoughStamina(DodgeStaminaCost)) {
-		if (!bIsAttack && CanJump()) {
+	if (bHasEnoughStamina(RollStaminaCost)) {
+		if (!bIsAttack && CanJump() && !bIsRoll) {
 			if (UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance()) {
-				ConsumeStaminaForAction(DodgeStaminaCost);
+				ConsumeStaminaForAction(RollStaminaCost);
+				auto MoveInput = GetCharacterMovement()->GetLastInputVector();
+				RollDirection = GetActorForwardVector() * MoveInput.Y + GetActorRightVector() * MoveInput.X;
+
+				if (!RollDirection.IsNearlyZero()) {
+					RollDirection.Normalize();
+				}
+				else {
+					RollDirection = GetActorForwardVector();
+				}
 				AnimInstance->Montage_Play(DodgeMontage);
+				FVector RollMovement = RollDirection * RollDistMultiplier;
+				LaunchCharacter(RollMovement, false, true);
 			}
 		}
 	}
@@ -268,83 +316,105 @@ void AMyCharacter::Dodge()
 
 void AMyCharacter::LockOnTarget()
 {
-	if (bIsLockOnTarget) {
+	if (bIsLockon) {
 		//이미 락온된 상태에서는 새로운 타겟
-		if (AActor* NewTarget = FindNewTarget()) {
-			LockedOnTarget = NewTarget;
-			DrawDebugSphere(GetWorld(), LockedOnTarget->GetActorLocation(), 150.0f, 12, FColor::Red, false, 5.0f);
-		}
-		else {
-			//새로운 타겟을 찾지 못하면 락온을 해제
-			UnLockOnTarget();
-		}
+		AActor* NewTarget = FindLockOnTarget();
+		ChangeTarget(NewTarget);
+		CreateLockonEffect();
 	}
 	else {
-		if (AActor* NewTarget = FindNewTarget()) {
-			LockedOnTarget = NewTarget;
-			DrawDebugSphere(GetWorld(), LockedOnTarget->GetActorLocation(), 150.0f, 12, FColor::Red, false, 5.0f);
+		AActor* NewTarget = FindLockOnTarget();
+		if (NewTarget) {
+			ChangeTarget(NewTarget);
+			CreateLockonEffect();
 		}
 	}
 }
 
-AActor* AMyCharacter::FindNewTarget()
+AActor* AMyCharacter::FindLockOnTarget()
 {
-	FVector CameraLocation = CameraComponent->GetComponentLocation();
-	FVector CameraForwardVector = CameraComponent->GetForwardVector();
+	TArray<AActor*> Enemies;
+	UGameplayStatics::GetAllActorsOfClass(GetWorld(), AActor::StaticClass(), Enemies);
 
-	//범위 내의 모든 액터를 검색
-	AActor* NearestTarget = nullptr;
-	float NearestDistance = LockOnConeRadius;
+	if (Enemies.Contains(CurrentTarget))
+		Enemies.Remove(CurrentTarget); //현재 타겟 제외
 
-	TArray<AActor*> PotentialTargets;
-	UGameplayStatics::GetAllActorsOfClassWithTag(GetWorld(), AActor::StaticClass(), FName(TEXT("Enemy")), PotentialTargets);
+	AActor* NearestEnemy = nullptr;
+	float NearestDistance = TargetRange;
 
-	//이미 락온중인거는 거르도록
-	for (AActor* Target : PotentialTargets) {
-		if (LockedOnTarget == Target) {
-			PotentialTargets.Remove(Target);
+	for (AActor* Enemy : Enemies) {
+		if (Enemy->ActorHasTag(FName("Enemy"))) {
+			float Distance = GetDistanceTo(Enemy);
+			if (Distance < NearestDistance) {
+				NearestDistance = Distance;
+				NearestEnemy = Enemy;
+			}
 		}
 	}
-
-	for (AActor* Target : PotentialTargets) {
-		FVector DirectionToActor = (Target->GetActorLocation() - CameraLocation).GetSafeNormal();
-		float DistToActor = FVector::Dist(CameraLocation, Target->GetActorLocation());
-
-		//카메라의 전방 벡터와 타겟까지의 벡터 간의 각도를 계산
-		float AngleToTarget = FMath::Acos(FVector::DotProduct(CameraForwardVector, DirectionToActor));
-		AngleToTarget = FMath::RadiansToDegrees(AngleToTarget);
-
-		if (AngleToTarget <= LockOnConeAngle && DistToActor < NearestDistance) {
-			NearestTarget = Target;
-			NearestDistance = DistToActor;
-		}
-	}
-	if (NearestTarget) {
-		bIsLockOnTarget = true;
-	}
-	return NearestTarget;
+	return NearestEnemy;
 }
 
-void AMyCharacter::LockOnCamera(float DeltaTime)
+void AMyCharacter::UpdateTargetVisibility()
 {
-	FVector TargetLocation = LockedOnTarget->GetActorLocation();
-	FVector Direction = (TargetLocation - GetActorLocation()).GetSafeNormal();
-	FRotator NewRotation = FRotationMatrix::MakeFromX(Direction).Rotator();
-	NewRotation.Pitch = 0.0f;  // 캐릭터의 Pitch 회전은 고정
-	SetActorRotation(NewRotation);
-	float CurrentCameraBoomOffsetZ = CameraBoom->SocketOffset.Z;
-	float NewOffsetZ = FMath::Lerp(CurrentCameraBoomOffsetZ, 90.f, 5.f * DeltaTime);
-	if (NewOffsetZ <= 90.f) {
-		CameraBoom->SocketOffset = FVector(0.f, 0.f, NewOffsetZ);
+	if (CurrentTarget) {
+		//타겟이 항상 보이도록
+		if (!IsTargetInView(CurrentTarget)) {
+			ChangeTarget(nullptr); // 타겟이 시야에서 벗어난 경우 lock-on 해제
+		}
 	}
 }
 
-void AMyCharacter::UnLockOnTarget()
+bool AMyCharacter::IsTargetInView(AActor* CheckTarget)
 {
-	LockedOnTarget = nullptr;
-	bIsLockOnTarget = false;
+	if (CheckTarget == nullptr)
+		return false;
 
-	CameraBoom->SocketOffset = FVector(0.f, 0.f, 60.f);
+	FVector DirectionToTarget = CheckTarget->GetActorLocation() - GetActorLocation();
+	DirectionToTarget.Normalize();
+	FVector ForwardVector = GetActorForwardVector();
+
+	return FVector::DotProduct(ForwardVector, DirectionToTarget) > 0;
+}
+
+void AMyCharacter::ChangeTarget(AActor* NewTarget)
+{
+	if (NewTarget != CurrentTarget) {
+		
+		CurrentTarget = NewTarget;
+		if (CurrentTarget == nullptr) {
+			bIsLockon = false;
+		}
+		else {
+			bIsLockon = true;
+		}
+	}
+}
+
+void AMyCharacter::CreateLockonEffect()
+{
+	if (LockonWidgetInstance) {
+		UpdateLockonEffect();
+	}
+	else {
+		if (LockonWidgetClass) {
+			LockonWidgetInstance = CreateWidget<UUserWidget>(GetWorld(), LockonWidgetClass);
+			if (LockonWidgetInstance) {
+				LockonWidgetInstance->AddToViewport();
+				UpdateLockonEffect();
+			}
+		}
+	}
+}
+
+void AMyCharacter::UpdateLockonEffect()
+{
+	if (LockonWidgetInstance && CurrentTarget) {
+		FVector TargetLocation = CurrentTarget->GetActorLocation();
+		FVector2D ScreenPosition;
+		UGameplayStatics::ProjectWorldToScreen(GetWorld()->GetFirstPlayerController(), TargetLocation, ScreenPosition);
+
+		LockonWidgetInstance->SetPositionInViewport(ScreenPosition);
+	}
 }
 
 void AMyCharacter::RootItem()
@@ -514,7 +584,7 @@ void AMyCharacter::ChangeMoveSpeed(float DeltaTime)
 
 void AMyCharacter::CheckStaminaRecovery(float DeltaTime)
 {
-	if (!bIsAttack && !bIsRun && !bIsDodge) {
+	if (!bIsAttack && !bIsRun && !bIsRoll) {
 		if (CharacterStatus.CurrentStamina < CharacterStatus.MaxStamina) {
 			TimeWithoutAction += DeltaTime;
 			if (TimeWithoutAction >= 1.0f) {

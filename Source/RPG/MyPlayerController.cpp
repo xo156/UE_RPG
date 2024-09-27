@@ -113,9 +113,9 @@ void AMyPlayerController::SetupInputComponent() {
 		
 		EnHancedInputComponent->BindAction(AttackAction, ETriggerEvent::Started, this, &AMyPlayerController::AttackStart);
 		
-		EnHancedInputComponent->BindAction(BlockAction, ETriggerEvent::Triggered, this, &AMyPlayerController::Guard);
+		EnHancedInputComponent->BindAction(GuardAction, ETriggerEvent::Triggered, this, &AMyPlayerController::Guard);
 		
-		EnHancedInputComponent->BindAction(DodgeAction, ETriggerEvent::Started, this, &AMyPlayerController::Dodge);
+		EnHancedInputComponent->BindAction(RollAction, ETriggerEvent::Started, this, &AMyPlayerController::Roll);
 
 		EnHancedInputComponent->BindAction(LockOnAction, ETriggerEvent::Started, this, &AMyPlayerController::LockOnTarget);
 
@@ -185,10 +185,10 @@ void AMyPlayerController::Guard()
 	}
 }
 
-void AMyPlayerController::Dodge()
+void AMyPlayerController::Roll()
 {
 	if (GetCharacter() != nullptr) {
-		GetCharacter()->Dodge();
+		GetCharacter()->Roll();
 	}
 }
 

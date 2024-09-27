@@ -90,11 +90,14 @@ public:
 	void AttackExecute();
 	void AttackEnd();
 	void Guard();
-	void Dodge();
+	void Roll();
 	void LockOnTarget();
-	AActor* FindNewTarget();
-	void LockOnCamera(float DeltaTime);
-	void UnLockOnTarget();
+	AActor* FindLockOnTarget();
+	void UpdateTargetVisibility();
+	bool IsTargetInView(AActor* CheckTarget);
+	void ChangeTarget(AActor* NewTarget);
+	void CreateLockonEffect();
+	void UpdateLockonEffect();
 	void RootItem();
 	void OpenInventory();
 	UInventoryComponent* GetInventory();
@@ -128,32 +131,27 @@ public:
 	//AI
 	void SetupStimulusSource();
 
-	//전투
-
 	//캐릭터 상태들
 	bool bIsAttack;
 	bool bIsMove;
 	bool bIsRun;
 	bool bIsGuard;
-	bool bIsDodge;
-	bool bIsLockOnTarget;
+	bool bIsRoll;
+	bool bIsLockon;
+	bool bIsIdle;
 
 	//소모되는 스테미나
 	float RunStaminaCost = 0.2f;
 	float JumpStaminaCost = 5.f;
-	//float AttackStaminaCost = 6.f;
 	float AttackStaminaCost = 0.0f;
 	float GuardStaminaCost = 10.f;
-	float DodgeStaminaCost = 5.f;
+	float RollStaminaCost = 5.f;
 
 	//테스트
 	void TEST();
 
 	//델리게이트
 	FOnPlayerUIUpdated OnPlayerUIUpdated;
-
-	//락온
-	AActor* LockedOnTarget = nullptr; 
 		
 protected:
 	// Called when the game starts or when spawned
@@ -183,7 +181,7 @@ protected:
 
 	//무기
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Weapon")
-	TSubclassOf<class UWeaponBaseComponent> BareHand;
+	TSubclassOf<class UWeaponBaseComponent> WeaponComponent;
 
 private:
 	//카메라
@@ -201,23 +199,29 @@ private:
 	//AI
 	class UAIPerceptionStimuliSourceComponent* StimulusSource; //Monster가 탐지할 수 있도록
 
-	//이동속도
+	//이동
 	float TargetSpeed;
 	float TimeWithoutAction = 0.f; //스테미나 회복 시작까지 걸리는 시간 체크용도
-
-	//구조체 추가 고민중
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Status", meta = (AllowPrivateAccess = "true"))
 	float WalkSpeed = 600.f;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Status", meta = (AllowPrivateAccess = "true"))
 	float RunSpeed = 900.f;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Status", meta = (AllowPrivateAccess = "true"))
+	float RollDistMultiplier = 1000.f;
+	FVector RollDirection;
+	FVector2D LastMoveInput;
 
 	//락온
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "LockOn", meta = (AllowPrivateAccess = "true"))
-	float LockOnConeAngle = 45.f;
+	float TargetHeightOffset = 20.f;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "LockOn", meta = (AllowPrivateAccess = "true"))
-	float LockOnConeRadius = 1000.f;
+	float TargetRange = 1000.f;
+	AActor* CurrentTarget = nullptr;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "LockOn", meta = (AllowPrivateAccess = "true"))
-	float MaxLockOnDist = 300.f;
+	TSubclassOf<class UUserWidget> LockonWidgetClass;
+	class UUserWidget* LockonWidgetInstance;
+
+	//달리는 중인가
 	FVector PreviousLocation;
 	FVector CurrentLocation;
 

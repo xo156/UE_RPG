@@ -48,5 +48,6 @@ private:
 
 	class AMyCharacter* OwnerCharacter;
 	TArray<AActor*> OverlapActors;
-
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon", meta = (AllowPrivateAccess = "true"))
+	TSubclassOf<class UWeaponBaseComponent> ThisWeaponComponent;
 };

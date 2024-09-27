@@ -8,15 +8,17 @@
 void UDisableColliderANS::NotifyBegin(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, float TotalDuration)
 {
 	if (auto* PlayerCharacter = Cast<AMyCharacter>(MeshComp->GetOwner())) {
-		PlayerCharacter->bIsDodge = true;
+		PlayerCharacter->bIsRoll = true;
 		PlayerCharacter->GetCapsuleComponent()->SetActive(false);
+		PlayerCharacter->GetCapsuleComponent()->SetCollisionProfileName(FName("NoCollision"));
 	}
 }
 
 void UDisableColliderANS::NotifyEnd(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation)
 {
 	if (auto* PlayerCharacter = Cast<AMyCharacter>(MeshComp->GetOwner())) {
-		PlayerCharacter->bIsDodge = false;
+		PlayerCharacter->bIsRoll = false;
 		PlayerCharacter->GetCapsuleComponent()->SetActive(true);
+		PlayerCharacter->GetCapsuleComponent()->SetCollisionProfileName(FName("Pawn"));
 	}
 }

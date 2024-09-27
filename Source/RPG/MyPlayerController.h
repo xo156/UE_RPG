@@ -47,7 +47,7 @@ protected:
 	void Look(const FInputActionValue& Value);
 	void AttackStart(const FInputActionValue& Value);
 	void Guard();
-	void Dodge();
+	void Roll();
 	void LockOnTarget();
 	void RootItem();
 	void OpenInventory();
@@ -69,9 +69,9 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input", meta = (AllowPrivateAccess = "true"))
 	class UInputAction* LookAction;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input", meta = (AllowPrivateAccess = "true"))
-	class UInputAction* BlockAction;
+	class UInputAction* GuardAction;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input", meta = (AllowPrivateAccess = "true"))
-	class UInputAction* DodgeAction;
+	class UInputAction* RollAction;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input", meta = (AllowPrivateAccess = "true"))
 	class UInputAction* LockOnAction;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input", meta = (AllowPrivateAccess = "true"))

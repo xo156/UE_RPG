@@ -28,7 +28,7 @@ AWeapon::AWeapon()
 
 	WeaponCollision->SetHiddenInGame(false);
 	WeaponCollision->SetVisibility(true);
-	WeaponCollision->SetCollisionProfileName("Weapon");
+	WeaponCollision->SetCollisionProfileName("NoCollision");
 	WeaponCollision->SetNotifyRigidBodyCollision(false);
     WeaponCollision->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
 
@@ -93,21 +93,10 @@ void AWeapon::SetOwnerCharacter(AMyCharacter* NewOwnerCharacter)
 void AWeapon::Use()
 {
 	UE_LOG(LogTemp, Log, TEXT("AWeapon::Use()"));
-	/*if (!this) {
-		UE_LOG(LogTemp, Error, TEXT("AWeapon 인스턴스가 널입니다!"));
-		return;
+
+	if (auto* Player = Cast<AMyCharacter>(GetWorld()->GetFirstPlayerController()->GetPawn())) {
+		Player->EquipWeapon(ThisWeaponComponent);
 	}
-	else {
-		if (auto* PlayerController = Cast<AMyPlayerController>(GetWorld()->GetFirstPlayerController())) {
-			if (auto* PlayerCharacter = Cast<AMyCharacter>(PlayerController->GetPawn())) {
-				FVector SpawnLocation = PlayerCharacter->GetActorLocation() + FVector(150.f, 150.f, 0.f);
-				FRotator SpawnRotation = PlayerCharacter->GetActorRotation();
-				GetWorld()->SpawnActor<AWeapon>(GetClass(), SpawnLocation, SpawnRotation);
-			}
-		}
-
-	}*/
-
 
 }
 
