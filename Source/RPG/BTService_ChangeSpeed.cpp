@@ -3,10 +3,9 @@
 
 #include "BTService_ChangeSpeed.h"
 #include "MonsterAICSight.h"
+#include "MonsterAICHearing.h"
 #include "Monster.h"
 #include "GameFramework/CharacterMovementComponent.h"
-//#include "BehaviorTree/BlackboardComponent.h"
-//#include "BehaviorTree/Blackboard/BlackboardKeyType_Float.h"
 
 UBTService_ChangeSpeed::UBTService_ChangeSpeed()
 {
@@ -20,6 +19,12 @@ void UBTService_ChangeSpeed::OnBecomeRelevant(UBehaviorTreeComponent& OwnerComp,
 
 	if (AMonsterAICSight* MonsterAICSight = Cast<AMonsterAICSight>(OwnerComp.GetAIOwner())) {
 		if (AMonster* Monster = Cast<AMonster>(MonsterAICSight->GetPawn())) {
+			Monster->GetCharacterMovement()->MaxWalkSpeed = Speed;
+		}
+	}
+
+	if (AMonsterAICHearing* MonsterAICHearing = Cast<AMonsterAICHearing>(OwnerComp.GetAIOwner())) {
+		if (AMonster* Monster = Cast<AMonster>(MonsterAICHearing->GetPawn())) {
 			Monster->GetCharacterMovement()->MaxWalkSpeed = Speed;
 		}
 	}

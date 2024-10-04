@@ -10,6 +10,7 @@ void UMonsterCollisionEnableANS::NotifyBegin(USkeletalMeshComponent* MeshComp, U
 	if (MeshComp && MeshComp->GetOwner()) {
 		if (auto* Monster = Cast<AMonster>(MeshComp->GetOwner())) {
 			Monster->GetAttackCollision()->SetCollisionProfileName(FName("Enemy"));
+			Monster->GetAttackCollision()->SetNotifyRigidBodyCollision(true);
 		}
 	}
 }
@@ -19,6 +20,7 @@ void UMonsterCollisionEnableANS::NotifyEnd(USkeletalMeshComponent* MeshComp, UAn
 	if (MeshComp && MeshComp->GetOwner()) {
 		if (auto* Monster = Cast<AMonster>(MeshComp->GetOwner())) {
 			Monster->GetAttackCollision()->SetCollisionProfileName(FName("NoCollision"));
+			Monster->GetAttackCollision()->SetNotifyRigidBodyCollision(false);
 			Monster->GetOverlapActors().Empty();
 		}
 	}

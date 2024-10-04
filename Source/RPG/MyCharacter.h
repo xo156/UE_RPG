@@ -191,7 +191,7 @@ private:
 	class USpringArmComponent* CameraBoom;
 
 	//무기
-	class UWeaponBaseComponent* CurrentWeapon;
+	class UWeaponBaseComponent* CurrentWeaponComponent;
 
 	//핸들러
 	FTimerHandle ComboCheckTimerHandle;
@@ -202,14 +202,13 @@ private:
 	//이동
 	float TargetSpeed;
 	float TimeWithoutAction = 0.f; //스테미나 회복 시작까지 걸리는 시간 체크용도
+	FVector PreviousLocation;
+	FVector CurrentLocation;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Status", meta = (AllowPrivateAccess = "true"))
 	float WalkSpeed = 600.f;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Status", meta = (AllowPrivateAccess = "true"))
 	float RunSpeed = 900.f;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Status", meta = (AllowPrivateAccess = "true"))
-	float RollDistMultiplier = 1000.f;
-	FVector RollDirection;
-	FVector2D LastMoveInput;
+	FVector MoveDirection;
 
 	//락온
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "LockOn", meta = (AllowPrivateAccess = "true"))
@@ -221,14 +220,12 @@ private:
 	TSubclassOf<class UUserWidget> LockonWidgetClass;
 	class UUserWidget* LockonWidgetInstance;
 
-	//달리는 중인가
-	FVector PreviousLocation;
-	FVector CurrentLocation;
-
 	//아이템
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Inventory", meta = (AllowPrivateAccess = "true"))
 	UInventoryComponent* InventoryComponent;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Inventory", meta = (AllowPrivateAccess = "true"))
 	class UBoxComponent* RootItemBoxComponent;
 	TArray<class ADropItem*> OverlapItems;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Inventory", meta = (AllowPrivateAccess = "true"))
+	UDataTable* ItemTable;
 };

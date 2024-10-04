@@ -16,7 +16,7 @@ UBTTask_ChasePlayer::UBTTask_ChasePlayer()
 EBTNodeResult::Type UBTTask_ChasePlayer::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
 {
 	FVector PlayerLocation = OwnerComp.GetBlackboardComponent()->GetValueAsVector(GetSelectedBlackboardKey());
-	FVector GoalLocation = PlayerLocation + FVector(50.f, 50.f, 0.f);
+	FVector GoalLocation = PlayerLocation + FVector(0.f, -30.f, 0.f);
 
 	if (bIsSight) {
 		if (auto* MonsterAICSight = Cast<AMonsterAICSight>(OwnerComp.GetAIOwner())) {

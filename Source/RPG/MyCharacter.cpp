@@ -105,7 +105,7 @@ void AMyCharacter::Tick(float DeltaTime) {
 	PreviousLocation = CurrentLocation;
 	CurrentLocation = GetActorLocation();
 
-	// 이전 위치와 현재 위치가 다른 경우 움직임이 있음
+	//이전 위치와 현재 위치가 다른 경우 움직임이 있음
 	bIsMove = (CurrentLocation != PreviousLocation);
 
 	//락 온 중이면
@@ -182,8 +182,6 @@ void AMyCharacter::Move(FVector2D InputValue)
 
 		AddMovementInput(ForwardDirection, InputValue.Y);
 		AddMovementInput(RightDirection, InputValue.X);
-
-		bIsMove = true;
 	}
 }
 
@@ -220,8 +218,6 @@ void AMyCharacter::AttackStart()
 {
 	if (!bIsRoll && !bIsAttack && bHasEnoughStamina(AttackStaminaCost)) {
 		bIsAttack = true;
-		GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Blue, TEXT("AMyCharacter::AttackStart()"));
-
 		AttackExecute();
 	}
 }
@@ -230,50 +226,45 @@ void AMyCharacter::AttackExecute()
 {
 
 	if (UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance()) {
-		if (CurrentWeapon == nullptr) {
+		if (CurrentWeaponComponent == nullptr) {
 			bIsAttack = false;
 			return;
 		}
-
-		GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Blue, TEXT("AMyCharacter::AttackExecute()"));
-
 		//오버랩 액터 리스트 비우기
-		CurrentWeapon->GetRightHandWeaponInstance()->GetOverlapActors().Empty();
-		CurrentWeapon->GetLeftHandWeaponInstance()->GetOverlapActors().Empty();
+		CurrentWeaponComponent->GetRightHandWeaponInstance()->GetOverlapActors().Empty();
+		CurrentWeaponComponent->GetLeftHandWeaponInstance()->GetOverlapActors().Empty();
 
-		int32 SectionCount = CurrentWeapon->GetSectionCount(CurrentWeapon->AttackMontage);
+		int32 SectionCount = CurrentWeaponComponent->GetSectionCount(CurrentWeaponComponent->AttackMontage);
 		ConsumeStaminaForAction(AttackStaminaCost);
 		UAISense_Hearing::ReportNoiseEvent(GetWorld(), GetActorLocation(), AttackLoudness, this);
-		if (CurrentWeapon->CurrentComboCount < SectionCount) {
-			FString SectionName = "Combo" + FString::FromInt(CurrentWeapon->CurrentComboCount);
-			if (AnimInstance->Montage_IsPlaying(CurrentWeapon->AttackMontage)) {
-				AnimInstance->Montage_JumpToSection(FName(*SectionName), CurrentWeapon->AttackMontage);
+		if (CurrentWeaponComponent->CurrentComboCount < SectionCount) {
+			FString SectionName = "Combo" + FString::FromInt(CurrentWeaponComponent->CurrentComboCount);
+			if (AnimInstance->Montage_IsPlaying(CurrentWeaponComponent->AttackMontage)) {
+				AnimInstance->Montage_JumpToSection(FName(*SectionName), CurrentWeaponComponent->AttackMontage);
 			}
 			else {
-				AnimInstance->Montage_Play(CurrentWeapon->AttackMontage);
-				AnimInstance->Montage_JumpToSection(FName(*SectionName), CurrentWeapon->AttackMontage);
+				AnimInstance->Montage_Play(CurrentWeaponComponent->AttackMontage);
+				AnimInstance->Montage_JumpToSection(FName(*SectionName), CurrentWeaponComponent->AttackMontage);
 			}
-			CurrentWeapon->CurrentComboCount++;
+			CurrentWeaponComponent->CurrentComboCount++;
 		}
 		else {
-			CurrentWeapon->CurrentComboCount = 0;
+			CurrentWeaponComponent->CurrentComboCount = 0;
 			FString SectionName = "Combo0";
-			AnimInstance->Montage_Play(CurrentWeapon->AttackMontage);
-			AnimInstance->Montage_JumpToSection(FName(*SectionName), CurrentWeapon->AttackMontage);
+			AnimInstance->Montage_Play(CurrentWeaponComponent->AttackMontage);
+			AnimInstance->Montage_JumpToSection(FName(*SectionName), CurrentWeaponComponent->AttackMontage);
 		}
 
-		GetWorld()->GetTimerManager().SetTimer(ComboCheckTimerHandle, this, &AMyCharacter::AttackEnd, CurrentWeapon->WaitComboTime, false);
+		GetWorld()->GetTimerManager().SetTimer(ComboCheckTimerHandle, this, &AMyCharacter::AttackEnd, CurrentWeaponComponent->WaitComboTime, false);
 	}
 }
 
 void AMyCharacter::AttackEnd()
 {
-	if (CurrentWeapon) {
-		CurrentWeapon->CurrentComboCount = 0;
-		CurrentWeapon->GetRightHandWeaponInstance()->GetOverlapActors().Empty();
-		CurrentWeapon->GetLeftHandWeaponInstance()->GetOverlapActors().Empty();
-		GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Blue, TEXT("AMyCharacter::AttackEnd()"));
-
+	if (CurrentWeaponComponent) {
+		CurrentWeaponComponent->CurrentComboCount = 0;
+		CurrentWeaponComponent->GetRightHandWeaponInstance()->GetOverlapActors().Empty();
+		CurrentWeaponComponent->GetLeftHandWeaponInstance()->GetOverlapActors().Empty();
 	}
 	bIsAttack = false;
 }
@@ -297,18 +288,11 @@ void AMyCharacter::Roll()
 		if (!bIsAttack && CanJump() && !bIsRoll) {
 			if (UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance()) {
 				ConsumeStaminaForAction(RollStaminaCost);
-				auto MoveInput = GetCharacterMovement()->GetLastInputVector();
-				RollDirection = GetActorForwardVector() * MoveInput.Y + GetActorRightVector() * MoveInput.X;
+				bIsRoll = true;
+				bUseControllerRotationYaw = false;
+				GetCharacterMovement()->bOrientRotationToMovement = true;
 
-				if (!RollDirection.IsNearlyZero()) {
-					RollDirection.Normalize();
-				}
-				else {
-					RollDirection = GetActorForwardVector();
-				}
 				AnimInstance->Montage_Play(DodgeMontage);
-				FVector RollMovement = RollDirection * RollDistMultiplier;
-				LaunchCharacter(RollMovement, false, true);
 			}
 		}
 	}
@@ -333,25 +317,55 @@ void AMyCharacter::LockOnTarget()
 
 AActor* AMyCharacter::FindLockOnTarget()
 {
-	TArray<AActor*> Enemies;
-	UGameplayStatics::GetAllActorsOfClass(GetWorld(), AActor::StaticClass(), Enemies);
+	;
+	if (auto* PlayerController = Cast<APlayerController>(GetController())) {
+		// 플레이어의 카메라 위치와 방향 가져오기
+		FVector CameraLocation;
+		FRotator CameraRotation;
+		PlayerController->GetPlayerViewPoint(CameraLocation, CameraRotation);
 
-	if (Enemies.Contains(CurrentTarget))
-		Enemies.Remove(CurrentTarget); //현재 타겟 제외
+		FVector TraceStart = CameraLocation;
+		FVector TraceEnd = TraceStart + (CameraRotation.Vector() * TargetRange);
 
-	AActor* NearestEnemy = nullptr;
-	float NearestDistance = TargetRange;
+		// 라인 트레이스에 사용될 파라미터
+		FCollisionQueryParams QueryParams;
+		QueryParams.AddIgnoredActor(this); // 자기 자신 무시
+		QueryParams.bTraceComplex = false;
+		QueryParams.bReturnPhysicalMaterial = false;
 
-	for (AActor* Enemy : Enemies) {
-		if (Enemy->ActorHasTag(FName("Enemy"))) {
-			float Distance = GetDistanceTo(Enemy);
-			if (Distance < NearestDistance) {
-				NearestDistance = Distance;
-				NearestEnemy = Enemy;
+		TArray<FHitResult> HitResults;
+
+		// 트레이스 수행
+		bool bHit = GetWorld()->LineTraceMultiByChannel(
+			HitResults,
+			TraceStart,
+			TraceEnd,
+			ECC_Visibility,
+			QueryParams
+		);
+
+		AActor* NearestEnemy = nullptr;
+		float NearestDistance = TargetRange;
+
+		if (bHit) {
+			for (FHitResult& Hit : HitResults) {
+				AActor* HitActor = Hit.GetActor();
+				if (HitActor && HitActor->ActorHasTag(FName("Enemy"))) {
+					if (HitActor != CurrentTarget) {
+						float Distance = GetDistanceTo(HitActor);
+						if (Distance < NearestDistance) {
+							NearestDistance = Distance;
+							NearestEnemy = HitActor;
+						}
+					}
+				}
 			}
 		}
+		return NearestEnemy;
 	}
-	return NearestEnemy;
+	else {
+		return nullptr;
+	}
 }
 
 void AMyCharacter::UpdateTargetVisibility()
@@ -379,13 +393,16 @@ bool AMyCharacter::IsTargetInView(AActor* CheckTarget)
 void AMyCharacter::ChangeTarget(AActor* NewTarget)
 {
 	if (NewTarget != CurrentTarget) {
-		
 		CurrentTarget = NewTarget;
 		if (CurrentTarget == nullptr) {
-			bIsLockon = false;
+			bIsLockon = false; 
+			if (LockonWidgetInstance) {
+				LockonWidgetInstance->SetVisibility(ESlateVisibility::Hidden);
+			}
 		}
 		else {
 			bIsLockon = true;
+			CreateLockonEffect();
 		}
 	}
 }
@@ -412,6 +429,7 @@ void AMyCharacter::UpdateLockonEffect()
 		FVector TargetLocation = CurrentTarget->GetActorLocation();
 		FVector2D ScreenPosition;
 		UGameplayStatics::ProjectWorldToScreen(GetWorld()->GetFirstPlayerController(), TargetLocation, ScreenPosition);
+		LockonWidgetInstance->SetVisibility(ESlateVisibility::Visible);
 
 		LockonWidgetInstance->SetPositionInViewport(ScreenPosition);
 	}
@@ -495,35 +513,47 @@ void AMyCharacter::Close()
 void AMyCharacter::EquipWeapon(TSubclassOf<class UWeaponBaseComponent> WeaponBaseComponentClass)
 {
 	if (WeaponBaseComponentClass) {
-		if (CurrentWeapon) {
-			if (auto NowEquipWeapon = GetWorld()->SpawnActor<ADropItem>(ADropItem::StaticClass())) {
-				FDropItemData NowEquipWeaponData;
-				NowEquipWeaponData.Amount = 1;
-				NowEquipWeaponData.bCounterble = false;
-				NowEquipWeaponData.ItemID = CurrentWeapon->GetRightHandWeaponInstance()->GetItemData().ItemID;
-				GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, FString::Printf(TEXT("Now EquipWeapon ID : %d"), NowEquipWeaponData.ItemID));
-				NowEquipWeapon->SetDropItem(NowEquipWeaponData);
-				if (InventoryComponent) {
-					InventoryComponent->TryAddItem(NowEquipWeapon);
+		if (CurrentWeaponComponent) {
+			if (ItemTable) {
+				static const FString ContextString(TEXT("Item Table"));
+				for (const FName& RowName : ItemTable->GetRowNames()) {
+					FItemData* ItemData = ItemTable->FindRow<FItemData>(RowName, ContextString);
+					if (ItemData) {
+						for (const auto& ItemClass : ItemData->ItemClass) {
+							if (ItemClass && CurrentWeaponComponent->GetRightHandWeaponInstance()->IsA(ItemClass)) {
+								if (auto NowEquipWeapon = GetWorld()->SpawnActor<ADropItem>(ADropItem::StaticClass())) {
+									FDropItemData NowEquipWeaponData;
+									NowEquipWeaponData.Amount = 1;
+									NowEquipWeaponData.bCounterble = false;
+									NowEquipWeaponData.ItemID = ItemData->ItemID;
+									NowEquipWeapon->SetDropItem(NowEquipWeaponData);
+									if (InventoryComponent) {
+										InventoryComponent->TryAddItem(NowEquipWeapon);
+									}
+								}
+								break;
+							}
+						}
+					}
 				}
 			}
-			CurrentWeapon->GetRightHandWeaponInstance()->Destroy();
-			CurrentWeapon->GetLeftHandWeaponInstance()->Destroy();
-			CurrentWeapon = nullptr;
+			CurrentWeaponComponent->GetRightHandWeaponInstance()->Destroy();
+			CurrentWeaponComponent->GetLeftHandWeaponInstance()->Destroy();
+			CurrentWeaponComponent = nullptr;
 		}
 
-		CurrentWeapon = NewObject<UWeaponBaseComponent>(this, WeaponBaseComponentClass);
-		if (CurrentWeapon) {
-			CurrentWeapon->SetOwnerCharacter(this);
-			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, FString::Printf(TEXT("Now EquipWeapon : %s"), *CurrentWeapon->GetName()));
+		CurrentWeaponComponent = NewObject<UWeaponBaseComponent>(this, WeaponBaseComponentClass);
+		if (CurrentWeaponComponent) {
+			CurrentWeaponComponent->SetOwnerCharacter(this);
+			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, FString::Printf(TEXT("Now EquipWeapon : %s"), *CurrentWeaponComponent->GetName()));
 		}
 	}
 }
 
 UWeaponBaseComponent* AMyCharacter::GetCurrentWeapon() const
 {
-	if (CurrentWeapon)
-		return CurrentWeapon;
+	if (CurrentWeaponComponent)
+		return CurrentWeaponComponent;
 	return nullptr;
 }
 

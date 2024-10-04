@@ -23,6 +23,8 @@ void UMyAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 
 	if (!MovementComponent) { return; }
 
-	MoveSpeed = MovementComponent->Velocity.Size();
+	//MoveSpeed = MovementComponent->Velocity.Size();
+	ForwardSpeed = MovementComponent->Velocity.Size();
+	RightSpeed = MovementComponent->Velocity.Size();
 	bIsInAir = MovementComponent->IsFalling();
 }

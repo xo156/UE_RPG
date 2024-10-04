@@ -16,10 +16,14 @@ class RPG_API UMyAnimInstance : public UAnimInstance
 
 public:
 	//Locomotion 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Locomotion")
-	float MoveSpeed;
+	/*UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Locomotion")
+	float MoveSpeed;*/
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Locomotion")
 	bool bIsInAir = false;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Locomotion")
+	float ForwardSpeed;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Locomotion")
+	float RightSpeed;
 
 protected:
 	virtual void NativeInitializeAnimation() override;

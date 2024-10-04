@@ -73,6 +73,7 @@ bool UBTTask_MonsterAttack::bMontageHasFinished(AMonster* Monster)
 		return false;
 	}
 
-	UAnimInstance* AnimInstance = Monster->GetMesh()->GetAnimInstance();
-	return !AnimInstance->Montage_IsPlaying(Monster->GetMonsterAttackMontage());
+	if (UAnimInstance* AnimInstance = Monster->GetMesh()->GetAnimInstance())
+		return !AnimInstance->Montage_IsPlaying(Monster->GetMonsterAttackMontage());
+	return false;
 }

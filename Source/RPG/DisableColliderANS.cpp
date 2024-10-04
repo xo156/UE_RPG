@@ -8,9 +8,7 @@
 void UDisableColliderANS::NotifyBegin(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, float TotalDuration)
 {
 	if (auto* PlayerCharacter = Cast<AMyCharacter>(MeshComp->GetOwner())) {
-		PlayerCharacter->bIsRoll = true;
-		PlayerCharacter->GetCapsuleComponent()->SetActive(false);
-		PlayerCharacter->GetCapsuleComponent()->SetCollisionProfileName(FName("NoCollision"));
+		PlayerCharacter->GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision); 
 	}
 }
 
@@ -18,7 +16,7 @@ void UDisableColliderANS::NotifyEnd(USkeletalMeshComponent* MeshComp, UAnimSeque
 {
 	if (auto* PlayerCharacter = Cast<AMyCharacter>(MeshComp->GetOwner())) {
 		PlayerCharacter->bIsRoll = false;
-		PlayerCharacter->GetCapsuleComponent()->SetActive(true);
+		PlayerCharacter->GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
 		PlayerCharacter->GetCapsuleComponent()->SetCollisionProfileName(FName("Pawn"));
 	}
 }

@@ -39,7 +39,7 @@ AMonster::AMonster()
 	//몬스터 공격 콜리전 검출
 	MonsterAttackCollisionComponent = CreateDefaultSubobject<UCapsuleComponent>(TEXT("AttackCollisionComponent"));
 	MonsterAttackCollisionComponent->SetupAttachment(GetMesh(), FName("AttackCollision"));
-	MonsterAttackCollisionComponent->SetCollisionProfileName(TEXT("Enemy"));
+	MonsterAttackCollisionComponent->SetCollisionProfileName(TEXT("NoCollision"));
 	MonsterAttackCollisionComponent->OnComponentBeginOverlap.AddDynamic(this, &AMonster::OnOverlapBegin);
 	
 	//구조체
@@ -129,7 +129,6 @@ void AMonster::MonsterAttackEnd()
 {
 	GetCharacterMovement()->bOrientRotationToMovement = true;
 	bIsMonsterAttack = false;
-	OverlapActors.Empty();
 }
 
 void AMonster::OnAttackMontageEnded(UAnimMontage* Montage, bool bInterrupted)
@@ -141,10 +140,12 @@ void AMonster::OnAttackMontageEnded(UAnimMontage* Montage, bool bInterrupted)
 
 void AMonster::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComponent, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	if (OtherActor && OtherActor != this && OtherActor->IsA(AMyCharacter::StaticClass())) {
-		if (!OverlapActors.Contains(OtherActor)) {
-			OverlapActors.Add(OtherActor);
-			ApplyDamageToActor(OtherActor);
+	if (OverlappedComponent == MonsterAttackCollisionComponent) {
+		if (OtherActor && OtherActor != this && OtherActor->IsA(AMyCharacter::StaticClass())) {
+			if (!OverlapActors.Contains(OtherActor)) {
+				OverlapActors.Add(OtherActor);
+				ApplyDamageToActor(OtherActor);
+			}
 		}
 	}
 }

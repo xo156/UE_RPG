@@ -48,9 +48,9 @@ void UInventoryItemAction::OnOnlyUseClicked()
 				if (auto* ItemInstance = GetWorld()->SpawnActor<AItemBase>(ClickedItem->ItemClass[0])) {
 					if (auto* PlayerController = Cast<AMyPlayerController>(GetWorld()->GetFirstPlayerController())) {
 						if (auto* PlayerCharacter = Cast<AMyCharacter>(PlayerController->GetPawn())) {
+							ItemInstance->Use();
 							PlayerCharacter->GetInventory()->RemoveItem(InventoryItemData.ItemTableID, 1);
 							PlayerCharacter->GetInventory()->InventoryWidget->UpdateInventoryWidget(PlayerCharacter->GetInventory());
-							ItemInstance->Use();
 							ItemInstance->Destroy();
 						}
 					}

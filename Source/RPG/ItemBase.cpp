@@ -31,8 +31,3 @@ void AItemBase::Use()
 	UE_LOG(LogTemp, Log, TEXT("AItemBase::Use()"));
 
 }
-
-FItemData AItemBase::GetItemData()
-{
-	return FItemData();
-}
