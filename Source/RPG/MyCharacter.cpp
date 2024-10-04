@@ -111,30 +111,31 @@ void AMyCharacter::Tick(float DeltaTime) {
 	//락 온 중이면
 	if (bIsLockon && CurrentTarget) {
 		UpdateTargetVisibility();
-		if (!IsTargetInView(CurrentTarget)) {
+		if (!IsTargetInView(CurrentTarget) || GetDistanceTo(CurrentTarget) > TargetRange) {
 			ChangeTarget(nullptr);
 			UpdateLockonEffect();
 			return;
 		}
 
-		if (GetDistanceTo(CurrentTarget) > TargetRange) {
-			ChangeTarget(nullptr);
-			UpdateLockonEffect();
-			return;
+		if (!bIsRoll) {
+			bUseControllerRotationYaw = true;
+			GetCharacterMovement()->bOrientRotationToMovement = false;
+
+			//타겟 방향으로 바라보게 함
+			if (bIsMove || bIsAttack || bIsGuard) {
+				FRotator LookAtRotation = UKismetMathLibrary::FindLookAtRotation(GetActorLocation(), CurrentTarget->GetActorLocation());
+				LookAtRotation.Pitch -= TargetHeightOffset;
+				GetController()->SetControlRotation(LookAtRotation);
+			}
+
+			if (LockonWidgetInstance)
+				UpdateLockonEffect();
 		}
-
-		bUseControllerRotationYaw = true;
-		GetCharacterMovement()->bOrientRotationToMovement = false;
-
-		//타겟 방향으로 바라보게 함
-		if (bIsMove || bIsAttack || bIsGuard) {
-			FRotator LookAtRotation = UKismetMathLibrary::FindLookAtRotation(GetActorLocation(), CurrentTarget->GetActorLocation());
-			LookAtRotation.Pitch -= TargetHeightOffset;
-			GetController()->SetControlRotation(LookAtRotation);
+		else {
+			FRotator MovementDirection = GetVelocity().Rotation();
+			MovementDirection.Pitch = 0;
+			SetActorRotation(MovementDirection);
 		}
-
-		if (LockonWidgetInstance)
-			UpdateLockonEffect();
 	}
 	else {
 		UpdateLockonEffect();
@@ -224,7 +225,6 @@ void AMyCharacter::AttackStart()
 
 void AMyCharacter::AttackExecute()
 {
-
 	if (UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance()) {
 		if (CurrentWeaponComponent == nullptr) {
 			bIsAttack = false;
@@ -235,6 +235,7 @@ void AMyCharacter::AttackExecute()
 		CurrentWeaponComponent->GetLeftHandWeaponInstance()->GetOverlapActors().Empty();
 
 		int32 SectionCount = CurrentWeaponComponent->GetSectionCount(CurrentWeaponComponent->AttackMontage);
+
 		ConsumeStaminaForAction(AttackStaminaCost);
 		UAISense_Hearing::ReportNoiseEvent(GetWorld(), GetActorLocation(), AttackLoudness, this);
 		if (CurrentWeaponComponent->CurrentComboCount < SectionCount) {
@@ -254,13 +255,23 @@ void AMyCharacter::AttackExecute()
 			AnimInstance->Montage_Play(CurrentWeaponComponent->AttackMontage);
 			AnimInstance->Montage_JumpToSection(FName(*SectionName), CurrentWeaponComponent->AttackMontage);
 		}
-
-		GetWorld()->GetTimerManager().SetTimer(ComboCheckTimerHandle, this, &AMyCharacter::AttackEnd, CurrentWeaponComponent->WaitComboTime, false);
 	}
+}
+
+void AMyCharacter::SetComboAttackTimer()
+{
+	GetCurrentWeapon()->WaitComboTime = GetWorld()->GetTimerManager().GetTimerRemaining(ComboCheckTimerHandle);
+}
+
+void AMyCharacter::StopComboAttackTimer()
+{
+	GetWorld()->GetTimerManager().ClearTimer(ComboCheckTimerHandle);
+	GetCurrentWeapon()->WaitComboTime = 0;
 }
 
 void AMyCharacter::AttackEnd()
 {
+	UE_LOG(LogTemp, Log, TEXT("AMyCharacter::AttackEnd()"));
 	if (CurrentWeaponComponent) {
 		CurrentWeaponComponent->CurrentComboCount = 0;
 		CurrentWeaponComponent->GetRightHandWeaponInstance()->GetOverlapActors().Empty();
@@ -291,8 +302,7 @@ void AMyCharacter::Roll()
 				bIsRoll = true;
 				bUseControllerRotationYaw = false;
 				GetCharacterMovement()->bOrientRotationToMovement = true;
-
-				AnimInstance->Montage_Play(DodgeMontage);
+				AnimInstance->Montage_Play(RollMontage);
 			}
 		}
 	}

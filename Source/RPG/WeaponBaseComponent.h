@@ -41,9 +41,7 @@ public:
 	class UAnimMontage* AttackMontage;
 
 	//АјАн
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combo")
 	int32 CurrentComboCount = 0;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combo")
 	float WaitComboTime = 1.f;
 
 	class AMyCharacter* OwnerCharacter;

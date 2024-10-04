@@ -2,13 +2,15 @@
 
 
 #include "ComboCheckANS.h"
-#include "MyPlayerController.h"
 #include "MyCharacter.h"
+#include "WeaponBaseComponent.h"
 
 void UComboCheckANS::NotifyBegin(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, float TotalDuration)
 {
 	if (AMyCharacter* Character = Cast<AMyCharacter>(MeshComp->GetOwner())) {
 		Character->bIsAttack = true;
+
+		Character->SetComboAttackTimer();
 	}
 }
 
@@ -16,5 +18,6 @@ void UComboCheckANS::NotifyEnd(USkeletalMeshComponent* MeshComp, UAnimSequenceBa
 {
 	if (AMyCharacter* Character = Cast<AMyCharacter>(MeshComp->GetOwner())) {
 		Character->bIsAttack = false;
+		Character->StopComboAttackTimer();
 	}
 }

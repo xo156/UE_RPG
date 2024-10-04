@@ -88,6 +88,8 @@ public:
 	void Look(FVector2D InputValue);
 	void AttackStart();
 	void AttackExecute();
+	void SetComboAttackTimer();
+	void StopComboAttackTimer();
 	void AttackEnd();
 	void Guard();
 	void Roll();
@@ -177,7 +179,7 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Montage")
 	class UAnimMontage* BlockMontage;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Montage")
-	class UAnimMontage* DodgeMontage;
+	class UAnimMontage* RollMontage;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Montage")
 	class UAnimMontage* HitMontage;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Montage")
@@ -208,7 +210,6 @@ private:
 	float WalkSpeed = 600.f;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Status", meta = (AllowPrivateAccess = "true"))
 	float RunSpeed = 900.f;
-	FVector MoveDirection;
 
 	//¶ô¿Â
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "LockOn", meta = (AllowPrivateAccess = "true"))
