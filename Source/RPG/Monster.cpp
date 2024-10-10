@@ -13,6 +13,7 @@
 #include "ItemData.h"
 #include "DropItem.h"
 #include "BrainComponent.h"
+#include "DataTableGameInstance.h"
 
 // Sets default values
 AMonster::AMonster()
@@ -69,6 +70,10 @@ void AMonster::BeginPlay()
 		if (auto* HealthWidget = Cast<UMonsterWidget>(MonsterWidgetComponent->GetUserWidgetObject())) {
 			HealthWidget->SetOwnerMonster(this);
 		}
+	}
+
+	if (auto* GameInstance = Cast<UDataTableGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()))) {
+		ItemDropTable = GameInstance->GetDropItemTable();
 	}
 }
 

@@ -29,6 +29,7 @@ public:
 						bool bFromSweep, const FHitResult& SweepResult);
 
 	void ApplyDamageToActor(AActor* ActorToDamage);
+	void ZeroDamageToOnwer();
 	
 	void SetOwnerCharacter(class AMyCharacter* NewOwnerCharacter);
 
@@ -39,6 +40,8 @@ public:
 	TArray<AActor*>& GetOverlapActors();
 
 	FTimerHandle DamageUPHandle;
+
+	bool bGuardSuccess;
 
 private:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon", meta = (AllowPrivateAccess = "true"))

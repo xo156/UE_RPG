@@ -21,6 +21,7 @@
 #include "InventoryItemAction.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "Monster.h"
+#include "DataTableGameInstance.h"
 
 // Sets default values
 AMyCharacter::AMyCharacter() {
@@ -88,6 +89,10 @@ void AMyCharacter::BeginPlay() {
 	}
 
 	bIsIdle = true;
+
+	if (auto* GameInstance = Cast<UDataTableGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()))) {
+		ItemTable = GameInstance->GetItemTable();
+	}
 }
 
 // Called every frame
@@ -160,6 +165,9 @@ float AMyCharacter::TakeDamage(float DamageAmount, FDamageEvent const& DamageEve
 	if (DamageCauser == nullptr)
 		return -1.f;
 
+	if (bIsRoll)
+		return 0.f;
+
 	if (bHasEnoughHP(DamageAmount)) {
 		//체력이 충분해서 데미지를 입을때
 		ConsumeHPForAction(DamageAmount);
@@ -206,10 +214,7 @@ void AMyCharacter::RunEnd()
 
 void AMyCharacter::Look(FVector2D InputValue)
 {
-	if (InventoryComponent->bIsOpen) {
-		//열려있으면 화면은 안 돌아가도록
-	}
-	else {
+	if (!InventoryComponent->bIsOpen) {
 		AddControllerPitchInput(InputValue.Y);
 		AddControllerYawInput(InputValue.X);
 	}
@@ -280,29 +285,40 @@ void AMyCharacter::AttackEnd()
 	bIsAttack = false;
 }
 
-void AMyCharacter::Guard()
+void AMyCharacter::GuardUp()
 {
-	if (bHasEnoughStamina(GuardStaminaCost)) {
-		bIsGuard = true;
-		if (UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance()) {
-			//ConsumeStaminaForAction(GuardStaminaCost);
-			/*AnimInstance->Montage_Play(BlockMontage, 1.0f);
-			FName StartSection = TEXT("GuardStart");
-			AnimInstance->Montage_JumpToSection(StartSection, BlockMontage);*/
+	if (!InventoryComponent->bIsOpen) {
+		if (bHasEnoughStamina(GuardStaminaCost)) {
+			bIsGuard = true;
+			if (UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance()) {
+				//ConsumeStaminaForAction(GuardStaminaCost);
+				CurrentWeaponComponent->GetLeftHandWeaponInstance()->GetWeaponCollision()->SetCollisionProfileName("Weapon");
+				CurrentWeaponComponent->GetLeftHandWeaponInstance()->GetWeaponCollision()->SetNotifyRigidBodyCollision(true);
+				AnimInstance->Montage_Play(GuardMontage);
+			}
 		}
 	}
 }
 
+void AMyCharacter::GuardDown()
+{
+	bIsGuard = false;
+	CurrentWeaponComponent->GetLeftHandWeaponInstance()->GetWeaponCollision()->SetCollisionProfileName("NoCollision");
+	CurrentWeaponComponent->GetLeftHandWeaponInstance()->GetWeaponCollision()->SetNotifyRigidBodyCollision(false);
+
+}
+
 void AMyCharacter::Roll()
 {
-	if (bHasEnoughStamina(RollStaminaCost)) {
-		if (!bIsAttack && CanJump() && !bIsRoll) {
-			if (UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance()) {
-				ConsumeStaminaForAction(RollStaminaCost);
-				bIsRoll = true;
-				bUseControllerRotationYaw = false;
-				GetCharacterMovement()->bOrientRotationToMovement = true;
-				AnimInstance->Montage_Play(RollMontage);
+	if (!InventoryComponent->bIsOpen) {
+		if (bHasEnoughStamina(RollStaminaCost)) {
+			if (!bIsAttack && CanJump() && !bIsRoll) {
+				if (UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance()) {
+					ConsumeStaminaForAction(RollStaminaCost);
+					bUseControllerRotationYaw = false;
+					GetCharacterMovement()->bOrientRotationToMovement = true;
+					AnimInstance->Montage_Play(RollMontage);
+				}
 			}
 		}
 	}
@@ -684,4 +700,16 @@ void AMyCharacter::TEST()
 	}
 
 	GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Cyan, TEXT("TEST"));
+}
+
+AActor* AMyCharacter::GetCurrentTarget()
+{
+	if (CurrentTarget)
+		return CurrentTarget;
+	return nullptr;
+}
+
+float AMyCharacter::GetTargetHeightOffset()
+{
+	return TargetHeightOffset;
 }

@@ -113,7 +113,8 @@ void AMyPlayerController::SetupInputComponent() {
 		
 		EnHancedInputComponent->BindAction(AttackAction, ETriggerEvent::Started, this, &AMyPlayerController::AttackStart);
 		
-		EnHancedInputComponent->BindAction(GuardAction, ETriggerEvent::Triggered, this, &AMyPlayerController::Guard);
+		EnHancedInputComponent->BindAction(GuardAction, ETriggerEvent::Triggered, this, &AMyPlayerController::GuardUp);
+		EnHancedInputComponent->BindAction(GuardAction, ETriggerEvent::Completed, this, &AMyPlayerController::GuardDown);
 		
 		EnHancedInputComponent->BindAction(RollAction, ETriggerEvent::Started, this, &AMyPlayerController::Roll);
 
@@ -178,10 +179,17 @@ void AMyPlayerController::AttackStart(const FInputActionValue& Value) {
 	}
 }
 
-void AMyPlayerController::Guard()
+void AMyPlayerController::GuardUp()
 {
 	if (GetCharacter() != nullptr) {
-		GetCharacter()->Guard();
+		GetCharacter()->GuardUp();
+	}
+}
+
+void AMyPlayerController::GuardDown()
+{
+	if (GetCharacter() != nullptr) {
+		GetCharacter()->GuardDown();
 	}
 }
 

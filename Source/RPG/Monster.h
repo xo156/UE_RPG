@@ -115,9 +115,8 @@ private:
 	//몬스터가 때릴 때 콜리전 검출하기
 	TArray<AActor*> OverlapActors;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item", meta = (AllowPrivateAccess = "true"))
-	UDataTable* ItemDropTable;
-
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item", meta = (AllowPrivateAccess="true"))
 	TSubclassOf<class ADropItem> DropItemClass;
+
+	UDataTable* ItemDropTable;
 };

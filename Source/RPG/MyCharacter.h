@@ -91,7 +91,8 @@ public:
 	void SetComboAttackTimer();
 	void StopComboAttackTimer();
 	void AttackEnd();
-	void Guard();
+	void GuardUp();
+	void GuardDown();
 	void Roll();
 	void LockOnTarget();
 	AActor* FindLockOnTarget();
@@ -152,6 +153,10 @@ public:
 	//테스트
 	void TEST();
 
+	//getter
+	AActor* GetCurrentTarget();
+	float GetTargetHeightOffset();
+
 	//델리게이트
 	FOnPlayerUIUpdated OnPlayerUIUpdated;
 
@@ -177,7 +182,7 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Montage")
 	class UAnimMontage* AirboneMontage;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Montage")
-	class UAnimMontage* BlockMontage;
+	class UAnimMontage* GuardMontage;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Montage")
 	class UAnimMontage* RollMontage;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Montage")
@@ -227,6 +232,5 @@ private:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Inventory", meta = (AllowPrivateAccess = "true"))
 	class UBoxComponent* RootItemBoxComponent;
 	TArray<class ADropItem*> OverlapItems;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Inventory", meta = (AllowPrivateAccess = "true"))
 	UDataTable* ItemTable;
 };

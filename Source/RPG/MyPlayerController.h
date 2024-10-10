@@ -46,7 +46,8 @@ protected:
 	void Jump();
 	void Look(const FInputActionValue& Value);
 	void AttackStart(const FInputActionValue& Value);
-	void Guard();
+	void GuardUp();
+	void GuardDown();
 	void Roll();
 	void LockOnTarget();
 	void RootItem();
