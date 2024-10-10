@@ -41,7 +41,6 @@ void UMonsterWidget::SetOwnerMonster(AMonster* NewOwningMonster)
 {
     OwnerMonster = NewOwningMonster;
     if (OwnerMonster) {
-        // 현재 상태로 HP를 업데이트해 UI가 올바르게 초기화되도록 함
         UpdateHP(OwnerMonster->MonsterStatus.CurrentMonsterHP, OwnerMonster->MonsterStatus.MaxMonsterHP);
     }
     else {

@@ -23,9 +23,6 @@ public:
 	float Damage;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Status")
-	int32 DropSoul;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Status")
 	TArray<FDropRate> DropRates;
 
 	float UseHP(float HPCost) {

@@ -21,20 +21,14 @@ public:
     void UpdateHP(float CurrentHP, float MaxHP);
 
     UFUNCTION(BlueprintCallable, Category = "Status")
-    void UpdateMP(float CurrentMP, float MaxMP);
-
-    UFUNCTION(BlueprintCallable, Category = "Status")
     void UpdateStamina(float CurrentStamina, float MaxStamina);
 
     UFUNCTION()
-    void OnPlayerStatusUswerWidgetUpdate(float NewHP, float NewMP, float NewStamina);
+    void OnPlayerStatusUswerWidgetUpdate(float NewHP, float NewStamina);
 
 protected:
     UPROPERTY(meta = (BindWidget))
     class UProgressBar* HPProgressBar;
-
-    UPROPERTY(meta = (BindWidget))
-    class UProgressBar* MPProgressBar;
 
     UPROPERTY(meta = (BindWidget))
     class UProgressBar* StaminaProgressBar;

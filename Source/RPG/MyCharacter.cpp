@@ -50,15 +50,11 @@ AMyCharacter::AMyCharacter() {
 	CameraComponent->SetupAttachment(CameraBoom, USpringArmComponent::SocketName);
 
 	//±¸Á¶Ã¼
-	CharacterStatus.CurrentHP = 100.0f;
-	CharacterStatus.MaxHP = 100.0f;
-	CharacterStatus.CurrentStamina = 50.0f;
-	CharacterStatus.MaxStamina = 50.0f;
-	CharacterStatus.CurrentMP = 30.0f;
-	CharacterStatus.MaxMP = 30.0f;
+	CharacterStatus.MaxHP = 100.f;
+	CharacterStatus.CurrentHP = CharacterStatus.MaxHP;
+	CharacterStatus.MaxStamina = 50.f;
+	CharacterStatus.CurrentStamina = CharacterStatus.MaxStamina;
 	CharacterStatus.Damage = 20.f;
-	CharacterStatus.CurrentMoney = 0;
-	CharacterStatus.MaxMoney = 10000;
 
 	//À§Á¬
 	PlayerWidgetClass = UPlayerWidget::StaticClass();
@@ -590,7 +586,6 @@ void AMyCharacter::SetupWidget()
 		if (PlayerWidgetInstance) {
 			PlayerWidgetInstance->AddToViewport();
 			PlayerWidgetInstance->UpdateHP(CharacterStatus.CurrentHP, CharacterStatus.MaxHP);
-			PlayerWidgetInstance->UpdateMP(CharacterStatus.CurrentMP, CharacterStatus.MaxMP);
 			PlayerWidgetInstance->UpdateStamina(CharacterStatus.CurrentStamina, CharacterStatus.MaxStamina);
 		}
 	}
@@ -599,7 +594,7 @@ void AMyCharacter::SetupWidget()
 void AMyCharacter::ConsumeStaminaForAction(float StaminaCost)
 {
 	CharacterStatus.UseStamina(StaminaCost);
-	OnPlayerUIUpdated.Broadcast(CharacterStatus.CurrentHP, CharacterStatus.CurrentMP, CharacterStatus.CurrentStamina);
+	OnPlayerUIUpdated.Broadcast(CharacterStatus.CurrentHP, CharacterStatus.CurrentStamina);
 }
 
 bool AMyCharacter::bHasEnoughStamina(float StaminaCost) const
@@ -607,21 +602,10 @@ bool AMyCharacter::bHasEnoughStamina(float StaminaCost) const
 	return CharacterStatus.CurrentStamina >= StaminaCost;
 }
 
-void AMyCharacter::ConsumeMPForAction(float MPCost)
-{
-	CharacterStatus.UseMP(MPCost);
-	OnPlayerUIUpdated.Broadcast(CharacterStatus.CurrentHP, CharacterStatus.CurrentMP, CharacterStatus.CurrentStamina);
-}
-
-bool AMyCharacter::bHasEnoughMP(float MPCost) const
-{
-	return CharacterStatus.CurrentMP >= MPCost;
-}
-
 void AMyCharacter::ConsumeHPForAction(float HPCost)
 {
 	CharacterStatus.UseHP(HPCost);	
-	OnPlayerUIUpdated.Broadcast(CharacterStatus.CurrentHP, CharacterStatus.CurrentMP, CharacterStatus.CurrentStamina);
+	OnPlayerUIUpdated.Broadcast(CharacterStatus.CurrentHP, CharacterStatus.CurrentStamina);
 }
 
 bool AMyCharacter::bHasEnoughHP(float HPCost) const
@@ -669,7 +653,7 @@ void AMyCharacter::RecoveryStaminia(float DeltaTime)
 {
 	float StaminaRecoveryRate = 1000.0f;
 	CharacterStatus.CurrentStamina = FMath::Min(CharacterStatus.CurrentStamina + (StaminaRecoveryRate * DeltaTime), CharacterStatus.MaxStamina);
-	OnPlayerUIUpdated.Broadcast(CharacterStatus.CurrentHP, CharacterStatus.CurrentMP, CharacterStatus.CurrentStamina);
+	OnPlayerUIUpdated.Broadcast(CharacterStatus.CurrentHP, CharacterStatus.CurrentStamina);
 }
 
 void AMyCharacter::SetupStimulusSource()

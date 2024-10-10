@@ -20,12 +20,6 @@ public:
 	float MaxHP;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Status")
-	float CurrentMP;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Status")
-	float MaxMP;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Status")
 	float CurrentStamina;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Status")
@@ -34,25 +28,12 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Status")
 	float Damage;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Status")
-	int32 CurrentMoney;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Status")
-	int32 MaxMoney;
-
 	float UseStamina(float StaminaCost) {
 		if (StaminaCost >= 0) {
 			CurrentStamina = FMath::Max(CurrentStamina - StaminaCost, 0.0f);
 		}
 		UE_LOG(LogTemp, Warning, TEXT("CurrentStamina: %f"), CurrentStamina);
 		return CurrentStamina;
-	}
-	float UseMP(float MPCost) {
-		if (MPCost >= 0) {
-			CurrentMP = FMath::Max(CurrentMP - MPCost, 0.0f);
-		}
-		UE_LOG(LogTemp, Warning, TEXT("CurrentMP: %f"), CurrentMP);
-		return CurrentMP;
 	}
 	float UseHP(float HPCost) {
 		if (HPCost >= 0) {
@@ -63,7 +44,7 @@ public:
 	}
 };
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FOnPlayerUIUpdated, float, NewHP, float, NewMP, float, NewStamina);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnPlayerUIUpdated, float, NewHP, float, NewStamina);
 UCLASS()
 class RPG_API AMyCharacter : public ACharacter
 {
@@ -123,8 +104,6 @@ public:
 	FCharacterStatus CharacterStatus;
 	void ConsumeStaminaForAction(float StaminaCost);
 	bool bHasEnoughStamina(float StaminaCost) const;
-	void ConsumeMPForAction(float MPCost);
-	bool bHasEnoughMP(float MPCost) const;
 	void ConsumeHPForAction(float HPCost);
 	bool bHasEnoughHP(float HPCost) const;
 	void ChangeMoveSpeed(float DeltaTime);

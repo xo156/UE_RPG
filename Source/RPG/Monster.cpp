@@ -44,10 +44,9 @@ AMonster::AMonster()
 	MonsterAttackCollisionComponent->OnComponentBeginOverlap.AddDynamic(this, &AMonster::OnOverlapBegin);
 	
 	//±¸Á¶Ã¼
-	MonsterStatus.MaxMonsterHP = 100.0f;
+	MonsterStatus.MaxMonsterHP = 100.f;
 	MonsterStatus.CurrentMonsterHP = MonsterStatus.MaxMonsterHP;
 	MonsterStatus.Damage = 10.f;
-	MonsterStatus.DropSoul = 100;
 }
 
 void AMonster::ConsumeHPForAction(float HPCost)

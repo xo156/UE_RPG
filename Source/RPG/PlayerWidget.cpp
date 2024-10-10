@@ -21,13 +21,6 @@ void UPlayerWidget::UpdateHP(float CurrentHP, float MaxHP)
 	}
 }
 
-void UPlayerWidget::UpdateMP(float CurrentMP, float MaxMP)
-{
-	if (MPProgressBar) {
-		MPProgressBar->SetPercent(CurrentMP / MaxMP);
-	}
-}
-
 void UPlayerWidget::UpdateStamina(float CurrentStamina, float MaxStamina)
 {
 	if (StaminaProgressBar) {
@@ -35,11 +28,10 @@ void UPlayerWidget::UpdateStamina(float CurrentStamina, float MaxStamina)
 	}
 }
 
-void UPlayerWidget::OnPlayerStatusUswerWidgetUpdate(float NewHP, float NewMP, float NewStamina)
+void UPlayerWidget::OnPlayerStatusUswerWidgetUpdate(float NewHP, float NewStamina)
 {
 	if (auto* PlayerCharacter = Cast<AMyCharacter>(GetOwningPlayerPawn())) {
 		UpdateHP(NewHP, PlayerCharacter->CharacterStatus.MaxHP);
-		UpdateMP(NewMP, PlayerCharacter->CharacterStatus.MaxMP);
 		UpdateStamina(NewStamina, PlayerCharacter->CharacterStatus.MaxStamina);
 	}
 }
