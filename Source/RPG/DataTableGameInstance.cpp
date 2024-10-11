@@ -3,6 +3,7 @@
 
 #include "DataTableGameInstance.h"
 #include "Engine/DataTable.h"
+#include "Camera/CameraShakeBase.h"
 
 UDataTable* UDataTableGameInstance::GetItemTable()
 {
@@ -15,5 +16,12 @@ UDataTable* UDataTableGameInstance::GetDropItemTable()
 {
 	if (DropItemTable)
 		return DropItemTable;
+	return nullptr;
+}
+
+TSubclassOf<class UCameraShakeBase> UDataTableGameInstance::GetCameraShake()
+{
+	if (CameraShake)
+		return CameraShake;
 	return nullptr;
 }

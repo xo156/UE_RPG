@@ -17,6 +17,7 @@ class RPG_API UDataTableGameInstance : public UGameInstance
 public:
 	class UDataTable* GetItemTable();
 	class UDataTable* GetDropItemTable();
+	TSubclassOf<class UCameraShakeBase> GetCameraShake();
 
 private:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "ItemData", meta = (AllowPrivateAccess = "true"))
@@ -24,4 +25,7 @@ private:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "ItemData", meta = (AllowPrivateAccess = "true"))
 	class UDataTable* DropItemTable;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "CameraShake", meta = (AllowPrivateAccess = "true"))
+	TSubclassOf<class UCameraShakeBase> CameraShake;
 };

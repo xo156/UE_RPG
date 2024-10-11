@@ -11,6 +11,7 @@
 #include "ItemBase.h"
 #include "InventoryTooltip.h"
 #include "InventoryItemAction.h"
+#include "Camera/CameraShakeBase.h"
 
 AMyPlayerController::AMyPlayerController() {
 

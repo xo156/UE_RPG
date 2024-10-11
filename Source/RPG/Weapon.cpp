@@ -78,7 +78,7 @@ void AWeapon::ApplyDamageToActor(AActor* ActorToDamage)
 		return;
 	}
 	else {
-		OwnerCharacter->TakeDamage(Damage, DamageEvent, GetInstigatorController(), this);
+		ActorToDamage->TakeDamage(Damage, DamageEvent, GetInstigatorController(), this);
 	}
 }
 

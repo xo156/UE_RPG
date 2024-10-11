@@ -36,9 +36,7 @@ public:
 	class UTextBlock* AmountText;
 
 	FInventoryItemData CurrentInventoryItemData;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item")
-	UDataTable* ItemDataTable;
+	UDataTable* ItemTable;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item")
 	TSubclassOf<class UInventoryTooltip> InventoryTooltipClass;

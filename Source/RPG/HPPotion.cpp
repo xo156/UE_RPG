@@ -34,15 +34,10 @@ void AHPPotion::Use()
 
 	if (auto* PlayerCharacter = Cast<AMyCharacter>(GetWorld()->GetFirstPlayerController()->GetPawn())) {
 		if (PlayerCharacter->CharacterStatus.CurrentHP + HPRecoveryAmount >= PlayerCharacter->CharacterStatus.MaxHP) {
-			//PlayerCharacter->CharacterStatus.CurrentHP = PlayerCharacter->CharacterStatus.MaxHP;
-
-			UE_LOG(LogTemp, Log, TEXT("111 HPRecoveryAmount: %f"), HPRecoveryAmount);
-			PlayerCharacter->ConsumeHPForAction(HPRecoveryAmount);
+			PlayerCharacter->ConsumeHPForAction(-PlayerCharacter->CharacterStatus.MaxHP);
 		}
 		else {
-			//PlayerCharacter->CharacterStatus.CurrentHP += HPRecoveryAmount;
-			UE_LOG(LogTemp, Log, TEXT("222 HPRecoveryAmount: %f"), HPRecoveryAmount);
-			PlayerCharacter->ConsumeHPForAction(HPRecoveryAmount);
+			PlayerCharacter->ConsumeHPForAction(-HPRecoveryAmount);
 		}
 	}
 }

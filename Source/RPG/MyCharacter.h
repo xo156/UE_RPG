@@ -32,12 +32,18 @@ public:
 		if (StaminaCost >= 0) {
 			CurrentStamina = FMath::Max(CurrentStamina - StaminaCost, 0.0f);
 		}
+		else {
+			CurrentStamina = FMath::Min(CurrentStamina + StaminaCost, MaxStamina);
+		}
 		UE_LOG(LogTemp, Warning, TEXT("CurrentStamina: %f"), CurrentStamina);
 		return CurrentStamina;
 	}
 	float UseHP(float HPCost) {
 		if (HPCost >= 0) {
 			CurrentHP = FMath::Max(CurrentHP - HPCost, 0.0f);
+		}
+		else {
+			CurrentHP = FMath::Min(CurrentHP - HPCost, MaxHP);
 		}
 		UE_LOG(LogTemp, Warning, TEXT("CurrentHP: %f"), CurrentHP);
 		return CurrentHP;
@@ -212,4 +218,7 @@ private:
 	class UBoxComponent* RootItemBoxComponent;
 	TArray<class ADropItem*> OverlapItems;
 	UDataTable* ItemTable;
+
+	//Èçµé¸²
+	TSubclassOf<class UCameraShakeBase> CameraShake;
 };

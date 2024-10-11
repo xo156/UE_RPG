@@ -14,6 +14,7 @@
 #include "DropItem.h"
 #include "BrainComponent.h"
 #include "DataTableGameInstance.h"
+#include "MyPlayerController.h"
 
 // Sets default values
 AMonster::AMonster()
@@ -73,6 +74,7 @@ void AMonster::BeginPlay()
 
 	if (auto* GameInstance = Cast<UDataTableGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()))) {
 		ItemDropTable = GameInstance->GetDropItemTable();
+		CameraShake = GameInstance->GetCameraShake();
 	}
 }
 
@@ -82,7 +84,6 @@ void AMonster::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 
 	WidgetFaceToPlayer();
-
 }
 
 // Called to bind functionality to input
@@ -163,6 +164,10 @@ float AMonster::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, 
 	if (DamageCauser == nullptr)
 		return -1.f;
 
+	if (auto* PlayerController = Cast<AMyPlayerController>(UGameplayStatics::GetPlayerController(GetWorld(), 0))) {
+		PlayerController->ClientPlayCameraShake(CameraShake);
+	}
+
 	if (bHasEnoughHP(DamageAmount)) {
 		//체력이 충분해서 데미지를 입을때
 		ConsumeHPForAction(DamageAmount);
@@ -198,9 +203,31 @@ float AMonster::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, 
 				}
 			}
 		}
+		//몬스터 사라지기
+		if (UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance()) {
+			if (MonsterDieMontage) {
+				AnimInstance->Montage_Play(MonsterDieMontage);
+				FOnMontageEnded EndDelegate;
+				EndDelegate.BindUObject(this, &AMonster::OnDieMontageEnded);
+				AnimInstance->Montage_SetEndDelegate(EndDelegate, MonsterDieMontage);
+			}
+		}
 	}
 	
 	return DamageAmount;
+}
+
+void AMonster::OnDieMontageEnded(UAnimMontage* Montage, bool bInterrupted)
+{
+	if (!bInterrupted) {
+		if (AController* AIControllerInstance = GetController()) {
+			if (AAIController* AIController = Cast<AAIController>(AIControllerInstance)) {
+				AIController->StopMovement();
+				AIController->UnPossess();
+			}
+		}
+		Destroy();
+	}
 }
 
 void AMonster::ApplyDamageToActor(AActor* ActorToDamage)

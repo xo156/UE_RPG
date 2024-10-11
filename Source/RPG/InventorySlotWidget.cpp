@@ -3,12 +3,14 @@
 
 #include "InventorySlotWidget.h"
 #include "InventoryItemData.h"
+#include "DataTableGameInstance.h"
 #include "ItemData.h"
 #include "Components/Button.h"
 #include "Components/TextBlock.h"
 #include "InventoryTooltip.h"
 #include "MyPlayerController.h"
 #include "InventoryItemAction.h"
+#include "Kismet/GameplayStatics.h"
 
 void UInventorySlotWidget::NativeConstruct()
 {
@@ -18,6 +20,10 @@ void UInventorySlotWidget::NativeConstruct()
 		Thumbnail->OnHovered.AddDynamic(this, &UInventorySlotWidget::OnThumbnailHovered);
 		Thumbnail->OnUnhovered.AddDynamic(this, &UInventorySlotWidget::OnThumbnailUnhovered);
 	}
+
+	if (auto* GameInstance = Cast<UDataTableGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()))) {
+		ItemTable = GameInstance->GetItemTable();
+	}
 }
 
 void UInventorySlotWidget::OnThumbnailHovered()
@@ -26,8 +32,8 @@ void UInventorySlotWidget::OnThumbnailHovered()
 		if (InventoryTooltipClass) {
 			InventoryTooltipInstance = CreateWidget<UInventoryTooltip>(this, InventoryTooltipClass);
 			if (InventoryTooltipInstance){
-				if (ItemDataTable) {
-					FItemData* ShowedData = ItemDataTable->FindRow<FItemData>(FName(*FString::FromInt(CurrentInventoryItemData.ItemTableID)), TEXT("Item Data Context"));
+				if (ItemTable) {
+					FItemData* ShowedData = ItemTable->FindRow<FItemData>(FName(*FString::FromInt(CurrentInventoryItemData.ItemTableID)), TEXT("Item Data Context"));
 					if (ShowedData) {
 						InventoryTooltipInstance->InitTooltip(*ShowedData);
 					}
@@ -69,9 +75,9 @@ void UInventorySlotWidget::RefreshSlot(TArray<FInventoryItemData> InventoryItem,
 	CurrentInventoryItemData = InventoryItem[Index];
 	UE_LOG(LogTemp, Log, TEXT("UInventorySlotWidget::RefreshSlot(): ItemID: %d, Amount: %d"), CurrentInventoryItemData.ItemTableID, CurrentInventoryItemData.ItemAmount);
 
-	if (ItemDataTable) {
+	if (ItemTable) {
 		static const FString ContextString(TEXT("Item Data Context"));
-		FItemData* ItemData = ItemDataTable->FindRow<FItemData>(FName(*FString::FromInt(CurrentInventoryItemData.ItemTableID)), ContextString);
+		FItemData* ItemData = ItemTable->FindRow<FItemData>(FName(*FString::FromInt(CurrentInventoryItemData.ItemTableID)), ContextString);
 		if (ItemData) {
 			FButtonStyle ButtonStyle = Thumbnail->WidgetStyle;
 			FSlateBrush NewBrush;

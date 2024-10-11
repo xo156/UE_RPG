@@ -8,6 +8,8 @@
 #include "MyCharacter.h"
 #include "MyPlayerController.h"
 #include "DropItem.h"
+#include "DataTableGameInstance.h"
+#include "Kismet/GameplayStatics.h"
 
 void UInventoryItemAction::NativeConstruct()
 {
@@ -20,6 +22,10 @@ void UInventoryItemAction::NativeConstruct()
 	if (OnlyDestroy) {
 		OnlyDestroy->OnClicked.AddDynamic(this, &UInventoryItemAction::OnOnlyDestroyClicked);
 	}
+
+	if (auto* GameInstance = Cast<UDataTableGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()))) {
+		ItemTable = GameInstance->GetItemTable();
+	}
 }
 
 void UInventoryItemAction::SetItemData(const FInventoryItemData& InItemData)
@@ -30,8 +36,8 @@ void UInventoryItemAction::SetItemData(const FInventoryItemData& InItemData)
 void UInventoryItemAction::OnOnlyUseClicked()
 {
 	if (InventoryItemData.ItemAmount > 0) {
-		if (ItemDataTable) {
-			FItemData* ClickedItem = ItemDataTable->FindRow<FItemData>(FName(*FString::FromInt(InventoryItemData.ItemTableID)), TEXT("Item Data Context IvnentoryItemAction"));
+		if (ItemTable) {
+			FItemData* ClickedItem = ItemTable->FindRow<FItemData>(FName(*FString::FromInt(InventoryItemData.ItemTableID)), TEXT("Item Data Context IvnentoryItemAction"));
 			switch (ClickedItem->ItemType) {
 			case EItemType::Consumable:
 				if (auto* ItemInstance = GetWorld()->SpawnActor<AItemBase>(ClickedItem->ItemClass[0])) {

@@ -61,6 +61,7 @@ public:
 						 UPrimitiveComponent* OtherComponent, int32 OtherBodyIndex, 
 						 bool bFromSweep, const FHitResult& SweepResult);
 	virtual float TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
+	void OnDieMontageEnded(UAnimMontage* Montage, bool bInterrupted);
 	void ApplyDamageToActor(AActor* ActorToDamage);
 
 	class UBehaviorTree* GetBehaviorTree() const;
@@ -78,6 +79,7 @@ public:
 	void ConsumeHPForAction(float HPCost);
 	bool bHasEnoughHP(float HPCost) const;
 
+	//»óÅÂ
 	bool bIsMonsterAttack = false;
 
 protected:
@@ -98,9 +100,6 @@ private:
 	class UAnimMontage* MonsterAttackMontage;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Montage", meta = (AllowPrivateAccess = "true"))
-	class UAnimMontage* MonsterHitMontage;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Montage", meta = (AllowPrivateAccess = "true"))
 	class UAnimMontage* MonsterDieMontage;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UI", meta = (AllowPrivateAccess = "true"))
@@ -116,4 +115,7 @@ private:
 	TSubclassOf<class ADropItem> DropItemClass;
 
 	UDataTable* ItemDropTable;
+
+	//Èçµé¸²
+	TSubclassOf<class UCameraShakeBase> CameraShake;
 };

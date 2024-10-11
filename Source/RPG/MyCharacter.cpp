@@ -88,6 +88,7 @@ void AMyCharacter::BeginPlay() {
 
 	if (auto* GameInstance = Cast<UDataTableGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()))) {
 		ItemTable = GameInstance->GetItemTable();
+		CameraShake = GameInstance->GetCameraShake();
 	}
 }
 
@@ -163,6 +164,13 @@ float AMyCharacter::TakeDamage(float DamageAmount, FDamageEvent const& DamageEve
 
 	if (bIsRoll)
 		return 0.f;
+
+	if (bIsGuard)
+		return 0.f;
+
+	if (auto* PlayerController = Cast<AMyPlayerController>(GetController())) {
+		PlayerController->ClientPlayCameraShake(CameraShake);
+	}
 
 	if (bHasEnoughHP(DamageAmount)) {
 		//체력이 충분해서 데미지를 입을때
@@ -261,7 +269,16 @@ void AMyCharacter::AttackExecute()
 
 void AMyCharacter::SetComboAttackTimer()
 {
-	GetCurrentWeapon()->WaitComboTime = GetWorld()->GetTimerManager().GetTimerRemaining(ComboCheckTimerHandle);
+	if (auto* AnimInstance = GetMesh()->GetAnimInstance()) {
+		if (AnimInstance->Montage_IsPlaying(CurrentWeaponComponent->AttackMontage)) {
+			FName CurrentSectionName = AnimInstance->Montage_GetCurrentSection(CurrentWeaponComponent->AttackMontage);
+			if (!CurrentSectionName.IsNone()) {
+				float SectionLength = CurrentWeaponComponent->AttackMontage->GetSectionLength(CurrentWeaponComponent->AttackMontage->GetSectionIndex(CurrentSectionName));
+				GetWorld()->GetTimerManager().SetTimer(ComboCheckTimerHandle, this, &AMyCharacter::StopComboAttackTimer, SectionLength, false);
+				GetCurrentWeapon()->WaitComboTime = SectionLength;
+			}
+		}
+	}
 }
 
 void AMyCharacter::StopComboAttackTimer()
@@ -287,7 +304,6 @@ void AMyCharacter::GuardUp()
 		if (bHasEnoughStamina(GuardStaminaCost)) {
 			bIsGuard = true;
 			if (UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance()) {
-				//ConsumeStaminaForAction(GuardStaminaCost);
 				CurrentWeaponComponent->GetLeftHandWeaponInstance()->GetWeaponCollision()->SetCollisionProfileName("Weapon");
 				CurrentWeaponComponent->GetLeftHandWeaponInstance()->GetWeaponCollision()->SetNotifyRigidBodyCollision(true);
 				AnimInstance->Montage_Play(GuardMontage);

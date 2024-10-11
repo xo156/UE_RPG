@@ -33,8 +33,7 @@ public:
 	void SetItemData(const FInventoryItemData& InItemData);
 	FInventoryItemData InventoryItemData;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item")
-	UDataTable* ItemDataTable;
+	UDataTable* ItemTable;
 
 	UFUNCTION()
 	void OnOnlyUseClicked();

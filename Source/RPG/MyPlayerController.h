@@ -20,7 +20,7 @@ class RPG_API AMyPlayerController : public APlayerController
 public:
 	AMyPlayerController();
 
-	//플레이어 유효성 체크
+	//getter
 	AMyCharacter* GetCharacter();
 
 	//UI
@@ -55,7 +55,7 @@ protected:
 	void Close();
 	void TEST();
 
-protected:
+private:
 	//인풋 액션
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input", meta = (AllowPrivateAccess = "true"))
 	class UInputMappingContext* DefaultMappingContext;
@@ -81,16 +81,14 @@ protected:
 	class UInputAction* InventoryAction;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input", meta = (AllowPrivateAccess = "true"))
 	class UInputAction* CloseAction;
-
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input", meta = (AllowPrivateAccess = "true"))
 	class UInputAction* TESTSTATUSAction;
 
-private:
 	class AMyCharacter* MyCharacter;
-
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UI", meta = (AllowPrivateAccess = "true"))
 	class UInventoryTooltip* CurrentTooltip;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UI", meta = (AllowPrivateAccess = "true"))
 	class UInventoryItemAction* InventoryItemAction;
+
 };
