@@ -24,7 +24,7 @@ EBTNodeResult::Type UBTTask_MonsterAttack::ExecuteTask(UBehaviorTreeComponent& O
 		if (auto* MonsterAICSight = Cast<AMonsterAICSight>(OwnerComp.GetAIOwner())) {
 			if (auto* Monster = Cast<AMonster>(MonsterAICSight->GetPawn())) {
 				Monster->MonsterAttackStart();
-				Monster->MonsterAttack();
+				Monster->MonsterAttackExecute();
 				FinishLatentTask(OwnerComp, EBTNodeResult::InProgress);
 			}
 		}
@@ -34,7 +34,7 @@ EBTNodeResult::Type UBTTask_MonsterAttack::ExecuteTask(UBehaviorTreeComponent& O
 		if (auto* MonsterAICHearing = Cast<AMonsterAICHearing>(OwnerComp.GetAIOwner())) {
 			if (auto* Monster = Cast<AMonster>(MonsterAICHearing->GetPawn())) {
 				Monster->MonsterAttackStart();
-				Monster->MonsterAttack();
+				Monster->MonsterAttackExecute();
 				FinishLatentTask(OwnerComp, EBTNodeResult::InProgress);
 			}
 		}

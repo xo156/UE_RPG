@@ -25,3 +25,10 @@ TSubclassOf<class UCameraShakeBase> UDataTableGameInstance::GetCameraShake()
 		return CameraShake;
 	return nullptr;
 }
+
+TSubclassOf<class UCameraShakeBase> UDataTableGameInstance::GetBossCameraShake()
+{
+	if (BossCameraShake)
+		return BossCameraShake;
+	return nullptr;
+}

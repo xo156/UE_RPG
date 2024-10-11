@@ -18,6 +18,7 @@ public:
 	class UDataTable* GetItemTable();
 	class UDataTable* GetDropItemTable();
 	TSubclassOf<class UCameraShakeBase> GetCameraShake();
+	TSubclassOf<class UCameraShakeBase> GetBossCameraShake();
 
 private:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "ItemData", meta = (AllowPrivateAccess = "true"))
@@ -28,4 +29,7 @@ private:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "CameraShake", meta = (AllowPrivateAccess = "true"))
 	TSubclassOf<class UCameraShakeBase> CameraShake;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "CameraShake", meta = (AllowPrivateAccess = "true"))
+	TSubclassOf<class UCameraShakeBase> BossCameraShake;
 };

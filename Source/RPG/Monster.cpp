@@ -114,7 +114,7 @@ void AMonster::MonsterAttackStart()
 	GetCharacterMovement()->bOrientRotationToMovement = false;
 }
 
-void AMonster::MonsterAttack()
+void AMonster::MonsterAttackExecute()
 {
 	if (UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance()) {
 		if (MonsterAttackMontage) {
@@ -224,9 +224,9 @@ void AMonster::OnDieMontageEnded(UAnimMontage* Montage, bool bInterrupted)
 			if (AAIController* AIController = Cast<AAIController>(AIControllerInstance)) {
 				AIController->StopMovement();
 				AIController->UnPossess();
+				Destroy();
 			}
 		}
-		Destroy();
 	}
 }
 

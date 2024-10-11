@@ -29,6 +29,9 @@ public:
 		if (HPCost >= 0) {
 			CurrentMonsterHP = FMath::Max(CurrentMonsterHP - HPCost, 0.0f);
 		}
+		else {
+			CurrentMonsterHP = FMath::Min(CurrentMonsterHP - HPCost, MaxMonsterHP);
+		}
 		UE_LOG(LogTemp, Warning, TEXT("CurrentMonsterHP: %f"), CurrentMonsterHP);
 		return CurrentMonsterHP;
 	}
@@ -53,7 +56,7 @@ public:
 	void WidgetFaceToPlayer();
 
 	void MonsterAttackStart();
-	void MonsterAttack();
+	virtual void MonsterAttackExecute();
 	void MonsterAttackEnd();
 	void OnAttackMontageEnded(UAnimMontage* Montage, bool bInterrupted);
 	UFUNCTION()
@@ -87,33 +90,35 @@ protected:
 	virtual void BeginPlay() override;
 
 private:
+	//AI
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AI", meta = (AllowPrivateAccess = "true"))
 	class UBehaviorTree* BehaviorTree;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AI", meta = (AllowPrivateAccess = "true"))
 	class APatrolPath* PatrolPath;
 
+	//공격
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Collision", meta = (AllowPrivateAccess = "true"))
 	class UCapsuleComponent* MonsterAttackCollisionComponent;
+	TArray<AActor*> OverlapActors; //몬스터가 때릴 때 콜리전 검출하기
 
+	//몽타주
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Montage", meta = (AllowPrivateAccess = "true"))
 	class UAnimMontage* MonsterAttackMontage;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Montage", meta = (AllowPrivateAccess = "true"))
 	class UAnimMontage* MonsterDieMontage;
 
+	//위젯
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UI", meta = (AllowPrivateAccess = "true"))
 	TSubclassOf<class UMonsterWidget> MonsterWidgetClass;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UI", meta = (AllowPrivateAccess = "true"))
 	class UWidgetComponent* MonsterWidgetComponent;
 
-	//몬스터가 때릴 때 콜리전 검출하기
-	TArray<AActor*> OverlapActors;
-
+	//아이템 드랍
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item", meta = (AllowPrivateAccess="true"))
 	TSubclassOf<class ADropItem> DropItemClass;
-
 	UDataTable* ItemDropTable;
 
 	//흔들림
