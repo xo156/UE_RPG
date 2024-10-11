@@ -76,8 +76,8 @@ public:
 	//구조체
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Status")
 	FMonsterStatus MonsterStatus;
-	void ConsumeHPForAction(float HPCost);
-	bool bHasEnoughHP(float HPCost) const;
+	virtual void ConsumeHPForAction(float HPCost);
+	virtual bool bHasEnoughHP(float HPCost) const;
 
 	//상태
 	bool bIsMonsterAttack = false;
