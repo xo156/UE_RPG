@@ -71,9 +71,10 @@ public:
 	class UBehaviorTree* GetBehaviorTree() const;
 	class APatrolPath* GetPatrolPath() const;
 	class UAnimMontage* GetMonsterAttackMontage() const;
-	class UCapsuleComponent* GetAttackCollisions(int32 Index) const;
+	class UCapsuleComponent* GetAttackCollision(FName WantCollision) const;
+	void CheckMonsterAttackCollisionComponents() const;
 	TArray<AActor*>& GetOverlapActors();
-	//TODO: 보스 몬스터의 위젯 표시를 위한 getter
+	class UWidgetComponent* GetMonsterWidgetComponent() const;
 	float GetWaitForNextActionTime();
 	float GetPlayerAroundRadius();
 
@@ -114,8 +115,9 @@ private:
 
 	//공격
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Collision", meta = (AllowPrivateAccess = "true"))
-	//class UCapsuleComponent* MonsterAttackCollisionComponent;
+	class UCapsuleComponent* MonsterAttackCollisionComponent;
 	TArray<class UCapsuleComponent*> MonsterAttackCollisionComponents;
+
 	TArray<AActor*> OverlapActors; //몬스터가 때릴 때 콜리전 검출하기
 
 	//몽타주

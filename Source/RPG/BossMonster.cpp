@@ -2,18 +2,39 @@
 
 
 #include "BossMonster.h"
+#include "Components/CapsuleComponent.h"
+#include "GameFramework/CharacterMovementComponent.h"
+#include "MonsterWidget.h"
+#include "Components/WidgetComponent.h"
 #include "MyCharacter.h"
 #include "MyPlayerController.h"
+#include "Kismet/GameplayStatics.h"
 
-ABossMonster::ABossMonster()
+ABossMonster::ABossMonster() : AMonster()
 {
+	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
+
+	GetCapsuleComponent()->InitCapsuleSize(60.f, 130.f);
+
+	GetCharacterMovement()->MaxWalkSpeed = 700.f;
+
+	//위젯 컴포넌트 생성 및 초기화
+	//MonsterWidgetComponent = CreateDefaultSubobject<UWidgetComponent>(TEXT("MonsterWidgetComponent"));
+	//MonsterWidgetComponent->SetupAttachment(GetMesh(), FName("HealthWidgetSocket")); // 헤드 소켓에 붙이기
+	//MonsterWidgetComponent->SetRelativeLocation(GetActorLocation());
+	//MonsterWidgetComponent->SetWidgetClass(MonsterWidgetClass);
+
+	//구조체
+	MonsterStatus.MaxMonsterHP = 200.f;
+	MonsterStatus.CurrentMonsterHP = MonsterStatus.MaxMonsterHP;
+	MonsterStatus.Damage = 20.f;
 }
 
 void ABossMonster::BeginPlay()
 {
 	Super::BeginPlay();
-
+	CheckMonsterAttackCollisionComponents();
 }
 
 void ABossMonster::Tick(float DeltaTime)
@@ -24,6 +45,7 @@ void ABossMonster::Tick(float DeltaTime)
 	/*if (MonsterStatus.CurrentMonsterHP <= MonsterStatus.MaxMonsterHP / 2) {
 		WaitForNextActionTime = 1.5;
 	}*/
+
 }
 
 void ABossMonster::MonsterAttackExecute(int32 PatternNumber)
@@ -59,10 +81,10 @@ void ABossMonster::WidgetFaceToPlayer()
 {
 	Super::WidgetFaceToPlayer();
 
-	//if (MonsterWidgetComponent) {
+	//if (GetMonsterWidgetComponent()) {
 	//	if (auto* PlayerController = UGameplayStatics::GetPlayerController(GetWorld(), 0)) {
 	//		FVector2D ScreenPosition;
-	//		FVector WorldLocation = GetActorLocation();  // 보스 몬스터의 월드 위치
+	//		//FVector WorldLocation = GetActorLocation();  // 보스 몬스터의 월드 위치
 
 	//		// 월드 위치를 화면 공간으로 변환
 	//		if (PlayerController->ProjectWorldLocationToScreen(WorldLocation, ScreenPosition)) {

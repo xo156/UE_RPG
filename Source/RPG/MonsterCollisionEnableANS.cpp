@@ -9,7 +9,7 @@ void UMonsterCollisionEnableANS::NotifyBegin(USkeletalMeshComponent* MeshComp, U
 {
 	if (MeshComp && MeshComp->GetOwner()) {
 		if (auto* Monster = Cast<AMonster>(MeshComp->GetOwner())) {
-			if (UCapsuleComponent* CollisionComponent = Monster->GetAttackCollisions(CollisionIndex)) {
+			if (UCapsuleComponent* CollisionComponent = Monster->GetAttackCollision(WantCollision)) {
 				CollisionComponent->SetCollisionProfileName(FName("Enemy"));
 				CollisionComponent->SetNotifyRigidBodyCollision(true);
 			}
@@ -21,7 +21,7 @@ void UMonsterCollisionEnableANS::NotifyEnd(USkeletalMeshComponent* MeshComp, UAn
 {
 	if (MeshComp && MeshComp->GetOwner()) {
 		if (auto* Monster = Cast<AMonster>(MeshComp->GetOwner())) {
-			if (UCapsuleComponent* CollisionComponent = Monster->GetAttackCollisions(CollisionIndex)) {
+			if (UCapsuleComponent* CollisionComponent = Monster->GetAttackCollision(WantCollision)) {
 				CollisionComponent->SetCollisionProfileName(FName("NoCollision"));
 				CollisionComponent->SetNotifyRigidBodyCollision(false);
 			}
