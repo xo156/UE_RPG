@@ -39,11 +39,26 @@ AMonster::AMonster()
 	MonsterWidgetComponent->SetWidgetClass(MonsterWidgetClass); 
 
 	//몬스터 공격 콜리전 검출
-	MonsterAttackCollisionComponent = CreateDefaultSubobject<UCapsuleComponent>(TEXT("AttackCollisionComponent"));
+	/*MonsterAttackCollisionComponent = CreateDefaultSubobject<UCapsuleComponent>(TEXT("AttackCollisionComponent"));
 	MonsterAttackCollisionComponent->SetupAttachment(GetMesh(), FName("AttackCollision"));
 	MonsterAttackCollisionComponent->SetCollisionProfileName(TEXT("NoCollision"));
-	MonsterAttackCollisionComponent->OnComponentBeginOverlap.AddDynamic(this, &AMonster::OnOverlapBegin);
+	MonsterAttackCollisionComponent->OnComponentBeginOverlap.AddDynamic(this, &AMonster::OnOverlapBegin);*/
 	
+	MonsterAttackCollisionComponents.Add(CreateDefaultSubobject<UCapsuleComponent>(TEXT("AttackCollisionComponent0"))); //첫 번째 컴포넌트
+	MonsterAttackCollisionComponents[0]->SetupAttachment(GetMesh(), FName("AttackCollision"));
+	MonsterAttackCollisionComponents[0]->SetCollisionProfileName(TEXT("NoCollision"));
+	MonsterAttackCollisionComponents[0]->OnComponentBeginOverlap.AddDynamic(this, &AMonster::OnOverlapBegin);
+
+	for (int32 i = 1; i < MonsterAttackCollisionComponents.Num(); i++) {
+		FString CollisionComponentName = FString::Printf(TEXT("AttackCollisionComponent%d"), i);
+		UCapsuleComponent* NewCollisionComponent = CreateDefaultSubobject<UCapsuleComponent>(*CollisionComponentName);
+		NewCollisionComponent->SetupAttachment(GetMesh(), FName("AttackCollision"));
+		NewCollisionComponent->SetCollisionProfileName(TEXT("NoCollision"));
+		NewCollisionComponent->OnComponentBeginOverlap.AddDynamic(this, &AMonster::OnOverlapBegin);
+
+		MonsterAttackCollisionComponents.Add(NewCollisionComponent);
+	}
+
 	//구조체
 	MonsterStatus.MaxMonsterHP = 100.f;
 	MonsterStatus.CurrentMonsterHP = MonsterStatus.MaxMonsterHP;
@@ -117,15 +132,13 @@ void AMonster::MonsterAttackStart()
 void AMonster::MonsterAttackExecute()
 {
 	if (UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance()) {
-		if (MonsterAttackMontage) {
-			if (!bIsMonsterAttack) {
-				bIsMonsterAttack = true;
-				AnimInstance->Montage_Play(MonsterAttackMontage);
+		if (MonsterAttackMontage && !bIsMonsterAttack) {
+			bIsMonsterAttack = true;
+			AnimInstance->Montage_Play(MonsterAttackMontage);
 
-				FOnMontageEnded MontageEndedDelegate;
-				MontageEndedDelegate.BindUObject(this, &AMonster::OnAttackMontageEnded);
-				AnimInstance->Montage_SetEndDelegate(MontageEndedDelegate, MonsterAttackMontage);
-			}
+			FOnMontageEnded MontageEndedDelegate;
+			MontageEndedDelegate.BindUObject(this, &AMonster::OnAttackMontageEnded);
+			AnimInstance->Montage_SetEndDelegate(MontageEndedDelegate, MonsterAttackMontage);
 		}
 	}
 }
@@ -136,20 +149,31 @@ void AMonster::MonsterAttackEnd()
 	bIsMonsterAttack = false;
 }
 
-void AMonster::OnAttackMontageEnded(UAnimMontage* Montage, bool bInterrupted)
+void AMonster::OnAttackMontageEnded(UAnimMontage* NowPlayMontage, bool bInterrupted)
 {
-	if (Montage == MonsterAttackMontage) {
+	if (NowPlayMontage == MonsterAttackMontage) {
 		MonsterAttackEnd();
 	}
 }
 
 void AMonster::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComponent, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	if (OverlappedComponent == MonsterAttackCollisionComponent) {
+	/*if (OverlappedComponent == MonsterAttackCollisionComponent) {
 		if (OtherActor && OtherActor != this && OtherActor->IsA(AMyCharacter::StaticClass())) {
 			if (!OverlapActors.Contains(OtherActor)) {
 				OverlapActors.Add(OtherActor);
 				ApplyDamageToActor(OtherActor);
+			}
+		}
+	}*/
+
+	for (UCapsuleComponent* CollisionComponent : MonsterAttackCollisionComponents) {
+		if (OverlappedComponent == CollisionComponent) {
+			if (OtherActor && OtherActor != this && OtherActor->IsA(AMyCharacter::StaticClass())) {
+				if (!OverlapActors.Contains(OtherActor)) {
+					OverlapActors.Add(OtherActor);
+					ApplyDamageToActor(OtherActor);
+				}
 			}
 		}
 	}
@@ -254,12 +278,35 @@ UAnimMontage* AMonster::GetMonsterAttackMontage() const
 	return MonsterAttackMontage;
 }
 
-UCapsuleComponent* AMonster::GetAttackCollision() const
+UCapsuleComponent* AMonster::GetAttackCollisions(int32 Index) const
 {
-	return MonsterAttackCollisionComponent;
+	if (MonsterAttackCollisionComponents.IsValidIndex(Index)) {
+		return MonsterAttackCollisionComponents[Index];
+	}
+	return nullptr;
 }
 
 TArray<AActor*>& AMonster::GetOverlapActors()
 {
 	return OverlapActors;
+}
+
+float AMonster::GetWaitForNextActionTime()
+{
+	return WaitForNextActionTime;
+}
+
+float AMonster::GetPlayerAroundRadius()
+{
+	return PlayerAroundRadius;
+}
+
+void AMonster::SetWaitForNextActionTime(float NewWaitForNextActionTime)
+{
+	WaitForNextActionTime = NewWaitForNextActionTime;
+}
+
+void AMonster::SetPlayerAroundRadius(float NewPlayerAroundRadius)
+{
+	PlayerAroundRadius = NewPlayerAroundRadius;
 }

@@ -53,7 +53,7 @@ public:
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
-	void WidgetFaceToPlayer();
+	virtual void WidgetFaceToPlayer();
 
 	void MonsterAttackStart();
 	virtual void MonsterAttackExecute();
@@ -64,14 +64,23 @@ public:
 						 UPrimitiveComponent* OtherComponent, int32 OtherBodyIndex, 
 						 bool bFromSweep, const FHitResult& SweepResult);
 	virtual float TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
-	void OnDieMontageEnded(UAnimMontage* Montage, bool bInterrupted);
+	void OnDieMontageEnded(UAnimMontage* NowPlayMontage, bool bInterrupted);
 	void ApplyDamageToActor(AActor* ActorToDamage);
 
+	//getter
 	class UBehaviorTree* GetBehaviorTree() const;
 	class APatrolPath* GetPatrolPath() const;
 	class UAnimMontage* GetMonsterAttackMontage() const;
-	class UCapsuleComponent* GetAttackCollision() const;
+	class UCapsuleComponent* GetAttackCollisions(int32 Index) const;
 	TArray<AActor*>& GetOverlapActors();
+	//TODO: 보스 몬스터의 위젯 표시를 위한 getter
+	float GetWaitForNextActionTime();
+	float GetPlayerAroundRadius();
+
+	//setter
+	void SetWaitForNextActionTime(float NewWaitForNextActionTime);
+	void SetPlayerAroundRadius(float NewPlayerAroundRadius);
+
 
 	//델리게이트
 	FOnMonsterUIUpdated OnMonsterUIUpdated;
@@ -97,9 +106,16 @@ private:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AI", meta = (AllowPrivateAccess = "true"))
 	class APatrolPath* PatrolPath;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AI", meta = (AllowPrivateAccess = "true"))
+	float WaitForNextActionTime = 2.f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AI", meta = (AllowPrivateAccess = "true"))
+	float PlayerAroundRadius = 400.f;
+
 	//공격
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Collision", meta = (AllowPrivateAccess = "true"))
-	class UCapsuleComponent* MonsterAttackCollisionComponent;
+	//class UCapsuleComponent* MonsterAttackCollisionComponent;
+	TArray<class UCapsuleComponent*> MonsterAttackCollisionComponents;
 	TArray<AActor*> OverlapActors; //몬스터가 때릴 때 콜리전 검출하기
 
 	//몽타주

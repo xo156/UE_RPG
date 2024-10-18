@@ -14,7 +14,10 @@ class RPG_API UMonsterCollisionEnableANS : public UAnimNotifyState
 {
 	GENERATED_BODY()
 	
+public:
 	virtual void NotifyBegin(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, float TotalDuration) override;
 	virtual void NotifyEnd(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation) override;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Index")
+	int32 CollisionIndex = 0;
 };

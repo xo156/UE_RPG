@@ -5,6 +5,8 @@
 #include "MonsterAICSight.h"
 #include "MonsterAICHearing.h"
 #include "Monster.h"
+#include "BossMonsterAIC.h"
+#include "BossMonster.h"
 #include "Kismet/GameplayStatics.h"
 #include "BehaviorTree/BlackboardComponent.h"
 
@@ -16,6 +18,7 @@ UBTService_PlayerIsInAttackRange::UBTService_PlayerIsInAttackRange()
 
 void UBTService_PlayerIsInAttackRange::OnBecomeRelevant(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
 {
+	//일반
 	if (bIsSight) {
 		if (auto* MonsterAICSight = Cast<AMonsterAICSight>(OwnerComp.GetAIOwner())) {
 			if (auto* Monster = Cast<AMonster>(MonsterAICSight->GetPawn())) {
@@ -31,6 +34,18 @@ void UBTService_PlayerIsInAttackRange::OnBecomeRelevant(UBehaviorTreeComponent& 
 			if (auto* Monster = Cast<AMonster>(MonsterAICHearing->GetPawn())) {
 				if (auto* PlayerCharacter = UGameplayStatics::GetPlayerCharacter(GetWorld(), 0)) {
 					OwnerComp.GetBlackboardComponent()->SetValueAsBool(GetSelectedBlackboardKey(), Monster->GetDistanceTo(PlayerCharacter) <= AttackRange);
+				}
+			}
+		}
+	}
+
+	//보스
+	if (bIsHearing) {
+		if (auto* BossMonsterAIC = Cast<ABossMonsterAIC>(OwnerComp.GetAIOwner())) {
+			if (auto* BossMonster = Cast<ABossMonster>(BossMonsterAIC->GetPawn())) {
+				if (auto* PlayerCharacter = UGameplayStatics::GetPlayerCharacter(GetWorld(), 0)) {
+					OwnerComp.GetBlackboardComponent()->SetValueAsVector(FName("TargetLocation"), PlayerCharacter->GetActorLocation());
+					OwnerComp.GetBlackboardComponent()->SetValueAsBool(FName("PlayerIsInAttackRange"), BossMonster->GetDistanceTo(PlayerCharacter) <= AttackRange);
 				}
 			}
 		}

@@ -2,178 +2,117 @@
 
 
 #include "BossMonster.h"
-#include "Components/CapsuleComponent.h"
-#include "GameFramework/CharacterMovementComponent.h"
-#include "MonsterWidget.h"
-#include "DataTableGameInstance.h"
-#include "Kismet/GameplayStatics.h"
-#include "Blueprint/AIBlueprintHelperLibrary.h"
-#include "BehaviorTree/BlackboardComponent.h"
+#include "MyCharacter.h"
 #include "MyPlayerController.h"
 
 ABossMonster::ABossMonster()
 {
-	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
-
-	//GetCapsuleComponent()->InitCapsuleSize(42.f, 96.f);
-	//bUseControllerRotationPitch = false;
-	//bUseControllerRotationYaw = false;
-	//bUseControllerRotationRoll = false;
-
-	//GetCharacterMovement()->bOrientRotationToMovement = true;
-	//GetCharacterMovement()->MaxWalkSpeed = 500.f;
-	//GetCapsuleComponent()->SetCollisionProfileName(TEXT("Enemy"));
-	//GetMesh()->SetCollisionProfileName(TEXT("NoCollision"));
-	
-	////위젯 컴포넌트 생성 및 초기화
-	BossMonsterWidgetClass = UMonsterWidget::StaticClass();
-
-	////몬스터 공격 콜리전 검출
-	//MonsterAttackCollisionComponent = CreateDefaultSubobject<UCapsuleComponent>(TEXT("AttackCollisionComponent"));
-	//MonsterAttackCollisionComponent->SetupAttachment(GetMesh(), FName("AttackCollision"));
-	//MonsterAttackCollisionComponent->SetCollisionProfileName(TEXT("NoCollision"));
-	//MonsterAttackCollisionComponent->OnComponentBeginOverlap.AddDynamic(this, &AMonster::OnOverlapBegin);
-
-	//구조체
-	MonsterStatus.MaxMonsterHP = 300.f;
-	MonsterStatus.CurrentMonsterHP = MonsterStatus.MaxMonsterHP;
-	MonsterStatus.Damage = 15.f;
-
 }
 
 void ABossMonster::BeginPlay()
 {
 	Super::BeginPlay();
 
-	if (auto* GameInstance = Cast<UDataTableGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()))) {
-		BossCameraShake = GameInstance->GetBossCameraShake();
-	}
 }
 
-void ABossMonster::SetUpBossWidget()
+void ABossMonster::Tick(float DeltaTime)
 {
-	if (BossMonsterWidgetClass) {
-		BossMonsterWidgetInstance = CreateWidget<UMonsterWidget>(GetWorld(), BossMonsterWidgetClass);
-		if (BossMonsterWidgetInstance) {
-			BossMonsterWidgetInstance->AddToViewport();
-			BossMonsterWidgetInstance->UpdateHP(MonsterStatus.CurrentMonsterHP, MonsterStatus.MaxMonsterHP);
-		}
-	}
+	Super::Tick(DeltaTime);
+
+	//체력이 반 이하로 내려가면
+	/*if (MonsterStatus.CurrentMonsterHP <= MonsterStatus.MaxMonsterHP / 2) {
+		WaitForNextActionTime = 1.5;
+	}*/
 }
 
-void ABossMonster::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
+void ABossMonster::MonsterAttackExecute(int32 PatternNumber)
 {
-	Super::SetupPlayerInputComponent(PlayerInputComponent);
-}
-
-void ABossMonster::MonsterAttackExecute(UAnimMontage* Montage)
-{
-	Super::MonsterAttackExecute();
-
 	if (UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance()) {
-		if (Montage) {
-			if (!bIsMonsterAttack) {
-				bIsMonsterAttack = true;
-				AnimInstance->Montage_Play(Montage);
+		if (!bIsMonsterAttack) {
+			bIsMonsterAttack = true;
 
-				FOnMontageEnded MontageEndedDelegate;
-				MontageEndedDelegate.BindUObject(this, &AMonster::OnAttackMontageEnded);
-				AnimInstance->Montage_SetEndDelegate(MontageEndedDelegate, Montage);
+			FOnMontageEnded MontageEndedDelegate;
+			MontageEndedDelegate.BindUObject(this, &AMonster::OnAttackMontageEnded);
+
+			switch (PatternNumber) {
+			case 1:
+				AnimInstance->Montage_Play(CloseAttackMontage);
+				AnimInstance->Montage_SetEndDelegate(MontageEndedDelegate, CloseAttackMontage);
+				break;
+			case 2:
+				AnimInstance->Montage_Play(MidAttackMontage);
+				AnimInstance->Montage_SetEndDelegate(MontageEndedDelegate, MidAttackMontage);
+				break;
+			case 3:
+				AnimInstance->Montage_Play(LongAttackMontage);
+				AnimInstance->Montage_SetEndDelegate(MontageEndedDelegate, LongAttackMontage);
+				break;
+			default:
+				break;
 			}
 		}
 	}
 }
 
-float ABossMonster::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
+void ABossMonster::WidgetFaceToPlayer()
 {
-	Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
+	Super::WidgetFaceToPlayer();
 
-	if (EventInstigator == nullptr)
-		return -1.f;
-	if (DamageCauser == nullptr)
-		return -1.f;
+	//if (MonsterWidgetComponent) {
+	//	if (auto* PlayerController = UGameplayStatics::GetPlayerController(GetWorld(), 0)) {
+	//		FVector2D ScreenPosition;
+	//		FVector WorldLocation = GetActorLocation();  // 보스 몬스터의 월드 위치
 
-	if (auto* PlayerController = Cast<AMyPlayerController>(UGameplayStatics::GetPlayerController(GetWorld(), 0))) {
-		PlayerController->ClientPlayCameraShake(BossCameraShake);
-	}
+	//		// 월드 위치를 화면 공간으로 변환
+	//		if (PlayerController->ProjectWorldLocationToScreen(WorldLocation, ScreenPosition)) {
+	//			// 화면 하단의 중앙에 위치하도록 조정
+	//			int32 ScreenSizeX, ScreenSizeY;
+	//			PlayerController->GetViewportSize(ScreenSizeX, ScreenSizeY);
 
-	if (bHasEnoughHP(DamageAmount)) {
-		//체력이 충분해서 데미지를 입을때
-		ConsumeHPForAction(DamageAmount);
-		UE_LOG(LogTemp, Log, TEXT("BossMonster Damaged, CurrentHP: %f"), MonsterStatus.CurrentMonsterHP);
-	}
-	else {
-		//체력이 없어서 죽을때
-		UE_LOG(LogTemp, Log, TEXT("BossMonster Die"));
-		ConsumeHPForAction(DamageAmount); //체력을 0으로 하기
-		//몬스터 사라지기
-		if (UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance()) {
-			if (BossMonsterDieMontage) {
-				AnimInstance->Montage_Play(BossMonsterDieMontage);
-				FOnMontageEnded EndDelegate;
-				EndDelegate.BindUObject(this, &AMonster::OnDieMontageEnded);
-				AnimInstance->Montage_SetEndDelegate(EndDelegate, BossMonsterDieMontage);
-			}
-		}
-	}
+	//			// 위젯의 스크린 위치를 하단 중앙으로 맞추기 위한 계산
+	//			float WidgetPositionY = ScreenSizeY - MonsterWidgetComponent->GetDesiredSize().Y - 50.f;  // 약간의 오프셋
+	//			float WidgetPositionX = ScreenSizeX * 0.5f - MonsterWidgetComponent->GetDesiredSize().X * 0.5f;
 
-	return DamageAmount;
+	//			// 위젯의 스크린 좌표 설정 (하단 중앙)
+	//			FVector2D WidgetScreenPosition(WidgetPositionX, WidgetPositionY);
+
+	//			// 위젯의 새로운 위치로 적용
+	//			MonsterWidgetComponent->SetDrawAtDesiredSize(true);
+	//			MonsterWidgetComponent->SetWorldLocation(WorldLocation);  // 기존 월드 위치
+	//			MonsterWidgetComponent->SetScreenSpaceWidgetPosition(WidgetScreenPosition);  // 스크린 좌표
+	//		}
+	//	}
+	//}
 }
 
-void ABossMonster::NoAction()
+float ABossMonster::GetCloseRange()
 {
-	UAIBlueprintHelperLibrary::SimpleMoveToLocation(GetController(), GoalLocation);
-
-	if (WanderCount >= 2) {
-		WanderCount = 0;
-		bIsWander = false;
-	}
+	return CloseRange;
 }
 
-void ABossMonster::FindPlayerAround()
+float ABossMonster::GetMidRange()
 {
-	if (auto* PlayerPawn = UGameplayStatics::GetPlayerPawn(GetWorld(), 0)) {
-		PlayerLocation = PlayerPawn->GetActorLocation();
-		GoalLocation = PlayerLocation + FMath::VRand() * FMath::FRandRange(200.0f, 400.0f); //랜덤 위치 생성
-
-		for (WanderCount; WanderCount < 2; WanderCount++) {
-			bIsWander = true;
-			NoAction();
-		}
-	}
+	return MidRange;
 }
 
 UAnimMontage* ABossMonster::GetCloseAttackMontage()
 {
-	if (BossMonsterCloseAttackMontage) {
-		NowPlayMontage = BossMonsterCloseAttackMontage;
-		return BossMonsterCloseAttackMontage;
-	}
+	if (CloseAttackMontage)
+		return CloseAttackMontage;
 	return nullptr;
 }
 
 UAnimMontage* ABossMonster::GetMidAttackMontage()
 {
-	if (BossMonsterMidAttackMontage) {
-		NowPlayMontage = BossMonsterMidAttackMontage;
-		return BossMonsterMidAttackMontage;
-	}
+	if (MidAttackMontage)
+		return MidAttackMontage;
 	return nullptr;
 }
 
 UAnimMontage* ABossMonster::GetLongAttackMontage()
 {
-	if (BossMonsterLongAttackMontage) {
-		NowPlayMontage = BossMonsterLongAttackMontage;
-		return BossMonsterLongAttackMontage;
-	}
-	return nullptr;
-}
-
-UAnimMontage* ABossMonster::GetNowAttackMontage()
-{
-	if (NowPlayMontage)
-		return NowPlayMontage;
+	if (LongAttackMontage)
+		return LongAttackMontage;
 	return nullptr;
 }
