@@ -46,7 +46,7 @@ EBTNodeResult::Type UBTTask_MonsterAttack::ExecuteTask(UBehaviorTreeComponent& O
 		}
 		return EBTNodeResult::Failed;
 	}
-	else {
+	else {//보스 말고 일반
 		//범위 밖이면 공격 안하도록
 		if (bool bOutOfRange = !OwnerComp.GetBlackboardComponent()->GetValueAsBool(GetSelectedBlackboardKey())) {
 			FinishLatentTask(OwnerComp, EBTNodeResult::Succeeded);
@@ -118,7 +118,28 @@ bool UBTTask_MonsterAttack::bMontageHasFinished(AMonster* Monster)
 		return false;
 	}
 
-	if (UAnimInstance* AnimInstance = Monster->GetMesh()->GetAnimInstance())
-		return !AnimInstance->Montage_IsPlaying(Monster->GetMonsterAttackMontage());
+	if (UAnimInstance* AnimInstance = Monster->GetMesh()->GetAnimInstance()) {
+		if (bIsBoss) {
+			if (auto* BossMonster = Cast<ABossMonster>(Monster)) {
+				switch (PatternNumber) {
+				case 1:
+					return !AnimInstance->Montage_IsPlaying(BossMonster->GetCloseAttackMontage());
+					break;
+				case 2:
+					return !AnimInstance->Montage_IsPlaying(BossMonster->GetMidAttackMontage());
+					break;
+				case 3:
+					return !AnimInstance->Montage_IsPlaying(BossMonster->GetLongAttackMontage());
+					break;
+				default:
+					return true;
+					break;
+				}
+			}
+		}
+		else {
+			return !AnimInstance->Montage_IsPlaying(Monster->GetMonsterAttackMontage());
+		}
+	}
 	return false;
 }

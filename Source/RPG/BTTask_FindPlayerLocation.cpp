@@ -14,6 +14,15 @@ UBTTask_FindPlayerLocation::UBTTask_FindPlayerLocation()
 
 EBTNodeResult::Type UBTTask_FindPlayerLocation::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
 {
+	if (bIsBoss) {
+		if (auto* PlayerCharacter = UGameplayStatics::GetPlayerCharacter(GetWorld(), 0)) {
+			FVector PlayerLocation = PlayerCharacter->GetActorLocation();
+			OwnerComp.GetBlackboardComponent()->SetValueAsVector(GetSelectedBlackboardKey(), PlayerLocation);
+			FinishLatentTask(OwnerComp, EBTNodeResult::Succeeded);
+			return EBTNodeResult::Succeeded;
+		}
+	}
+
 	if (auto* PlayerCharacter = UGameplayStatics::GetPlayerCharacter(GetWorld(), 0)) {
 		FVector PlayerLocation = PlayerCharacter->GetActorLocation();
 		if (bSearchRandom) {

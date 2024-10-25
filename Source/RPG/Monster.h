@@ -7,6 +7,7 @@
 #include "DropRate.h"
 #include "Monster.generated.h"
 
+
 USTRUCT(BlueprintType)
 struct FMonsterStatus
 {
@@ -71,17 +72,16 @@ public:
 	class UBehaviorTree* GetBehaviorTree() const;
 	class APatrolPath* GetPatrolPath() const;
 	class UAnimMontage* GetMonsterAttackMontage() const;
-	class UCapsuleComponent* GetAttackCollision(FName WantCollision) const;
-	void CheckMonsterAttackCollisionComponents() const;
 	TArray<AActor*>& GetOverlapActors();
 	class UWidgetComponent* GetMonsterWidgetComponent() const;
 	float GetWaitForNextActionTime();
 	float GetPlayerAroundRadius();
+	UCapsuleComponent* GetAttackCollisionComponent(FName AttackCollisionFName) const;
 
 	//setter
 	void SetWaitForNextActionTime(float NewWaitForNextActionTime);
 	void SetPlayerAroundRadius(float NewPlayerAroundRadius);
-
+	void SetMonsterAttackCollision(class UCapsuleComponent* AttackCollision);
 
 	//델리게이트
 	FOnMonsterUIUpdated OnMonsterUIUpdated;
@@ -114,10 +114,9 @@ private:
 	float PlayerAroundRadius = 400.f;
 
 	//공격
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Collision", meta = (AllowPrivateAccess = "true"))
-	class UCapsuleComponent* MonsterAttackCollisionComponent;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attack", meta = (AllowPrivateAccess = "true"))
+	class UCapsuleComponent* MonsterAttackCollisionComponent0;
 	TArray<class UCapsuleComponent*> MonsterAttackCollisionComponents;
-
 	TArray<AActor*> OverlapActors; //몬스터가 때릴 때 콜리전 검출하기
 
 	//몽타주

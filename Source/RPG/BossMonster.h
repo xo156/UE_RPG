@@ -43,10 +43,22 @@ private:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Montage", meta = (AllowPrivateAccess = "true"))
 	UAnimMontage* LongAttackMontage;
 
-	//공격 거리
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Pattern", meta = (AllowPrivateAccess = "true"))
+	//공격
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attack", meta = (AllowPrivateAccess = "true"))
 	float CloseRange = 200.f;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Pattern", meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attack", meta = (AllowPrivateAccess = "true"))
 	float MidRange = 400.f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attack", meta = (AllowPrivateAccess = "true"))
+	class UCapsuleComponent* MonsterAttackCollisionComponent1;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attack", meta = (AllowPrivateAccess = "true"))
+	class UCapsuleComponent* MonsterAttackCollisionComponent2;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attack", meta = (AllowPrivateAccess = "true"))
+	class UCapsuleComponent* MonsterAttackCollisionComponent3;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attack", meta = (AllowPrivateAccess = "true"))
+	class UCapsuleComponent* MonsterAttackCollisionComponent4;
 };

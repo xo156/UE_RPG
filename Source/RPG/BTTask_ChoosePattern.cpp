@@ -20,7 +20,7 @@ EBTNodeResult::Type UBTTask_ChoosePattern::ExecuteTask(UBehaviorTreeComponent& O
 				PlayerLocation = BlackboardComponent->GetValueAsVector(FName("TargetLocation"));
 				DistanceToPlayer = FVector::Dist(BossMonster->GetActorLocation(), PlayerLocation);
 				RandomValue = FMath::RandRange(0.f, 1.f);
-				if (DistanceToPlayer < BossMonster->GetCloseRange()) {
+				if (DistanceToPlayer <= BossMonster->GetCloseRange()) {
 					if (RandomValue < 0.6f) {
 						//근거리
 						OwnerComp.GetBlackboardComponent()->SetValueAsInt(GetSelectedBlackboardKey(), 1);
@@ -40,7 +40,7 @@ EBTNodeResult::Type UBTTask_ChoosePattern::ExecuteTask(UBehaviorTreeComponent& O
 						return EBTNodeResult::Succeeded;
 					}
 				}
-				else if (DistanceToPlayer < BossMonster->GetMidRange()) {
+				else if (DistanceToPlayer <= BossMonster->GetMidRange()) {
 					if (RandomValue < 0.6f) {
 						//중거리
 						OwnerComp.GetBlackboardComponent()->SetValueAsInt(GetSelectedBlackboardKey(), 2);

@@ -44,8 +44,7 @@ void UBTService_PlayerIsInAttackRange::OnBecomeRelevant(UBehaviorTreeComponent& 
 		if (auto* BossMonsterAIC = Cast<ABossMonsterAIC>(OwnerComp.GetAIOwner())) {
 			if (auto* BossMonster = Cast<ABossMonster>(BossMonsterAIC->GetPawn())) {
 				if (auto* PlayerCharacter = UGameplayStatics::GetPlayerCharacter(GetWorld(), 0)) {
-					OwnerComp.GetBlackboardComponent()->SetValueAsVector(FName("TargetLocation"), PlayerCharacter->GetActorLocation());
-					OwnerComp.GetBlackboardComponent()->SetValueAsBool(FName("PlayerIsInAttackRange"), BossMonster->GetDistanceTo(PlayerCharacter) <= AttackRange);
+					OwnerComp.GetBlackboardComponent()->SetValueAsBool(GetSelectedBlackboardKey(), BossMonster->GetDistanceTo(PlayerCharacter) <= AttackRange);
 				}
 			}
 		}

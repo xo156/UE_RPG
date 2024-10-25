@@ -19,11 +19,30 @@ ABossMonster::ABossMonster() : AMonster()
 
 	GetCharacterMovement()->MaxWalkSpeed = 700.f;
 
-	//위젯 컴포넌트 생성 및 초기화
-	//MonsterWidgetComponent = CreateDefaultSubobject<UWidgetComponent>(TEXT("MonsterWidgetComponent"));
-	//MonsterWidgetComponent->SetupAttachment(GetMesh(), FName("HealthWidgetSocket")); // 헤드 소켓에 붙이기
-	//MonsterWidgetComponent->SetRelativeLocation(GetActorLocation());
-	//MonsterWidgetComponent->SetWidgetClass(MonsterWidgetClass);
+	//추가 몬스터 공격 콜리전 검출
+	MonsterAttackCollisionComponent1 = CreateDefaultSubobject<UCapsuleComponent>(TEXT("AttackCollisionComponent1"));
+	MonsterAttackCollisionComponent1->SetupAttachment(GetMesh(), FName("AttackCollision_RightHand"));
+	MonsterAttackCollisionComponent1->SetCollisionProfileName(TEXT("NoCollision"));
+	MonsterAttackCollisionComponent1->OnComponentBeginOverlap.AddDynamic(this, &AMonster::OnOverlapBegin);
+	SetMonsterAttackCollision(MonsterAttackCollisionComponent1);
+
+	MonsterAttackCollisionComponent2 = CreateDefaultSubobject<UCapsuleComponent>(TEXT("AttackCollisionComponent2"));
+	MonsterAttackCollisionComponent2->SetupAttachment(GetMesh(), FName("AttackCollision_LeftLeg"));
+	MonsterAttackCollisionComponent2->SetCollisionProfileName(TEXT("NoCollision"));
+	MonsterAttackCollisionComponent2->OnComponentBeginOverlap.AddDynamic(this, &AMonster::OnOverlapBegin);
+	SetMonsterAttackCollision(MonsterAttackCollisionComponent2);
+
+	MonsterAttackCollisionComponent3 = CreateDefaultSubobject<UCapsuleComponent>(TEXT("AttackCollisionComponent3"));
+	MonsterAttackCollisionComponent3->SetupAttachment(GetMesh(), FName("AttackCollision_RightLeg"));
+	MonsterAttackCollisionComponent3->SetCollisionProfileName(TEXT("NoCollision"));
+	MonsterAttackCollisionComponent3->OnComponentBeginOverlap.AddDynamic(this, &AMonster::OnOverlapBegin);
+	SetMonsterAttackCollision(MonsterAttackCollisionComponent3);
+
+	MonsterAttackCollisionComponent4 = CreateDefaultSubobject<UCapsuleComponent>(TEXT("AttackCollisionComponent4"));
+	MonsterAttackCollisionComponent4->SetupAttachment(GetMesh(), FName("AttackCollision_Jump"));
+	MonsterAttackCollisionComponent4->SetCollisionProfileName(TEXT("NoCollision"));
+	MonsterAttackCollisionComponent4->OnComponentBeginOverlap.AddDynamic(this, &AMonster::OnOverlapBegin);
+	SetMonsterAttackCollision(MonsterAttackCollisionComponent4);
 
 	//구조체
 	MonsterStatus.MaxMonsterHP = 200.f;
@@ -34,17 +53,21 @@ ABossMonster::ABossMonster() : AMonster()
 void ABossMonster::BeginPlay()
 {
 	Super::BeginPlay();
-	CheckMonsterAttackCollisionComponents();
+
 }
 
 void ABossMonster::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	//체력이 반 이하로 내려가면
-	/*if (MonsterStatus.CurrentMonsterHP <= MonsterStatus.MaxMonsterHP / 2) {
-		WaitForNextActionTime = 1.5;
-	}*/
+	//항상 플레이어 바라보기
+	if (auto* PlayerController = Cast<AMyPlayerController>(GetWorld()->GetFirstPlayerController())) {
+		if (auto* PlayerCharacter = Cast<AMyCharacter>(PlayerController->GetPawn())) {
+			FVector PlayerLocation = PlayerCharacter->GetActorLocation();
+			FRotator LookAtRotation = (PlayerLocation - GetActorLocation()).Rotation();
+			SetActorRotation(FRotator(0.0f, LookAtRotation.Yaw, 0.0f));
+		}
+	}
 
 }
 

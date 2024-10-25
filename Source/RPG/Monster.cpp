@@ -15,6 +15,7 @@
 #include "BrainComponent.h"
 #include "DataTableGameInstance.h"
 #include "MyPlayerController.h"
+#include "MyGameModeBase.h"
 
 // Sets default values
 AMonster::AMonster()
@@ -39,11 +40,11 @@ AMonster::AMonster()
 	MonsterWidgetComponent->SetWidgetClass(MonsterWidgetClass); 
 
 	//몬스터 공격 콜리전 검출
-	MonsterAttackCollisionComponent = CreateDefaultSubobject<UCapsuleComponent>(TEXT("AttackCollisionComponent"));
-	MonsterAttackCollisionComponent->SetupAttachment(GetMesh(), FName("AttackCollision"));
-	MonsterAttackCollisionComponent->SetCollisionProfileName(TEXT("NoCollision"));
-	MonsterAttackCollisionComponent->OnComponentBeginOverlap.AddDynamic(this, &AMonster::OnOverlapBegin);
-	//MonsterAttackCollisionComponents.Add(MonsterAttackCollisionComponent);
+	MonsterAttackCollisionComponent0 = CreateDefaultSubobject<UCapsuleComponent>(TEXT("AttackCollisionComponent0"));
+	MonsterAttackCollisionComponent0->SetupAttachment(GetMesh(), FName("AttackCollision_LeftHand"));
+	MonsterAttackCollisionComponent0->SetCollisionProfileName(TEXT("NoCollision"));
+	MonsterAttackCollisionComponent0->OnComponentBeginOverlap.AddDynamic(this, &AMonster::OnOverlapBegin);
+	SetMonsterAttackCollision(MonsterAttackCollisionComponent0);
 
 	//구조체
 	MonsterStatus.MaxMonsterHP = 100.f;
@@ -77,19 +78,6 @@ void AMonster::BeginPlay()
 		ItemDropTable = GameInstance->GetDropItemTable();
 		CameraShake = GameInstance->GetCameraShake();
 	}
-
-	TArray<UCapsuleComponent*> CapsuleComponents;
-	GetComponents<UCapsuleComponent>(CapsuleComponents);
-	for (auto* AttackCollisionComponent : CapsuleComponents) {
-		TArray<FName> AttackComponentTags = AttackCollisionComponent->ComponentTags;
-		for (auto AttackComponentTag : AttackComponentTags) {
-			if (AttackComponentTag.ToString().StartsWith(TEXT("AttackCollision"))) {
-				MonsterAttackCollisionComponents.AddUnique(AttackCollisionComponent);
-			}
-		}
-	}
-
-	
 }
 
 // Called every frame
@@ -157,12 +145,19 @@ void AMonster::OnAttackMontageEnded(UAnimMontage* NowPlayMontage, bool bInterrup
 
 void AMonster::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComponent, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	if (OverlappedComponent == MonsterAttackCollisionComponent) {
+	/*if (OverlappedComponent == MonsterAttackCollisionComponent0) {
 		if (OtherActor && OtherActor != this && OtherActor->IsA(AMyCharacter::StaticClass())) {
 			if (!OverlapActors.Contains(OtherActor)) {
 				OverlapActors.Add(OtherActor);
 				ApplyDamageToActor(OtherActor);
 			}
+		}
+	}*/
+
+	if (OtherActor && OtherActor != this && OtherActor->IsA(AMyCharacter::StaticClass())) {
+		if (!OverlapActors.Contains(OtherActor)) {
+			OverlapActors.Add(OtherActor);
+			ApplyDamageToActor(OtherActor);
 		}
 	}
 }
@@ -217,6 +212,9 @@ float AMonster::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, 
 		}
 		//몬스터 사라지기
 		if (UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance()) {
+			if (auto* MyGameModeBase = GetWorld()->GetAuthGameMode<AMyGameModeBase>()) {
+				MyGameModeBase->MonsterDeadCount += 1;
+			}
 			if (MonsterDieMontage) {
 				AnimInstance->Montage_Play(MonsterDieMontage);
 				FOnMontageEnded EndDelegate;
@@ -266,31 +264,6 @@ UAnimMontage* AMonster::GetMonsterAttackMontage() const
 	return MonsterAttackMontage;
 }
 
-UCapsuleComponent* AMonster::GetAttackCollision(FName WantCollision) const
-{
-	if (MonsterAttackCollisionComponents.Num() > 0) {
-		for (auto* AttackCollisionComponent : MonsterAttackCollisionComponents) {
-			TArray<FName> WantComponentTags = AttackCollisionComponent->ComponentTags;
-			for (auto WantComponentTag : WantComponentTags) {
-				if (WantComponentTag == WantCollision) {
-					return AttackCollisionComponent;
-				}
-			}
-		}
-	}
-	return nullptr;
-}
-
-void AMonster::CheckMonsterAttackCollisionComponents() const
-{
-	if (MonsterAttackCollisionComponents.Num() > 0) {
-		for (auto* MonsterAttackCollision : MonsterAttackCollisionComponents) {
-			UE_LOG(LogTemp, Log, TEXT("MonsterAttackCollision: %s"), *MonsterAttackCollision->GetName());
-		}
-	}
-}
-
-
 TArray<AActor*>& AMonster::GetOverlapActors()
 {
 	return OverlapActors;
@@ -313,6 +286,19 @@ float AMonster::GetPlayerAroundRadius()
 	return PlayerAroundRadius;
 }
 
+UCapsuleComponent* AMonster::GetAttackCollisionComponent(FName AttackCollisionFName) const
+{
+	if (MonsterAttackCollisionComponents.Num() > 0) {
+		for (auto& CheckAttackCollision : MonsterAttackCollisionComponents) {
+			if (CheckAttackCollision->GetFName() == AttackCollisionFName) {
+				return CheckAttackCollision;
+			}
+		}
+	}
+
+	return nullptr;
+}
+
 void AMonster::SetWaitForNextActionTime(float NewWaitForNextActionTime)
 {
 	WaitForNextActionTime = NewWaitForNextActionTime;
@@ -321,4 +307,9 @@ void AMonster::SetWaitForNextActionTime(float NewWaitForNextActionTime)
 void AMonster::SetPlayerAroundRadius(float NewPlayerAroundRadius)
 {
 	PlayerAroundRadius = NewPlayerAroundRadius;
+}
+
+void AMonster::SetMonsterAttackCollision(UCapsuleComponent* AttackCollision)
+{
+	MonsterAttackCollisionComponents.AddUnique(AttackCollision);
 }
