@@ -23,16 +23,24 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
-	void StartHomingToPlayer();
+	void GoToPlayer();
+	void DestroyProjectile();
+
+	UFUNCTION()
+	void OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComponent, FVector NormalImpulse, const FHitResult& Hit);
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Components")
+	class USphereComponent* SphereComponent;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Components")
+	UStaticMeshComponent* ProjectileMesh;
+
+	FTimerHandle ProjectileTimerHandle;
+	
+	float ProjectileSpeed;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Projectile")
-	class UProjectileMovementComponent* ProjectileMovementComponent;
+	float ProjectileLifeTime = 5.f;
 
-	FTimerHandle TimerHandle;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Projectile")
-	float ProjectileSpeed = 2000.f;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Projectile")
-	float InitialMoveDistance = 200.f;
+	class AMonster* Monster;
 };

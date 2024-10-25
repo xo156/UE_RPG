@@ -104,31 +104,6 @@ void ABossMonster::WidgetFaceToPlayer()
 {
 	Super::WidgetFaceToPlayer();
 
-	//if (GetMonsterWidgetComponent()) {
-	//	if (auto* PlayerController = UGameplayStatics::GetPlayerController(GetWorld(), 0)) {
-	//		FVector2D ScreenPosition;
-	//		//FVector WorldLocation = GetActorLocation();  // 보스 몬스터의 월드 위치
-
-	//		// 월드 위치를 화면 공간으로 변환
-	//		if (PlayerController->ProjectWorldLocationToScreen(WorldLocation, ScreenPosition)) {
-	//			// 화면 하단의 중앙에 위치하도록 조정
-	//			int32 ScreenSizeX, ScreenSizeY;
-	//			PlayerController->GetViewportSize(ScreenSizeX, ScreenSizeY);
-
-	//			// 위젯의 스크린 위치를 하단 중앙으로 맞추기 위한 계산
-	//			float WidgetPositionY = ScreenSizeY - MonsterWidgetComponent->GetDesiredSize().Y - 50.f;  // 약간의 오프셋
-	//			float WidgetPositionX = ScreenSizeX * 0.5f - MonsterWidgetComponent->GetDesiredSize().X * 0.5f;
-
-	//			// 위젯의 스크린 좌표 설정 (하단 중앙)
-	//			FVector2D WidgetScreenPosition(WidgetPositionX, WidgetPositionY);
-
-	//			// 위젯의 새로운 위치로 적용
-	//			MonsterWidgetComponent->SetDrawAtDesiredSize(true);
-	//			MonsterWidgetComponent->SetWorldLocation(WorldLocation);  // 기존 월드 위치
-	//			MonsterWidgetComponent->SetScreenSpaceWidgetPosition(WidgetScreenPosition);  // 스크린 좌표
-	//		}
-	//	}
-	//}
 }
 
 float ABossMonster::GetCloseRange()
