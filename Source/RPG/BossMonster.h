@@ -9,6 +9,8 @@
 /**
  * 
  */
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnBossMonsterUIUpdated, float, NewHP);
+
 UCLASS()
 class RPG_API ABossMonster : public AMonster
 {
@@ -23,14 +25,18 @@ public:
 
 	virtual void MonsterAttackExecute(int32 PatternNumber);
 
-	virtual void WidgetFaceToPlayer() override;
-
 	//getter
 	float GetCloseRange();
 	float GetMidRange();
 	UAnimMontage* GetCloseAttackMontage();
 	UAnimMontage* GetMidAttackMontage();
 	UAnimMontage* GetLongAttackMontage();
+
+	//델리게이트
+	FOnBossMonsterUIUpdated OnBossMonsterUIUpdated;
+
+	//구조체
+	virtual void ConsumeHPForAction(float HPCost);
 
 private:
 	//몽타주
@@ -61,4 +67,6 @@ private:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attack", meta = (AllowPrivateAccess = "true"))
 	class UCapsuleComponent* MonsterAttackCollisionComponent4;
+
+	class UMonsterWidget* MonsterWidgetInstance;
 };

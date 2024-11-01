@@ -9,7 +9,7 @@ void UMonsterProjectileANS::NotifyBegin(USkeletalMeshComponent* MeshComp, UAnimS
 {
 	if (MeshComp && MeshComp->GetOwner()) {
 		if (Animation) {
-			float Duration = Animation->GetPlayLength();
+			float Duration = Animation->GetPlayLength() / 3;
 			SpawnActorAt(MeshComp, 0.f, Duration);
 		}
 	}
@@ -29,7 +29,7 @@ void UMonsterProjectileANS::NotifyEnd(USkeletalMeshComponent* MeshComp, UAnimSeq
 void UMonsterProjectileANS::SpawnActorAt(USkeletalMeshComponent* MeshComp, float Time, float TotalDuration)
 {
 	if (MeshComp && MeshComp->GetOwner()) {
-		FVector SpawnLocation = MeshComp->GetSocketLocation(FName("MonsterProjectile")) + FVector(0, 0, 100.f);
+		FVector SpawnLocation = MeshComp->GetSocketLocation(FName("MonsterProjectile")) + FVector(100.f, 100.f, 100.f);
 		if (AMonsterProjectileClass) {
 			AMonsterProjectile* MonsterProjectile = MeshComp->GetWorld()->SpawnActor<AMonsterProjectile>(AMonsterProjectileClass, SpawnLocation, FRotator::ZeroRotator);
 		}

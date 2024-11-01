@@ -54,6 +54,14 @@ void ABossMonster::BeginPlay()
 {
 	Super::BeginPlay();
 
+	if (GetMonsterWidgetClass()) {
+		MonsterWidgetInstance = CreateWidget<UMonsterWidget>(GetWorld(), GetMonsterWidgetClass());
+		if (MonsterWidgetInstance) {
+			MonsterWidgetInstance->AddToViewport();
+			MonsterWidgetInstance->UpdateHP(MonsterStatus.CurrentMonsterHP, MonsterStatus.MaxMonsterHP);
+		}
+	}
+
 }
 
 void ABossMonster::Tick(float DeltaTime)
@@ -100,12 +108,6 @@ void ABossMonster::MonsterAttackExecute(int32 PatternNumber)
 	}
 }
 
-void ABossMonster::WidgetFaceToPlayer()
-{
-	Super::WidgetFaceToPlayer();
-
-}
-
 float ABossMonster::GetCloseRange()
 {
 	return CloseRange;
@@ -135,4 +137,12 @@ UAnimMontage* ABossMonster::GetLongAttackMontage()
 	if (LongAttackMontage)
 		return LongAttackMontage;
 	return nullptr;
+}
+
+void ABossMonster::ConsumeHPForAction(float HPCost)
+{
+	Super::ConsumeHPForAction(HPCost);
+
+	MonsterStatus.UseHP(HPCost);
+	OnBossMonsterUIUpdated.Broadcast(MonsterStatus.CurrentMonsterHP);
 }

@@ -95,6 +95,7 @@ public:
 	void OnRootItemBoxOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComponent, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 	UFUNCTION()
 	void OnRootItemBoxOverlapEnd(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComponent, int32 OtherBodyIndex);
+	void QuickSlot();
 	void Close();
 
 	//公扁
@@ -141,6 +142,10 @@ public:
 	//getter
 	AActor* GetCurrentTarget();
 	float GetTargetHeightOffset();
+	class AItemBase* GetQuickSlotItem();
+
+	//setter
+	void SetQuickSlotItem(class AItemBase* NewQuickSlotItem);
 
 	//胆府霸捞飘
 	FOnPlayerUIUpdated OnPlayerUIUpdated;
@@ -162,6 +167,10 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UI")
 	TSubclassOf<class UPlayerWidget> PlayerWidgetClass;
 	class UPlayerWidget* PlayerWidgetInstance;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UI")
+	TSubclassOf<class UInventoryQuickSlotWidget> InventoryQuickSlotWidgetClass;
+	class UInventoryQuickSlotWidget* InventoryQuickSlotWidgetInstance;
 
 	//根鸥林
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Montage")
@@ -218,6 +227,7 @@ private:
 	class UBoxComponent* RootItemBoxComponent;
 	TArray<class ADropItem*> OverlapItems;
 	UDataTable* ItemTable;
+	class AItemBase* QuickSlotItem;
 
 	//如甸覆
 	TSubclassOf<class UCameraShakeBase> CameraShake;

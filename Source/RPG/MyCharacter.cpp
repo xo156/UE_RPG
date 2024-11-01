@@ -22,6 +22,7 @@
 #include "Kismet/KismetMathLibrary.h"
 #include "Monster.h"
 #include "DataTableGameInstance.h"
+#include "InventoryQuickSlotWidget.h"
 
 // Sets default values
 AMyCharacter::AMyCharacter() {
@@ -331,8 +332,6 @@ void AMyCharacter::Roll()
 					GetCharacterMovement()->bOrientRotationToMovement = true;
 					AnimInstance->Montage_Play(RollMontage);
 				}
-				//구르기가 끝날때 까지는 블렌드가 안되도록 true, false로 처리
-				//https://www.youtube.com/watch?v=uOiYEkLNUto pervis
 			}
 		}
 	}
@@ -542,6 +541,16 @@ void AMyCharacter::OnRootItemBoxOverlapEnd(UPrimitiveComponent* OverlappedCompon
 	}
 }
 
+void AMyCharacter::QuickSlot()
+{
+	if (QuickSlotItem) {
+		QuickSlotItem->Use();
+	}
+	else {
+		UE_LOG(LogTemp, Error, TEXT("QuickSlotItem is nullptr"));
+	}
+}
+
 void AMyCharacter::Close()
 {
 	if (InventoryComponent->InventoryWidget) {
@@ -605,6 +614,14 @@ void AMyCharacter::SetupWidget()
 			PlayerWidgetInstance->AddToViewport();
 			PlayerWidgetInstance->UpdateHP(CharacterStatus.CurrentHP, CharacterStatus.MaxHP);
 			PlayerWidgetInstance->UpdateStamina(CharacterStatus.CurrentStamina, CharacterStatus.MaxStamina);
+		}
+	}
+
+	if (InventoryQuickSlotWidgetClass) {
+		InventoryQuickSlotWidgetInstance = CreateWidget<UInventoryQuickSlotWidget>(GetWorld(), InventoryQuickSlotWidgetClass);
+		if (InventoryQuickSlotWidgetInstance) {
+			InventoryQuickSlotWidgetInstance->AddToViewport();
+			UE_LOG(LogTemp, Log, TEXT("InventoryQuickSlotWidgetInstance"));
 		}
 	}
 }
@@ -714,4 +731,18 @@ AActor* AMyCharacter::GetCurrentTarget()
 float AMyCharacter::GetTargetHeightOffset()
 {
 	return TargetHeightOffset;
+}
+
+AItemBase* AMyCharacter::GetQuickSlotItem()
+{
+	if (QuickSlotItem)
+		return QuickSlotItem;
+	return nullptr;
+}
+
+void AMyCharacter::SetQuickSlotItem(AItemBase* NewQuickSlotItem)
+{
+	if (NewQuickSlotItem) {
+		QuickSlotItem = NewQuickSlotItem;
+	}
 }

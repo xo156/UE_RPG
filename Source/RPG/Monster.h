@@ -54,7 +54,7 @@ public:
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
-	virtual void WidgetFaceToPlayer();
+	void WidgetFaceToPlayer();
 
 	void MonsterAttackStart();
 	virtual void MonsterAttackExecute();
@@ -74,6 +74,7 @@ public:
 	class UAnimMontage* GetMonsterAttackMontage() const;
 	TArray<AActor*>& GetOverlapActors();
 	class UWidgetComponent* GetMonsterWidgetComponent() const;
+	TSubclassOf<class UMonsterWidget> GetMonsterWidgetClass() const;
 	float GetWaitForNextActionTime();
 	float GetPlayerAroundRadius();
 	UCapsuleComponent* GetAttackCollisionComponent(FName AttackCollisionFName) const;
@@ -90,7 +91,7 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Status")
 	FMonsterStatus MonsterStatus;
 	virtual void ConsumeHPForAction(float HPCost);
-	virtual bool bHasEnoughHP(float HPCost) const;
+	bool bHasEnoughHP(float HPCost) const;
 
 	//ป๓ลย
 	bool bIsMonsterAttack = false;

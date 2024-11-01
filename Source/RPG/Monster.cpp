@@ -16,6 +16,8 @@
 #include "DataTableGameInstance.h"
 #include "MyPlayerController.h"
 #include "MyGameModeBase.h"
+#include "BehaviorTree/BehaviorTree.h"
+#include "BehaviorTree/BehaviorTreeComponent.h"
 
 // Sets default values
 AMonster::AMonster()
@@ -145,15 +147,6 @@ void AMonster::OnAttackMontageEnded(UAnimMontage* NowPlayMontage, bool bInterrup
 
 void AMonster::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComponent, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	/*if (OverlappedComponent == MonsterAttackCollisionComponent0) {
-		if (OtherActor && OtherActor != this && OtherActor->IsA(AMyCharacter::StaticClass())) {
-			if (!OverlapActors.Contains(OtherActor)) {
-				OverlapActors.Add(OtherActor);
-				ApplyDamageToActor(OtherActor);
-			}
-		}
-	}*/
-
 	if (OtherActor && OtherActor != this && OtherActor->IsA(AMyCharacter::StaticClass())) {
 		if (!OverlapActors.Contains(OtherActor)) {
 			OverlapActors.Add(OtherActor);
@@ -186,7 +179,7 @@ float AMonster::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, 
 		ConsumeHPForAction(DamageAmount); //체력을 0으로 하기
 
 		//아이템 드랍
-		if (ItemDropTable) {
+		if (ItemDropTable && MonsterStatus.DropRates.Num() > 0) {
 			static const FString ContextString(TEXT("Item Drop Context"));
 			for (const FDropRate& DropRate : MonsterStatus.DropRates) {
 				FDropRate* FoundItem = ItemDropTable->FindRow<FDropRate>(FName(*FString::FromInt(DropRate.ItemID)), ContextString);
@@ -221,6 +214,12 @@ float AMonster::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, 
 				EndDelegate.BindUObject(this, &AMonster::OnDieMontageEnded);
 				AnimInstance->Montage_SetEndDelegate(EndDelegate, MonsterDieMontage);
 			}
+			if (auto* AIControllerInstance = GetController()) {
+				if (auto* AIController = Cast<AAIController>(AIControllerInstance)) {
+					AIController->StopMovement();
+					AIController->UnPossess();
+				}
+			}
 		}
 	}
 	
@@ -230,13 +229,7 @@ float AMonster::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, 
 void AMonster::OnDieMontageEnded(UAnimMontage* Montage, bool bInterrupted)
 {
 	if (!bInterrupted) {
-		if (AController* AIControllerInstance = GetController()) {
-			if (AAIController* AIController = Cast<AAIController>(AIControllerInstance)) {
-				AIController->StopMovement();
-				AIController->UnPossess();
-				Destroy();
-			}
-		}
+		Destroy();
 	}
 }
 
@@ -274,6 +267,13 @@ UWidgetComponent* AMonster::GetMonsterWidgetComponent() const
 	if (MonsterWidgetComponent)
 		return MonsterWidgetComponent;
 	return nullptr;
+}
+
+TSubclassOf<class UMonsterWidget> AMonster::GetMonsterWidgetClass() const
+{
+	if (MonsterWidgetClass)
+		return MonsterWidgetClass;
+	return TSubclassOf<class UMonsterWidget>();
 }
 
 float AMonster::GetWaitForNextActionTime()

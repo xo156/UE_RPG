@@ -29,9 +29,18 @@ public:
 
 	UPROPERTY(meta = (BindWidget))
 	class UTextBlock* OnlyDestroyText;
+
+	UPROPERTY(meta = (BindWidget))
+	class UButton* QuickSlot;
+
+	UPROPERTY(meta = (BindWidget))
+	class UTextBlock* QuickSlotText;
 	
 	void SetItemData(const FInventoryItemData& InItemData);
 	FInventoryItemData InventoryItemData;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "QuickSlot")
+	class UInventoryQuickSlotWidget* InventoryQuickSlotWidget;
 
 	UDataTable* ItemTable;
 
@@ -40,4 +49,7 @@ public:
 
 	UFUNCTION()
 	void OnOnlyDestroyClicked();
+
+	UFUNCTION()
+	void OnQuickSlotClicked();
 };

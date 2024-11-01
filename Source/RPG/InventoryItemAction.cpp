@@ -10,6 +10,7 @@
 #include "DropItem.h"
 #include "DataTableGameInstance.h"
 #include "Kismet/GameplayStatics.h"
+#include "InventoryQuickSlotWidget.h"
 
 void UInventoryItemAction::NativeConstruct()
 {
@@ -21,6 +22,10 @@ void UInventoryItemAction::NativeConstruct()
 
 	if (OnlyDestroy) {
 		OnlyDestroy->OnClicked.AddDynamic(this, &UInventoryItemAction::OnOnlyDestroyClicked);
+	}
+
+	if (QuickSlot) {
+		QuickSlot->OnClicked.AddDynamic(this, &UInventoryItemAction::OnQuickSlotClicked);
 	}
 
 	if (auto* GameInstance = Cast<UDataTableGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()))) {
@@ -76,6 +81,25 @@ void UInventoryItemAction::OnOnlyDestroyClicked()
 			if (auto* PlayerCharacter = Cast<AMyCharacter>(PlayerController->GetPawn())) {
 				PlayerCharacter->GetInventory()->RemoveItem(InventoryItemData.ItemTableID, 1);
 				PlayerCharacter->GetInventory()->InventoryWidget->UpdateInventoryWidget(PlayerCharacter->GetInventory());
+			}
+		}
+	}
+}
+
+void UInventoryItemAction::OnQuickSlotClicked()
+{
+	if (ItemTable) {
+		FItemData* ClickedItem = ItemTable->FindRow<FItemData>(FName(*FString::FromInt(InventoryItemData.ItemTableID)), TEXT("Item Data Context IvnentoryItemAction"));
+		if (ClickedItem && ClickedItem->ItemType == EItemType::Consumable) {
+			if (auto* ItemInstance = GetWorld()->SpawnActor<AItemBase>(ClickedItem->ItemClass[0])) {
+				if (auto* PlayerController = UGameplayStatics::GetPlayerController(GetWorld(), 0)) {
+					if (auto* PlayerCharacter = Cast<AMyCharacter>(PlayerController->GetPawn())) {
+						PlayerCharacter->SetQuickSlotItem(ItemInstance);
+						if (InventoryQuickSlotWidget) {
+							InventoryQuickSlotWidget->SetQuickSlotThumbnail(ClickedItem->ItemIcon);
+						}
+					}
+				}
 			}
 		}
 	}

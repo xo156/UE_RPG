@@ -9,6 +9,7 @@
 #include "Components/StaticMeshComponent.h"
 #include "GameFramework/DamageType.h"
 #include "Monster.h"
+#include "Engine/DamageEvents.h"
 
 // Sets default values
 AMonsterProjectile::AMonsterProjectile()
@@ -19,8 +20,8 @@ AMonsterProjectile::AMonsterProjectile()
     //충돌할 구체 생성
     SphereComponent = CreateDefaultSubobject<USphereComponent>(TEXT("SphereComponent"));
     RootComponent = SphereComponent;
-    SphereComponent->SetCollisionProfileName(TEXT("NoCollision"));
-    SphereComponent->OnComponentHit.AddDynamic(this, &AMonsterProjectile::OnHit);
+    SphereComponent->SetCollisionProfileName(TEXT("OverlapAllDynamic"));
+    SphereComponent->OnComponentBeginOverlap.AddDynamic(this, &AMonsterProjectile::OnBeginOverlap);
 
     ProjectileMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("ProjectileMesh"));
     ProjectileMesh->SetupAttachment(RootComponent);
@@ -33,6 +34,17 @@ AMonsterProjectile::AMonsterProjectile()
 void AMonsterProjectile::BeginPlay()
 {
 	Super::BeginPlay();
+    
+    //TODO: AMonster와 ABossMonster를 사용할 수 있도록 캐스팅
+    //ABossMonster는 AMonster의 자식 클래스
+    if (MonsterActor) {
+        if (auto* Monster = Cast<AMonster>(MonsterActor)) {
+            DamageAmount = Monster->MonsterStatus.Damage;
+            InstigatorController = Monster->GetController();
+
+        }
+    }
+
 
     GetWorld()->GetTimerManager().SetTimer(ProjectileTimerHandle, this, &AMonsterProjectile::DestroyProjectile, ProjectileLifeTime, false);
 
@@ -52,8 +64,8 @@ void AMonsterProjectile::GoToPlayer()
 {
     if (auto* PlayerCharacter = Cast<AMyCharacter>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0))) {
         FVector DirectionToPlayer = (PlayerCharacter->GetActorLocation() - GetActorLocation()).GetSafeNormal();
-        ProjectileSpeed = (GetDistanceTo(PlayerCharacter) / ProjectileLifeTime);
-
+        
+        ProjectileSpeed = FMath::FInterpTo(ProjectileSpeed, TargetSpeed, GetWorld()->DeltaTimeSeconds, SpeedIncreaseRate);
         FVector NewLocation = GetActorLocation() + (DirectionToPlayer * ProjectileSpeed * GetWorld()->DeltaTimeSeconds);
         SetActorLocation(NewLocation);
     }
@@ -64,16 +76,13 @@ void AMonsterProjectile::DestroyProjectile()
     Destroy();
 }
 
-void AMonsterProjectile::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComponent, FVector NormalImpulse, const FHitResult& Hit)
+void AMonsterProjectile::OnBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
+    UE_LOG(LogTemp, Log, TEXT("AMonsterProjectile::OnBeginOverlap"));
     if (OtherActor && OtherActor != this && OtherActor->IsA(AMyCharacter::StaticClass())) {
-        if (Monster) {
-            float DamageAmount = Monster->MonsterStatus.Damage;
-            TSubclassOf<UDamageType> DamageType = UDamageType::StaticClass();
-
-            UGameplayStatics::ApplyDamage(OtherActor, DamageAmount, nullptr, this, DamageType);
-            Destroy();
-        }
+        FDamageEvent DamageEvent;
+        OtherActor->TakeDamage(DamageAmount, DamageEvent, InstigatorController, this);
+        Destroy();
     }
 }
 

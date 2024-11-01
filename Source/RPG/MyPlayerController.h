@@ -52,6 +52,7 @@ protected:
 	void LockOnTarget();
 	void RootItem();
 	void OpenInventory();
+	void QuickSlot();
 	void Close();
 	void TEST();
 
@@ -79,6 +80,8 @@ private:
 	class UInputAction* RootItemAction;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input", meta = (AllowPrivateAccess = "true"))
 	class UInputAction* InventoryAction;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input", meta = (AllowPrivateAccess = "true"))
+	class UInputAction* QuickSlotAction;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input", meta = (AllowPrivateAccess = "true"))
 	class UInputAction* CloseAction;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input", meta = (AllowPrivateAccess = "true"))

@@ -222,6 +222,13 @@ void AMyPlayerController::OpenInventory()
 	}
 }
 
+void AMyPlayerController::QuickSlot()
+{
+	if (GetCharacter() != nullptr) {
+		GetCharacter()->QuickSlot();
+	}
+}
+
 void AMyPlayerController::Close()
 {
 	if (GetCharacter() != nullptr){
