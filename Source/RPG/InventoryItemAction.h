@@ -40,7 +40,8 @@ public:
 	FInventoryItemData InventoryItemData;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "QuickSlot")
-	class UInventoryQuickSlotWidget* InventoryQuickSlotWidget;
+	TSubclassOf<class UInventoryQuickSlotWidget> InventoryQuickSlotWidgetClass;
+	class UInventoryQuickSlotWidget* InventoryQuickSlotWidgetInstance;
 
 	UDataTable* ItemTable;
 

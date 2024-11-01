@@ -17,11 +17,14 @@ class RPG_API UInventoryQuickSlotWidget : public UUserWidget
 public:
 	virtual void NativeConstruct();
 
-
-	void SetQuickSlotThumbnail(class UTexture2D* NewQuickSlotItemIcon);
+	void SetQuickSlotConsumable(class UTexture2D* NewQuickSlotItemIcon, int32 InventoryItemAmount);
 
 	UPROPERTY(meta = (BindWidget))
-	class UImage* QuickSlotThumbnail;
+	class UOverlay* QuickSlotComsuable;
 
-	UDataTable* ItemTable;
+	UPROPERTY(meta = (BindWidget))
+	class UImage* QuickSlotImage;
+
+	UPROPERTY(meta = (BindWidget))
+	class UTextBlock* QuickSlotAmount;
 };

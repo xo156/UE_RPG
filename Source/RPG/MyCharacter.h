@@ -146,6 +146,7 @@ public:
 
 	//setter
 	void SetQuickSlotItem(class AItemBase* NewQuickSlotItem);
+	int32 SetQuickSlotItemAmount(int32 Amount);
 
 	//µ®∏Æ∞‘¿Ã∆Æ
 	FOnPlayerUIUpdated OnPlayerUIUpdated;
@@ -228,6 +229,7 @@ private:
 	TArray<class ADropItem*> OverlapItems;
 	UDataTable* ItemTable;
 	class AItemBase* QuickSlotItem;
+	int32 QuickSlotItemAmount = 0;
 
 	//»ÁµÈ∏≤
 	TSubclassOf<class UCameraShakeBase> CameraShake;

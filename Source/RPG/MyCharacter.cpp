@@ -543,11 +543,13 @@ void AMyCharacter::OnRootItemBoxOverlapEnd(UPrimitiveComponent* OverlappedCompon
 
 void AMyCharacter::QuickSlot()
 {
-	if (QuickSlotItem) {
+	if (QuickSlotItem && QuickSlotItemAmount > 0) {
 		QuickSlotItem->Use();
-	}
-	else {
-		UE_LOG(LogTemp, Error, TEXT("QuickSlotItem is nullptr"));
+		//TODO: 실제 인벤토리의 아이템이 사라지도록 할것
+		QuickSlotItemAmount--;
+		if (InventoryComponent) {
+			InventoryComponent->InventoryWidget->UpdateInventoryWidget(InventoryComponent);
+		}
 	}
 }
 
@@ -703,19 +705,8 @@ void AMyCharacter::SetupStimulusSource()
 
 void AMyCharacter::TEST()
 {	
-	if (InventoryComponent) {
-		UE_LOG(LogTemp, Log, TEXT("----- Inventory Items -----"));
-
-		for (const FInventoryItemData& Item : InventoryComponent->InventoryItems) {
-			UE_LOG(LogTemp, Log, TEXT("UID: %d, ItemID: %d, Amount: %d, bCounterble: %s"),
-				   Item.ItemUID,
-				   Item.ItemTableID,
-				   Item.ItemAmount,
-				   Item.bCounterble ? TEXT("True") : TEXT("False")
-			);
-		}
-
-		UE_LOG(LogTemp, Log, TEXT("----------------------------"));
+	if (QuickSlotItem) {
+		UE_LOG(LogTemp, Log, TEXT("QuickSlotItem : %s"), *QuickSlotItem->GetName());
 	}
 
 	GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Cyan, TEXT("TEST"));
@@ -745,4 +736,9 @@ void AMyCharacter::SetQuickSlotItem(AItemBase* NewQuickSlotItem)
 	if (NewQuickSlotItem) {
 		QuickSlotItem = NewQuickSlotItem;
 	}
+}
+
+int32 AMyCharacter::SetQuickSlotItemAmount(int32 Amount)
+{
+	return QuickSlotItemAmount = Amount;
 }

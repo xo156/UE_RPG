@@ -6,20 +6,19 @@
 #include "DataTableGameInstance.h"
 #include "Kismet/GameplayStatics.h"
 #include "Components/Image.h"
+#include "Components/TextBlock.h"
 
 void UInventoryQuickSlotWidget::NativeConstruct()
 {
-	if (auto* GameInstance = Cast<UDataTableGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()))) {
-		ItemTable = GameInstance->GetItemTable();
-	}
+	Super::NativeConstruct();
+
+	if (QuickSlotAmount)
+		QuickSlotAmount->SetText(FText::AsNumber(00));
 }
 
-void UInventoryQuickSlotWidget::SetQuickSlotThumbnail(UTexture2D* NewQuickSlotItemIcon)
+void UInventoryQuickSlotWidget::SetQuickSlotConsumable(UTexture2D* NewQuickSlotItemIcon, int32 InventoryItemAmount)
 {
-	if (NewQuickSlotItemIcon && QuickSlotThumbnail) {
-		QuickSlotThumbnail->SetBrushFromTexture(NewQuickSlotItemIcon);
-	}
-	else {
-		QuickSlotThumbnail->SetBrushFromTexture(nullptr);
-	}
+	QuickSlotImage->SetBrushFromTexture(NewQuickSlotItemIcon);
+	QuickSlotAmount->SetText(FText::AsNumber(InventoryItemAmount));
+
 }

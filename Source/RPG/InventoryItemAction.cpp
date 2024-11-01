@@ -11,6 +11,7 @@
 #include "DataTableGameInstance.h"
 #include "Kismet/GameplayStatics.h"
 #include "InventoryQuickSlotWidget.h"
+#include "InventoryItemData.h"
 
 void UInventoryItemAction::NativeConstruct()
 {
@@ -90,17 +91,28 @@ void UInventoryItemAction::OnQuickSlotClicked()
 {
 	if (ItemTable) {
 		FItemData* ClickedItem = ItemTable->FindRow<FItemData>(FName(*FString::FromInt(InventoryItemData.ItemTableID)), TEXT("Item Data Context IvnentoryItemAction"));
-		if (ClickedItem && ClickedItem->ItemType == EItemType::Consumable) {
+		switch (ClickedItem->ItemType) {
+		case EItemType::Consumable:
 			if (auto* ItemInstance = GetWorld()->SpawnActor<AItemBase>(ClickedItem->ItemClass[0])) {
 				if (auto* PlayerController = UGameplayStatics::GetPlayerController(GetWorld(), 0)) {
 					if (auto* PlayerCharacter = Cast<AMyCharacter>(PlayerController->GetPawn())) {
 						PlayerCharacter->SetQuickSlotItem(ItemInstance);
-						if (InventoryQuickSlotWidget) {
-							InventoryQuickSlotWidget->SetQuickSlotThumbnail(ClickedItem->ItemIcon);
+						PlayerCharacter->SetQuickSlotItemAmount(PlayerCharacter->GetInventory()->FindInventoryItem(ClickedItem->ItemID));
+						if (InventoryQuickSlotWidgetClass) {
+							InventoryQuickSlotWidgetInstance = CreateWidget<UInventoryQuickSlotWidget>(this, InventoryQuickSlotWidgetClass);
+							if (InventoryQuickSlotWidgetInstance) {
+								InventoryQuickSlotWidgetInstance->SetQuickSlotConsumable(ClickedItem->ItemIcon, PlayerCharacter->GetInventory()->FindInventoryItem(ClickedItem->ItemID));
+							}
 						}
+						
 					}
 				}
 			}
+			break;
+		default:
+			break;
 		}
 	}
+
+	//return 0,1,2,3 으로 바꿔보기
 }

@@ -125,6 +125,8 @@ void AMyPlayerController::SetupInputComponent() {
 
 		EnHancedInputComponent->BindAction(InventoryAction, ETriggerEvent::Started, this, &AMyPlayerController::OpenInventory);
 
+		EnHancedInputComponent->BindAction(QuickSlotAction, ETriggerEvent::Started, this, &AMyPlayerController::QuickSlot);
+
 		EnHancedInputComponent->BindAction(TESTSTATUSAction, ETriggerEvent::Started, this, &AMyPlayerController::TEST);
 	}
 
