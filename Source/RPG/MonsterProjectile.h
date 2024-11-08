@@ -27,13 +27,11 @@ public:
 	void DestroyProjectile();
 
 	UFUNCTION()
-	void OnBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+	void OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
+						UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Projectile")
-	class USphereComponent* SphereComponent;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Projectile")
-	UStaticMeshComponent* ProjectileMesh;
+	class USphereComponent* CollisionComponent;
 
 	FTimerHandle ProjectileTimerHandle;
 
@@ -51,9 +49,5 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Projectile")
 	float ProjectileLifeTime = 5.f;
 
-	float DamageAmount = 0.f;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Projectile")
-	TSubclassOf<class AMonster> MonsterActor;
-	AController* InstigatorController;
+	float DamageAmount;
 };

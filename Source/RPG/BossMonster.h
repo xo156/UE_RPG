@@ -32,13 +32,15 @@ public:
 	UAnimMontage* GetMidAttackMontage();
 	UAnimMontage* GetLongAttackMontage();
 
-	//델리게이트
-	FOnBossMonsterUIUpdated OnBossMonsterUIUpdated;
-
 	//구조체
 	virtual void ConsumeHPForAction(float HPCost);
 
+	float GetWaitForNextActionTime();
+
 private:
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AI", meta = (AllowPrivateAccess = "true"))
+	float WaitForNextActionTime;
+
 	//몽타주
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Montage", meta = (AllowPrivateAccess = "true"))
 	UAnimMontage* CloseAttackMontage;

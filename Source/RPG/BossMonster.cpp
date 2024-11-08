@@ -55,13 +55,25 @@ void ABossMonster::BeginPlay()
 	Super::BeginPlay();
 
 	if (GetMonsterWidgetClass()) {
-		MonsterWidgetInstance = CreateWidget<UMonsterWidget>(GetWorld(), GetMonsterWidgetClass());
-		if (MonsterWidgetInstance) {
-			MonsterWidgetInstance->AddToViewport();
-			MonsterWidgetInstance->UpdateHP(MonsterStatus.CurrentMonsterHP, MonsterStatus.MaxMonsterHP);
+		if (!MonsterWidgetInstance) {
+			MonsterWidgetInstance = CreateWidget<UMonsterWidget>(GetWorld(), GetMonsterWidgetClass());
+			if (MonsterWidgetInstance) {
+				MonsterWidgetInstance->AddToViewport();
+				//MonsterWidgetInstance->UpdateHP(MonsterStatus.CurrentMonsterHP, MonsterStatus.MaxMonsterHP);
+				MonsterWidgetInstance->SetOwnerMonster(this);
+				UE_LOG(LogTemp, Warning, TEXT("Boss Monster Widget added to viewport"));
+			}
+			else {
+				UE_LOG(LogTemp, Warning, TEXT("Fail to Boss Monster Widget Create"));
+			}
+		}
+		else {
+			UE_LOG(LogTemp, Warning, TEXT("Already Boss Monster Widget Create"));
 		}
 	}
-
+	else {
+		UE_LOG(LogTemp, Warning, TEXT("MonsterWidgetInstance already exists or GetMonsterWidgetClass is null"));
+	}
 }
 
 void ABossMonster::Tick(float DeltaTime)
@@ -144,5 +156,10 @@ void ABossMonster::ConsumeHPForAction(float HPCost)
 	Super::ConsumeHPForAction(HPCost);
 
 	MonsterStatus.UseHP(HPCost);
-	OnBossMonsterUIUpdated.Broadcast(MonsterStatus.CurrentMonsterHP);
+	OnMonsterUIUpdated.Broadcast(MonsterStatus.CurrentMonsterHP);
+}
+
+float ABossMonster::GetWaitForNextActionTime()
+{
+	return WaitForNextActionTime;
 }

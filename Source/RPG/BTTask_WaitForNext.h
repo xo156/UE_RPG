@@ -22,8 +22,13 @@ public:
 
 	void SetAroundLocation(AActor* PlayerCharacter, class ABossMonster* BossMonster);
 
-	float WaitForNextActionTime;
 	float ElapsedTime;
+	float WaitForNextActionTime;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AI")
+	float MinAroundRadius;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AI")
+	float MaxAroundRadius;
 
 	FVector AroundLocation;
 };

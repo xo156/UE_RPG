@@ -4,13 +4,13 @@
 #include "MonsterProjectileANS.h"
 #include "MonsterProjectile.h"
 #include "Engine/World.h"
+#include "Monster.h"
 
 void UMonsterProjectileANS::NotifyBegin(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, float TotalDuration)
 {
 	if (MeshComp && MeshComp->GetOwner()) {
 		if (Animation) {
-			float Duration = Animation->GetPlayLength() / 3;
-			SpawnActorAt(MeshComp, 0.f, Duration);
+			SpawnActorAt(MeshComp);
 		}
 	}
 }
@@ -19,19 +19,22 @@ void UMonsterProjectileANS::NotifyEnd(USkeletalMeshComponent* MeshComp, UAnimSeq
 {
 	if (MeshComp && MeshComp->GetOwner()) {
 		if (Animation) {
-			float Duration = Animation->GetPlayLength();
-			SpawnActorAt(MeshComp, Duration / 2, Duration);
-			SpawnActorAt(MeshComp, Duration, Duration);
+			SpawnActorAt(MeshComp);
 		}
 	}
 }
 
-void UMonsterProjectileANS::SpawnActorAt(USkeletalMeshComponent* MeshComp, float Time, float TotalDuration)
+void UMonsterProjectileANS::SpawnActorAt(USkeletalMeshComponent* MeshComp)
 {
 	if (MeshComp && MeshComp->GetOwner()) {
 		FVector SpawnLocation = MeshComp->GetSocketLocation(FName("MonsterProjectile")) + FVector(100.f, 100.f, 100.f);
 		if (AMonsterProjectileClass) {
-			AMonsterProjectile* MonsterProjectile = MeshComp->GetWorld()->SpawnActor<AMonsterProjectile>(AMonsterProjectileClass, SpawnLocation, FRotator::ZeroRotator);
+			if (auto* MonsterProjectile = MeshComp->GetWorld()->SpawnActor<AMonsterProjectile>(AMonsterProjectileClass, SpawnLocation, FRotator::ZeroRotator)) {
+				AActor* OwnerActor = MeshComp->GetOwner();
+				MonsterProjectile->SetOwner(OwnerActor);
+				MonsterProjectile->SetInstigator(Cast<APawn>(OwnerActor));
+				MonsterProjectile->DamageAmount = 10.f;
+			}
 		}
 	}
 }

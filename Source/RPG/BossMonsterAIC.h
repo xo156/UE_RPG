@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "AIController.h"
+#include "Perception/AIPerceptionTypes.h"
 #include "BossMonsterAIC.generated.h"
 
 /**
@@ -16,9 +17,6 @@ class RPG_API ABossMonsterAIC : public AAIController
 	
 public:
 	ABossMonsterAIC();
-
-	// Called every frame
-	virtual void Tick(float DeltaTime) override;
 
 protected:
 	virtual void OnPossess(APawn* InPawn) override;

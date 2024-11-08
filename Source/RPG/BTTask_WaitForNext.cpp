@@ -8,11 +8,13 @@
 #include "MyCharacter.h"
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetMathLibrary.h"
+#include "Blueprint/AIBlueprintHelperLibrary.h"
 
 UBTTask_WaitForNext::UBTTask_WaitForNext()
 {
 	bNotifyTick = true;
 	NodeName = TEXT("Wait For Next");
+
 }
 
 EBTNodeResult::Type UBTTask_WaitForNext::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
@@ -20,10 +22,9 @@ EBTNodeResult::Type UBTTask_WaitForNext::ExecuteTask(UBehaviorTreeComponent& Own
 	if (auto* BossMonsterAIC = Cast<ABossMonsterAIC>(OwnerComp.GetAIOwner())) {
 		if (auto* BossMonster = Cast<ABossMonster>(BossMonsterAIC->GetPawn())) {
 			if (auto* PlayerCharacter = UGameplayStatics::GetPlayerCharacter(GetWorld(), 0)) {
-				SetAroundLocation(PlayerCharacter, BossMonster);
-				WaitForNextActionTime = BossMonster->GetWaitForNextActionTime();
-
 				ElapsedTime = 0.f;
+				WaitForNextActionTime = BossMonster->GetWaitForNextActionTime();
+				SetAroundLocation(PlayerCharacter, BossMonster);
 				return EBTNodeResult::InProgress;
 			}
 		}
@@ -34,16 +35,24 @@ EBTNodeResult::Type UBTTask_WaitForNext::ExecuteTask(UBehaviorTreeComponent& Own
 
 void UBTTask_WaitForNext::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, float DeltaSeconds)
 {
+	ElapsedTime += DeltaSeconds;
+	if (ElapsedTime >= WaitForNextActionTime) {
+		FinishLatentTask(OwnerComp, EBTNodeResult::Succeeded);
+		return;
+	}
+
 	if (auto* BossMonsterAIC = Cast<ABossMonsterAIC>(OwnerComp.GetAIOwner())) {
 		if (auto* BossMonster = Cast<ABossMonster>(BossMonsterAIC->GetPawn())) {
-			if (auto* PlayerCharacter = UGameplayStatics::GetPlayerCharacter(GetWorld(), 0)) {
-				BossMonsterAIC->MoveToLocation(AroundLocation);
+			if (ElapsedTime >= BossMonster->GetWaitForNextActionTime()) {
+				FinishLatentTask(OwnerComp, EBTNodeResult::Succeeded);
+				return;
+			}
 
-				//배회하는 시간 계산
-				ElapsedTime += DeltaSeconds;
-				if (ElapsedTime >= WaitForNextActionTime) {
-					FinishLatentTask(OwnerComp, EBTNodeResult::Succeeded);
+			if (auto* PlayerCharacter = UGameplayStatics::GetPlayerCharacter(GetWorld(), 0)) {
+				if (FMath::Fmod(ElapsedTime, 1.0f) < DeltaSeconds) {
+					SetAroundLocation(PlayerCharacter, BossMonster);
 				}
+				UAIBlueprintHelperLibrary::SimpleMoveToLocation(BossMonsterAIC, AroundLocation);
 			}
 		}
 	}
@@ -53,8 +62,9 @@ void UBTTask_WaitForNext::SetAroundLocation(AActor* PlayerCharacter, ABossMonste
 {
 	if (PlayerCharacter && BossMonster) {
 		FVector PlayerLocation = PlayerCharacter->GetActorLocation();
-		FVector RandomOffset = UKismetMathLibrary::RandomUnitVector() * BossMonster->GetPlayerAroundRadius();
+		float MoveRadius = FMath::FRandRange(MinAroundRadius, MaxAroundRadius);
+		FVector RandomOffset = UKismetMathLibrary::RandomUnitVector() * MoveRadius;
 		AroundLocation = PlayerLocation + RandomOffset;
-		AroundLocation.Z = BossMonster->GetActorLocation().Z;
+		AroundLocation.Z = PlayerLocation.Z;
 	}
 }

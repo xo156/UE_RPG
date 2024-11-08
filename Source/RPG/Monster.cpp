@@ -179,51 +179,61 @@ float AMonster::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, 
 		ConsumeHPForAction(DamageAmount); //체력을 0으로 하기
 
 		//아이템 드랍
-		if (ItemDropTable && MonsterStatus.DropRates.Num() > 0) {
-			static const FString ContextString(TEXT("Item Drop Context"));
-			for (const FDropRate& DropRate : MonsterStatus.DropRates) {
-				FDropRate* FoundItem = ItemDropTable->FindRow<FDropRate>(FName(*FString::FromInt(DropRate.ItemID)), ContextString);
-				if (FoundItem) {
-					float RandomNumber = FMath::FRandRange(0.f, 100.f);
-					if (RandomNumber <= FoundItem->Rate) {
-						int32 DropAmount = FMath::RandRange(FoundItem->MinAmount, FoundItem->MaxAmount);
+		DroppedItem();
+		//몬스터 사라지기
+		DestroyMonster();
+	}
+	
+	return DamageAmount;
+}
 
-						FVector SpawnLocation = GetActorLocation();
-						FRotator SpawnRotation = GetActorRotation();
+void AMonster::DroppedItem()
+{
+	if (ItemDropTable && MonsterStatus.DropRates.Num() > 0) {
+		static const FString ContextString(TEXT("Item Drop Context"));
+		for (const FDropRate& DropRate : MonsterStatus.DropRates) {
+			FDropRate* FoundItem = ItemDropTable->FindRow<FDropRate>(FName(*FString::FromInt(DropRate.ItemID)), ContextString);
+			if (FoundItem) {
+				float RandomNumber = FMath::FRandRange(0.f, 100.f);
+				if (RandomNumber <= FoundItem->Rate) {
+					int32 DropAmount = FMath::RandRange(FoundItem->MinAmount, FoundItem->MaxAmount);
 
-						if (ADropItem* DropItemActor = GetWorld()->SpawnActor<ADropItem>(DropItemClass, SpawnLocation, SpawnRotation)) {
-							FDropItemData DropItemData;
-							DropItemData.ItemID = DropRate.ItemID;
-							DropItemData.Amount = DropAmount;
-							DropItemData.bCounterble = DropRate.bCounterble;
+					FVector SpawnLocation = GetActorLocation();
+					FRotator SpawnRotation = GetActorRotation();
 
-							DropItemActor->SetDropItem(DropItemData);
-						}
+					if (ADropItem* DropItemActor = GetWorld()->SpawnActor<ADropItem>(DropItemClass, SpawnLocation, SpawnRotation)) {
+						FDropItemData DropItemData;
+						DropItemData.ItemID = DropRate.ItemID;
+						DropItemData.Amount = DropAmount;
+						DropItemData.bCounterble = DropRate.bCounterble;
+
+						DropItemActor->SetDropItem(DropItemData);
 					}
 				}
 			}
 		}
-		//몬스터 사라지기
-		if (UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance()) {
-			if (auto* MyGameModeBase = GetWorld()->GetAuthGameMode<AMyGameModeBase>()) {
-				MyGameModeBase->MonsterDeadCount += 1;
-			}
-			if (MonsterDieMontage) {
-				AnimInstance->Montage_Play(MonsterDieMontage);
-				FOnMontageEnded EndDelegate;
-				EndDelegate.BindUObject(this, &AMonster::OnDieMontageEnded);
-				AnimInstance->Montage_SetEndDelegate(EndDelegate, MonsterDieMontage);
-			}
-			if (auto* AIControllerInstance = GetController()) {
-				if (auto* AIController = Cast<AAIController>(AIControllerInstance)) {
-					AIController->StopMovement();
-					AIController->UnPossess();
-				}
+	}
+}
+
+void AMonster::DestroyMonster()
+{
+	if (UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance()) {
+		if (auto* MyGameModeBase = GetWorld()->GetAuthGameMode<AMyGameModeBase>()) {
+			MyGameModeBase->MonsterDeadCount += 1;
+		}
+		if (MonsterDieMontage) {
+			AnimInstance->Montage_Play(MonsterDieMontage);
+			FOnMontageEnded EndDelegate;
+			EndDelegate.BindUObject(this, &AMonster::OnDieMontageEnded);
+			AnimInstance->Montage_SetEndDelegate(EndDelegate, MonsterDieMontage);
+		}
+		if (auto* AIControllerInstance = GetController()) {
+			if (auto* AIController = Cast<AAIController>(AIControllerInstance)) {
+				AIController->StopMovement();
+				AIController->UnPossess();
 			}
 		}
 	}
-	
-	return DamageAmount;
 }
 
 void AMonster::OnDieMontageEnded(UAnimMontage* Montage, bool bInterrupted)
@@ -276,16 +286,6 @@ TSubclassOf<class UMonsterWidget> AMonster::GetMonsterWidgetClass() const
 	return TSubclassOf<class UMonsterWidget>();
 }
 
-float AMonster::GetWaitForNextActionTime()
-{
-	return WaitForNextActionTime;
-}
-
-float AMonster::GetPlayerAroundRadius()
-{
-	return PlayerAroundRadius;
-}
-
 UCapsuleComponent* AMonster::GetAttackCollisionComponent(FName AttackCollisionFName) const
 {
 	if (MonsterAttackCollisionComponents.Num() > 0) {
@@ -297,16 +297,6 @@ UCapsuleComponent* AMonster::GetAttackCollisionComponent(FName AttackCollisionFN
 	}
 
 	return nullptr;
-}
-
-void AMonster::SetWaitForNextActionTime(float NewWaitForNextActionTime)
-{
-	WaitForNextActionTime = NewWaitForNextActionTime;
-}
-
-void AMonster::SetPlayerAroundRadius(float NewPlayerAroundRadius)
-{
-	PlayerAroundRadius = NewPlayerAroundRadius;
 }
 
 void AMonster::SetMonsterAttackCollision(UCapsuleComponent* AttackCollision)

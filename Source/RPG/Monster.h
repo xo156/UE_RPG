@@ -65,6 +65,8 @@ public:
 						 UPrimitiveComponent* OtherComponent, int32 OtherBodyIndex, 
 						 bool bFromSweep, const FHitResult& SweepResult);
 	virtual float TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
+	void DroppedItem();
+	void DestroyMonster();
 	void OnDieMontageEnded(UAnimMontage* NowPlayMontage, bool bInterrupted);
 	void ApplyDamageToActor(AActor* ActorToDamage);
 
@@ -75,13 +77,9 @@ public:
 	TArray<AActor*>& GetOverlapActors();
 	class UWidgetComponent* GetMonsterWidgetComponent() const;
 	TSubclassOf<class UMonsterWidget> GetMonsterWidgetClass() const;
-	float GetWaitForNextActionTime();
-	float GetPlayerAroundRadius();
 	UCapsuleComponent* GetAttackCollisionComponent(FName AttackCollisionFName) const;
 
 	//setter
-	void SetWaitForNextActionTime(float NewWaitForNextActionTime);
-	void SetPlayerAroundRadius(float NewPlayerAroundRadius);
 	void SetMonsterAttackCollision(class UCapsuleComponent* AttackCollision);
 
 	//델리게이트
@@ -107,12 +105,6 @@ private:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AI", meta = (AllowPrivateAccess = "true"))
 	class APatrolPath* PatrolPath;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AI", meta = (AllowPrivateAccess = "true"))
-	float WaitForNextActionTime = 2.f;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AI", meta = (AllowPrivateAccess = "true"))
-	float PlayerAroundRadius = 400.f;
 
 	//공격
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attack", meta = (AllowPrivateAccess = "true"))

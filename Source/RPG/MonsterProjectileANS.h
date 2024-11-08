@@ -18,8 +18,9 @@ public:
 	virtual void NotifyBegin(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, float TotalDuration) override;
 	virtual void NotifyEnd(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation) override;
 
-	void SpawnActorAt(USkeletalMeshComponent* MeshComp, float Time, float TotalDuration);
+	void SpawnActorAt(USkeletalMeshComponent* MeshComp);
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Projectile")
 	TSubclassOf<class AMonsterProjectile> AMonsterProjectileClass;
+
 };

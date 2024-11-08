@@ -25,23 +25,20 @@ EBTNodeResult::Type UBTTask_MonsterAttack::ExecuteTask(UBehaviorTreeComponent& O
 				case 1:
 					BossMonster->MonsterAttackStart();
 					BossMonster->MonsterAttackExecute(1);
-					FinishLatentTask(OwnerComp, EBTNodeResult::InProgress);
 					break;
 				case 2:
 					BossMonster->MonsterAttackStart();
 					BossMonster->MonsterAttackExecute(2);
-					FinishLatentTask(OwnerComp, EBTNodeResult::InProgress);
 					break;
 				case 3:
 					BossMonster->MonsterAttackStart();
 					BossMonster->MonsterAttackExecute(3);
-					FinishLatentTask(OwnerComp, EBTNodeResult::InProgress);
 					break;
 				default:
-					FinishLatentTask(OwnerComp, EBTNodeResult::Succeeded);
 					return EBTNodeResult::Succeeded;
 					break;
 				}
+				return EBTNodeResult::InProgress;
 			}
 		}
 		return EBTNodeResult::Failed;
@@ -124,22 +121,17 @@ bool UBTTask_MonsterAttack::bMontageHasFinished(AMonster* Monster)
 				switch (PatternNumber) {
 				case 1:
 					return !AnimInstance->Montage_IsPlaying(BossMonster->GetCloseAttackMontage());
-					break;
 				case 2:
 					return !AnimInstance->Montage_IsPlaying(BossMonster->GetMidAttackMontage());
-					break;
 				case 3:
 					return !AnimInstance->Montage_IsPlaying(BossMonster->GetLongAttackMontage());
-					break;
 				default:
 					return true;
-					break;
 				}
 			}
 		}
-		else {
+		else
 			return !AnimInstance->Montage_IsPlaying(Monster->GetMonsterAttackMontage());
-		}
 	}
 	return false;
 }
