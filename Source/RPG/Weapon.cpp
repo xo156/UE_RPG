@@ -8,7 +8,6 @@
 #include "Kismet/GameplayStatics.h"
 #include "Engine/DamageEvents.h"
 #include "WeaponBaseComponent.h"
-
 #include "MyPlayerController.h"
 
 // Sets default values
@@ -55,12 +54,13 @@ void AWeapon::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* O
 		if (OtherActor->ActorHasTag(FName("Enemy"))) {
 			if (!OverlapActors.Contains(OtherActor)) {
 				OverlapActors.Add(OtherActor);
-				if (OwnerCharacter && OwnerCharacter->bIsGuard) {
+				/*if (OwnerCharacter && OwnerCharacter->bIsGuard) {
 					ZeroDamageToOnwer();
 				}
 				else {
 					ApplyDamageToActor(OtherActor);
-				}
+				}*/
+				ApplyDamageToActor(OtherActor);
 			}
 		}
 	}
@@ -96,7 +96,6 @@ void AWeapon::ZeroDamageToOnwer()
 	else {
 		OwnerCharacter->TakeDamage(Damage, DamageEvent, GetInstigatorController(), this);
 		OwnerCharacter->ConsumeStaminaForAction(OwnerCharacter->GuardStaminaCost);
-		OwnerCharacter->bIsGuard = false;
 		UE_LOG(LogTemp, Log, TEXT("Guard Success"));
 	}
 }

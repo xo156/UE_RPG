@@ -143,6 +143,7 @@ public:
 	AActor* GetCurrentTarget();
 	float GetTargetHeightOffset();
 	class AItemBase* GetQuickSlotItem();
+	class UBoxComponent* GetGuardComponent();
 
 	//setter
 	void SetQuickSlotItem(class AItemBase* NewQuickSlotItem);
@@ -233,4 +234,7 @@ private:
 
 	//Èçµé¸²
 	TSubclassOf<class UCameraShakeBase> CameraShake;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat", meta = (AllowPrivateAccess = "true"))
+	class UBoxComponent* GuardComponent;
 };

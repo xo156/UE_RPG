@@ -245,8 +245,14 @@ void AMonster::OnDieMontageEnded(UAnimMontage* Montage, bool bInterrupted)
 
 void AMonster::ApplyDamageToActor(AActor* ActorToDamage)
 {
+	//TODO:가드중에는 데미지 0
 	if (ActorToDamage) {
-		float Damage = MonsterStatus.Damage;
+		if (auto* PlayerCharacter = Cast<AMyCharacter>(ActorToDamage)) {
+			if (PlayerCharacter->bIsGuard)
+				Damage = 0.f;
+			else
+				Damage = MonsterStatus.Damage;
+		}
 		FDamageEvent DamageEvent;
 		ActorToDamage->TakeDamage(Damage, DamageEvent, GetInstigatorController(), this);
 	}

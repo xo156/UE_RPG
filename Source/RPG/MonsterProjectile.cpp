@@ -66,12 +66,15 @@ void AMonsterProjectile::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent
 {
     if (OtherActor && OtherActor != this && OtherActor != GetOwner()) {
         if (OtherActor->IsA(AMyCharacter::StaticClass())) {
-            auto* PlayerCharacter = Cast<AMyCharacter>(OtherActor);
-            if (PlayerCharacter) {
-                FDamageEvent DamageEvent;
-                PlayerCharacter->TakeDamage(DamageAmount, DamageEvent, GetInstigatorController(), this);
-                UE_LOG(LogTemp, Log, TEXT("Projectile hit player and dealt damage."));
-                Destroy();
+            if (auto* PlayerCharacter = Cast<AMyCharacter>(OtherActor)) {
+                for (auto* CheckComponent : PlayerCharacter->GetComponents()) {
+                    if (CheckComponent->ComponentHasTag(FName("Hitted"))) {
+                        FDamageEvent DamageEvent;
+                        PlayerCharacter->TakeDamage(DamageAmount, DamageEvent, GetInstigatorController(), this);
+                        UE_LOG(LogTemp, Log, TEXT("Projectile hit player and dealt damage."));
+                        Destroy();
+                    }
+                }
             }
         }
         else {

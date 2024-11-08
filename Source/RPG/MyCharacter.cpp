@@ -69,6 +69,10 @@ AMyCharacter::AMyCharacter() {
 	RootItemBoxComponent->SetCollisionProfileName(TEXT("OverlapAllDynamic"));
 	RootItemBoxComponent->OnComponentBeginOverlap.AddDynamic(this, &AMyCharacter::OnRootItemBoxOverlapBegin);
 	RootItemBoxComponent->OnComponentEndOverlap.AddDynamic(this, &AMyCharacter::OnRootItemBoxOverlapEnd);
+
+	GuardComponent = CreateDefaultSubobject<UBoxComponent>(TEXT("GuardBox"));
+	GuardComponent->SetupAttachment(RootComponent);
+	GuardComponent->SetCollisionProfileName(TEXT("NoCollision"));
 }
 
 // Called when the game starts or when spawned
@@ -166,8 +170,8 @@ float AMyCharacter::TakeDamage(float DamageAmount, FDamageEvent const& DamageEve
 	if (bIsRoll)
 		return 0.f;
 
-	if (bIsGuard)
-		return 0.f;
+	/*if (bIsGuard)
+		return 0.f;*/
 
 	if (auto* PlayerController = Cast<AMyPlayerController>(GetController())) {
 		PlayerController->ClientPlayCameraShake(CameraShake);
@@ -305,6 +309,7 @@ void AMyCharacter::GuardUp()
 		if (bHasEnoughStamina(GuardStaminaCost)) {
 			bIsGuard = true;
 			if (UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance()) {
+				GuardComponent->SetCollisionProfileName(TEXT("Pawn"));
 				CurrentWeaponComponent->GetLeftHandWeaponInstance()->GetWeaponCollision()->SetCollisionProfileName("Weapon");
 				CurrentWeaponComponent->GetLeftHandWeaponInstance()->GetWeaponCollision()->SetNotifyRigidBodyCollision(true);
 				AnimInstance->Montage_Play(GuardMontage);
@@ -316,6 +321,7 @@ void AMyCharacter::GuardUp()
 void AMyCharacter::GuardDown()
 {
 	bIsGuard = false;
+	GuardComponent->SetCollisionProfileName(TEXT("NoCollision"));
 	CurrentWeaponComponent->GetLeftHandWeaponInstance()->GetWeaponCollision()->SetCollisionProfileName("NoCollision");
 	CurrentWeaponComponent->GetLeftHandWeaponInstance()->GetWeaponCollision()->SetNotifyRigidBodyCollision(false);
 
@@ -728,6 +734,13 @@ AItemBase* AMyCharacter::GetQuickSlotItem()
 {
 	if (QuickSlotItem)
 		return QuickSlotItem;
+	return nullptr;
+}
+
+UBoxComponent* AMyCharacter::GetGuardComponent()
+{
+	if (GuardComponent)
+		return GuardComponent;
 	return nullptr;
 }
 

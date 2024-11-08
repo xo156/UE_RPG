@@ -3,7 +3,7 @@
 
 플레이어:
 락온 중에 움직이는 방향으로 구르기
-다단 히트 체크하기
+맞는 역할 컴포넌트를 확실하게 정하기
 ik rig 모션별로 해보기
 //구르기가 끝날때 까지는 블렌드가 안되도록 true, false로 처리
 //https://www.youtube.com/watch?v=uOiYEkLNUto pervis
@@ -11,3 +11,7 @@ ik rig 모션별로 해보기
 위젯:
 퀵 슬롯 이미지, 수량 변경
 퀵 슬롯 아이템 쓰면 해당 아이템이 인벤토리에서 사용한 만큼 사라지도록
+
+https://dlemrcnd.tistory.com/62
+https://www.youtube.com/watch?v=Q6sACCykYpU&list=PLGm9gBuuMTetCxCMuJHNJ48yYEQjWVsp-&index=2
+https://www.youtube.com/@CodeLikeMe/videos
