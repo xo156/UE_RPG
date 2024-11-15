@@ -221,7 +221,7 @@ private:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "LockOn", meta = (AllowPrivateAccess = "true"))
 	float TargetHeightOffset = 20.f;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "LockOn", meta = (AllowPrivateAccess = "true"))
-	float TargetRange = 1000.f;
+	float TargetRange = 5000.f;
 	AActor* CurrentTarget = nullptr;
 	AActor* PrevLockOnTarget = nullptr;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "LockOn", meta = (AllowPrivateAccess = "true"))

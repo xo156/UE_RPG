@@ -103,7 +103,6 @@ void AMyCharacter::Tick(float DeltaTime) {
 	Super::Tick(DeltaTime);
 
 	CheckStaminaRecovery(DeltaTime);
-
 	ChangeMoveSpeed(DeltaTime);
 
 	if (GetVelocity().Y == 0.f && !bIsRoll)
@@ -372,59 +371,49 @@ void AMyCharacter::LockOnTarget()
 
 AActor* AMyCharacter::FindLockOnTarget()
 {
-	;
-	if (auto* PlayerController = Cast<APlayerController>(GetController())) {
-		// 플레이어의 카메라 위치와 방향 가져오기
-		FVector CameraLocation;
-		FRotator CameraRotation;
-		PlayerController->GetPlayerViewPoint(CameraLocation, CameraRotation);
+	FCollisionQueryParams QueryParams;
+	QueryParams.AddIgnoredActor(this); // 자기 자신 무시
+	QueryParams.bTraceComplex = false;
+	QueryParams.bReturnPhysicalMaterial = false;
 
-		FVector TraceStart = CameraLocation;
-		FVector TraceEnd = TraceStart + (CameraRotation.Vector() * TargetRange);
+	TArray<FHitResult> HitResults;
 
-		// 라인 트레이스에 사용될 파라미터
-		FCollisionQueryParams QueryParams;
-		QueryParams.AddIgnoredActor(this); // 자기 자신 무시
-		QueryParams.bTraceComplex = false;
-		QueryParams.bReturnPhysicalMaterial = false;
+	// 트레이스 수행
+	bool bHit = GetWorld()->SweepMultiByChannel(
+		HitResults,
+		GetActorLocation(),
+		GetActorLocation(), 
+		FQuat::Identity,
+		ECC_Visibility,
+		FCollisionShape::MakeSphere(TargetRange),
+		QueryParams
+	);
 
-		TArray<FHitResult> HitResults;
+	AActor* NearestEnemy = nullptr;
+	float NearestDistance = TargetRange;
 
-		// 트레이스 수행
-		bool bHit = GetWorld()->LineTraceMultiByChannel(
-			HitResults,
-			TraceStart,
-			TraceEnd,
-			ECC_Visibility,
-			QueryParams
-		);
-
-		AActor* NearestEnemy = nullptr;
-		float NearestDistance = TargetRange;
-
-		if (bHit) {
-			for (FHitResult& Hit : HitResults) {
-				AActor* HitActor = Hit.GetActor();
-				if (HitActor && HitActor->ActorHasTag(FName("Enemy"))) {
-					if (HitActor != CurrentTarget) {
-						float Distance = GetDistanceTo(HitActor);
-						if (Distance < NearestDistance) {
-							NearestDistance = Distance;
-							NearestEnemy = HitActor;
-						}
+	if (bHit) {
+		for (FHitResult& Hit : HitResults) {
+			AActor* HitActor = Hit.GetActor();
+			if (HitActor && HitActor->ActorHasTag(FName("Enemy"))) {
+				if (HitActor != CurrentTarget) {
+					float Distance = GetDistanceTo(HitActor);
+					if (Distance < NearestDistance) {
+						NearestDistance = Distance;
+						NearestEnemy = HitActor;
 					}
 				}
 			}
 		}
-		return NearestEnemy;
 	}
-	else {
-		return nullptr;
-	}
+	return NearestEnemy;
 }
 
 void AMyCharacter::UpdateTargetVisibility()
 {
+	if (bIsRoll)
+		return;
+
 	if (CurrentTarget) {
 		//타겟이 항상 보이도록
 		if (!IsTargetInView(CurrentTarget)) {
@@ -436,6 +425,12 @@ void AMyCharacter::UpdateTargetVisibility()
 bool AMyCharacter::IsTargetInView(AActor* CheckTarget)
 {
 	if (CheckTarget == nullptr)
+		return false;
+
+	if (!CheckTarget->IsValidLowLevel() && CheckTarget->IsPendingKill())
+		return false;
+
+	if (GetDistanceTo(CheckTarget) > TargetRange)
 		return false;
 
 	FVector DirectionToTarget = CheckTarget->GetActorLocation() - GetActorLocation();

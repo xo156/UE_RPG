@@ -179,7 +179,7 @@ float AMonster::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, 
 		//체력이 없어서 죽을때
 		UE_LOG(LogTemp, Log, TEXT("Monster Die"));
 		ConsumeHPForAction(DamageAmount); //체력을 0으로 하기
-
+		bIsMonsterDead = true;
 		//아이템 드랍
 		DroppedItem();
 		//몬스터 사라지기
@@ -219,16 +219,12 @@ void AMonster::DroppedItem()
 
 void AMonster::DieMonster()
 {
-	bIsMonsterDead = true;
 	if (UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance()) {
 		if (auto* MyGameModeBase = GetWorld()->GetAuthGameMode<AMyGameModeBase>()) {
 			MyGameModeBase->MonsterDeadCount += 1;
 		}
-		if (MonsterDieMontage) {
-			AnimInstance->Montage_Play(MonsterDieMontage);
-			FOnMontageEnded EndDelegate;
-			EndDelegate.BindUObject(this, &AMonster::OnDieMontageEnded);
-			AnimInstance->Montage_SetEndDelegate(EndDelegate, MonsterDieMontage);
+		if (MonsterWidgetComponent) {
+			MonsterWidgetComponent->DestroyComponent();
 		}
 		if (auto* AIControllerInstance = GetController()) {
 			if (auto* AIController = Cast<AAIController>(AIControllerInstance)) {
@@ -236,20 +232,16 @@ void AMonster::DieMonster()
 				AIController->UnPossess();
 			}
 		}
+		if (MonsterDieMontage) {
+			AnimInstance->Montage_Play(MonsterDieMontage);
+			FOnMontageEnded EndDelegate;
+			EndDelegate.BindUObject(this, &AMonster::OnDieMontageEnded);
+			AnimInstance->Montage_SetEndDelegate(EndDelegate, MonsterDieMontage);
+		}
 	}
 }
 
 void AMonster::OnDieMontageEnded(UAnimMontage* Montage, bool bInterrupted)
-{
-	//GetMesh()->SetSimulatePhysics(true);
-	//GetCapsuleComponent()->SetCollisionProfileName(TEXT("NoCollision"));
-
-	//FTimerHandle TimerHandle;
-	//GetWorld()->GetTimerManager().SetTimer(TimerHandle, this, &AMonster::DestroyMonster, 10.0f, false);
-	DestroyMonster();
-}
-
-void AMonster::DestroyMonster()
 {
 	Destroy();
 }

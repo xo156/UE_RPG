@@ -68,7 +68,6 @@ public:
 	void DroppedItem();
 	void DieMonster();
 	void OnDieMontageEnded(UAnimMontage* NowPlayMontage, bool bInterrupted);
-	void DestroyMonster();
 	void ApplyDamageToActor(AActor* ActorToDamage, UPrimitiveComponent* OtherComponent);
 
 	//getter
@@ -94,6 +93,7 @@ public:
 
 	//»óÅÂ
 	bool bIsMonsterAttack = false;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Montage")
 	bool bIsMonsterDead = false;
 
 protected:
@@ -136,4 +136,5 @@ private:
 
 	//Èçµé¸²
 	TSubclassOf<class UCameraShakeBase> CameraShake;
+
 };

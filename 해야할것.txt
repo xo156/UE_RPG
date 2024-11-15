@@ -1,11 +1,6 @@
-몬스터:
-죽고나서 일어난 다음 사라지는거 막기
-발사체 생성 개수 정확하게 하기
-
 플레이어:
 락온 중에 구르면 락온 풀리는거 해결하기
 ik rig 모션별로 해보기
-//구르기가 끝날때 까지는 블렌드가 안되도록 true, false로 처리
 //https://www.youtube.com/watch?v=uOiYEkLNUto pervis
 
 아이템:

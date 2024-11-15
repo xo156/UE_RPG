@@ -59,20 +59,9 @@ void ABossMonster::BeginPlay()
 			MonsterWidgetInstance = CreateWidget<UMonsterWidget>(GetWorld(), GetMonsterWidgetClass());
 			if (MonsterWidgetInstance) {
 				MonsterWidgetInstance->AddToViewport();
-				//MonsterWidgetInstance->UpdateHP(MonsterStatus.CurrentMonsterHP, MonsterStatus.MaxMonsterHP);
 				MonsterWidgetInstance->SetOwnerMonster(this);
-				UE_LOG(LogTemp, Warning, TEXT("Boss Monster Widget added to viewport"));
-			}
-			else {
-				UE_LOG(LogTemp, Warning, TEXT("Fail to Boss Monster Widget Create"));
 			}
 		}
-		else {
-			UE_LOG(LogTemp, Warning, TEXT("Already Boss Monster Widget Create"));
-		}
-	}
-	else {
-		UE_LOG(LogTemp, Warning, TEXT("MonsterWidgetInstance already exists or GetMonsterWidgetClass is null"));
 	}
 }
 
@@ -90,7 +79,9 @@ void ABossMonster::Tick(float DeltaTime)
 			}
 		}
 	}
-
+	else {
+		MonsterWidgetInstance->SetVisibility(ESlateVisibility::Hidden);
+	}
 }
 
 void ABossMonster::MonsterAttackExecute(int32 PatternNumber)
@@ -151,14 +142,6 @@ UAnimMontage* ABossMonster::GetLongAttackMontage()
 	if (LongAttackMontage)
 		return LongAttackMontage;
 	return nullptr;
-}
-
-void ABossMonster::ConsumeHPForAction(float HPCost)
-{
-	Super::ConsumeHPForAction(HPCost);
-
-	MonsterStatus.UseHP(HPCost);
-	OnMonsterUIUpdated.Broadcast(MonsterStatus.CurrentMonsterHP);
 }
 
 float ABossMonster::GetWaitForNextActionTime()

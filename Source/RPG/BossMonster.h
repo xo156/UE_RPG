@@ -32,9 +32,6 @@ public:
 	UAnimMontage* GetMidAttackMontage();
 	UAnimMontage* GetLongAttackMontage();
 
-	//±¸Á¶Ã¼
-	virtual void ConsumeHPForAction(float HPCost);
-
 	float GetWaitForNextActionTime();
 
 private:
