@@ -67,6 +67,11 @@ void AMonsterProjectile::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent
     if (OtherActor && OtherActor != this && OtherActor != GetOwner()) {
         if (OtherActor->IsA(AMyCharacter::StaticClass())) {
             if (auto* PlayerCharacter = Cast<AMyCharacter>(OtherActor)) {
+                if (PlayerCharacter->bIsGuard) {
+                    UE_LOG(LogTemp, Log, TEXT("Player is guarding, no damage dealt."));
+                    Destroy();
+                    return;
+                }
                 for (auto* CheckComponent : PlayerCharacter->GetComponents()) {
                     if (CheckComponent->ComponentHasTag(FName("Hitted"))) {
                         FDamageEvent DamageEvent;

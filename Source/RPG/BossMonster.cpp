@@ -81,11 +81,13 @@ void ABossMonster::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 
 	//항상 플레이어 바라보기
-	if (auto* PlayerController = Cast<AMyPlayerController>(GetWorld()->GetFirstPlayerController())) {
-		if (auto* PlayerCharacter = Cast<AMyCharacter>(PlayerController->GetPawn())) {
-			FVector PlayerLocation = PlayerCharacter->GetActorLocation();
-			FRotator LookAtRotation = (PlayerLocation - GetActorLocation()).Rotation();
-			SetActorRotation(FRotator(0.0f, LookAtRotation.Yaw, 0.0f));
+	if (!bIsMonsterDead) {
+		if (auto* PlayerController = Cast<AMyPlayerController>(GetWorld()->GetFirstPlayerController())) {
+			if (auto* PlayerCharacter = Cast<AMyCharacter>(PlayerController->GetPawn())) {
+				FVector PlayerLocation = PlayerCharacter->GetActorLocation();
+				FRotator LookAtRotation = (PlayerLocation - GetActorLocation()).Rotation();
+				SetActorRotation(FRotator(0.0f, LookAtRotation.Yaw, 0.0f));
+			}
 		}
 	}
 

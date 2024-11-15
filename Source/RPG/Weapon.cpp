@@ -24,12 +24,10 @@ AWeapon::AWeapon()
 
 	WeaponCollision = CreateDefaultSubobject<UBoxComponent>(TEXT("WeaponCollision"));
 	WeaponCollision->SetupAttachment(RootComponent);
-
 	WeaponCollision->SetHiddenInGame(false);
 	WeaponCollision->SetVisibility(true);
 	WeaponCollision->SetCollisionProfileName("NoCollision");
 	WeaponCollision->SetNotifyRigidBodyCollision(false);
-
 	WeaponCollision->OnComponentBeginOverlap.AddDynamic(this, &AWeapon::OnOverlapBegin);
 
 }
@@ -54,12 +52,6 @@ void AWeapon::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* O
 		if (OtherActor->ActorHasTag(FName("Enemy"))) {
 			if (!OverlapActors.Contains(OtherActor)) {
 				OverlapActors.Add(OtherActor);
-				/*if (OwnerCharacter && OwnerCharacter->bIsGuard) {
-					ZeroDamageToOnwer();
-				}
-				else {
-					ApplyDamageToActor(OtherActor);
-				}*/
 				ApplyDamageToActor(OtherActor);
 			}
 		}
@@ -79,24 +71,6 @@ void AWeapon::ApplyDamageToActor(AActor* ActorToDamage)
 	}
 	else {
 		ActorToDamage->TakeDamage(Damage, DamageEvent, GetInstigatorController(), this);
-	}
-}
-
-void AWeapon::ZeroDamageToOnwer()
-{
-	if (OwnerCharacter == nullptr) {
-		return;
-	}
-
-	float Damage = 0.f;
-	FDamageEvent DamageEvent;
-	if (GetInstigator() == nullptr) {
-		return;
-	}
-	else {
-		OwnerCharacter->TakeDamage(Damage, DamageEvent, GetInstigatorController(), this);
-		OwnerCharacter->ConsumeStaminaForAction(OwnerCharacter->GuardStaminaCost);
-		UE_LOG(LogTemp, Log, TEXT("Guard Success"));
 	}
 }
 

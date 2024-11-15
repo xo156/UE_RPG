@@ -128,6 +128,7 @@ public:
 	bool bIsRoll;
 	bool bIsLockon;
 	bool bIsIdle;
+	bool bIsNoDamage;
 
 	//소모되는 스테미나
 	float RunStaminaCost = 0.2f;
@@ -141,13 +142,16 @@ public:
 
 	//getter
 	AActor* GetCurrentTarget();
+	AActor* GetPrevLockOnTarget();
 	float GetTargetHeightOffset();
 	class AItemBase* GetQuickSlotItem();
+	class UWeaponBaseComponent* GetCurrentWeaponComponent();
 	class UBoxComponent* GetGuardComponent();
 
 	//setter
 	void SetQuickSlotItem(class AItemBase* NewQuickSlotItem);
-	int32 SetQuickSlotItemAmount(int32 Amount);
+	void SetQuickSlotItemAmount(int32 NewAmount);
+	void SetQuickSlotItemID(int32 NewID);
 
 	//델리게이트
 	FOnPlayerUIUpdated OnPlayerUIUpdated;
@@ -207,6 +211,7 @@ private:
 	float TimeWithoutAction = 0.f; //스테미나 회복 시작까지 걸리는 시간 체크용도
 	FVector PreviousLocation;
 	FVector CurrentLocation;
+	FVector LastInputDirection;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Status", meta = (AllowPrivateAccess = "true"))
 	float WalkSpeed = 600.f;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Status", meta = (AllowPrivateAccess = "true"))
@@ -218,6 +223,7 @@ private:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "LockOn", meta = (AllowPrivateAccess = "true"))
 	float TargetRange = 1000.f;
 	AActor* CurrentTarget = nullptr;
+	AActor* PrevLockOnTarget = nullptr;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "LockOn", meta = (AllowPrivateAccess = "true"))
 	TSubclassOf<class UUserWidget> LockonWidgetClass;
 	class UUserWidget* LockonWidgetInstance;
@@ -231,6 +237,7 @@ private:
 	UDataTable* ItemTable;
 	class AItemBase* QuickSlotItem;
 	int32 QuickSlotItemAmount = 0;
+	int32 QuickSlotItemID;
 
 	//흔들림
 	TSubclassOf<class UCameraShakeBase> CameraShake;

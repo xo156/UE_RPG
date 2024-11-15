@@ -31,7 +31,7 @@ public:
 	void AddItem(class ADropItem* AddedItem);
 	void RemoveItem(int32 ItemTableID, int32 Amount);
 	int32 MakeUID();
-	int32 FindInventoryItem(int32 FindItemID);
+	int32 GetInventoryItemAmount(int32 FindItemID);
 
 	void CreateInventoryWidget();
 	void OpenInventoryWidget();

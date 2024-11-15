@@ -18,6 +18,8 @@
 #include "MyGameModeBase.h"
 #include "BehaviorTree/BehaviorTree.h"
 #include "BehaviorTree/BehaviorTreeComponent.h"
+#include "Components/BoxComponent.h"
+#include "Weapon.h"
 
 // Sets default values
 AMonster::AMonster()
@@ -150,7 +152,7 @@ void AMonster::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* 
 	if (OtherActor && OtherActor != this && OtherActor->IsA(AMyCharacter::StaticClass())) {
 		if (!OverlapActors.Contains(OtherActor)) {
 			OverlapActors.Add(OtherActor);
-			ApplyDamageToActor(OtherActor);
+			ApplyDamageToActor(OtherActor, OtherComponent);
 		}
 	}
 }
@@ -181,7 +183,7 @@ float AMonster::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, 
 		//아이템 드랍
 		DroppedItem();
 		//몬스터 사라지기
-		DestroyMonster();
+		DieMonster();
 	}
 	
 	return DamageAmount;
@@ -215,8 +217,9 @@ void AMonster::DroppedItem()
 	}
 }
 
-void AMonster::DestroyMonster()
+void AMonster::DieMonster()
 {
+	bIsMonsterDead = true;
 	if (UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance()) {
 		if (auto* MyGameModeBase = GetWorld()->GetAuthGameMode<AMyGameModeBase>()) {
 			MyGameModeBase->MonsterDeadCount += 1;
@@ -238,23 +241,32 @@ void AMonster::DestroyMonster()
 
 void AMonster::OnDieMontageEnded(UAnimMontage* Montage, bool bInterrupted)
 {
-	if (!bInterrupted) {
-		Destroy();
-	}
+	//GetMesh()->SetSimulatePhysics(true);
+	//GetCapsuleComponent()->SetCollisionProfileName(TEXT("NoCollision"));
+
+	//FTimerHandle TimerHandle;
+	//GetWorld()->GetTimerManager().SetTimer(TimerHandle, this, &AMonster::DestroyMonster, 10.0f, false);
+	DestroyMonster();
 }
 
-void AMonster::ApplyDamageToActor(AActor* ActorToDamage)
+void AMonster::DestroyMonster()
 {
-	//TODO:가드중에는 데미지 0
+	Destroy();
+}
+
+void AMonster::ApplyDamageToActor(AActor* ActorToDamage, UPrimitiveComponent* OtherComponent)
+{
 	if (ActorToDamage) {
 		if (auto* PlayerCharacter = Cast<AMyCharacter>(ActorToDamage)) {
-			if (PlayerCharacter->bIsGuard)
-				Damage = 0.f;
-			else
-				Damage = MonsterStatus.Damage;
+			Damage = MonsterStatus.Damage;
+			if (PlayerCharacter->bIsGuard) {
+				if (OtherComponent == PlayerCharacter->GetGuardComponent()) {
+					Damage = 0.f;
+				}
+			}
+			FDamageEvent DamageEvent;
+			ActorToDamage->TakeDamage(Damage, DamageEvent, GetInstigatorController(), this);
 		}
-		FDamageEvent DamageEvent;
-		ActorToDamage->TakeDamage(Damage, DamageEvent, GetInstigatorController(), this);
 	}
 }
 

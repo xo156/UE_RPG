@@ -27,4 +27,6 @@ public:
 
 	UPROPERTY(meta = (BindWidget))
 	class UTextBlock* QuickSlotAmount;
+
+	class AItemBase* QuickSlotItem;
 };

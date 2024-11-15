@@ -25,4 +25,6 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 	virtual void Use();
+
+	FItemData GetItemData();
 };

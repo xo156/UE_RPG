@@ -136,14 +136,14 @@ int32 UInventoryComponent::MakeUID()
 	return ++UIDCounter;
 }
 
-int32 UInventoryComponent::FindInventoryItem(int32 FindItemID)
+int32 UInventoryComponent::GetInventoryItemAmount(int32 FindItemID)
 {
 	for (auto& InventoryItem : InventoryItems) {
 		if (InventoryItem.ItemTableID == FindItemID)
 			return InventoryItem.ItemAmount;
 	}
 
-	return 00;
+	return 0;
 }
 
 void UInventoryComponent::CreateInventoryWidget()

@@ -29,7 +29,6 @@ public:
 						bool bFromSweep, const FHitResult& SweepResult);
 
 	void ApplyDamageToActor(AActor* ActorToDamage);
-	void ZeroDamageToOnwer();
 	
 	void SetOwnerCharacter(class AMyCharacter* NewOwnerCharacter);
 

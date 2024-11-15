@@ -70,6 +70,7 @@ AMyCharacter::AMyCharacter() {
 	RootItemBoxComponent->OnComponentBeginOverlap.AddDynamic(this, &AMyCharacter::OnRootItemBoxOverlapBegin);
 	RootItemBoxComponent->OnComponentEndOverlap.AddDynamic(this, &AMyCharacter::OnRootItemBoxOverlapEnd);
 
+	//막기
 	GuardComponent = CreateDefaultSubobject<UBoxComponent>(TEXT("GuardBox"));
 	GuardComponent->SetupAttachment(RootComponent);
 	GuardComponent->SetCollisionProfileName(TEXT("NoCollision"));
@@ -135,14 +136,16 @@ void AMyCharacter::Tick(float DeltaTime) {
 				GetController()->SetControlRotation(LookAtRotation);
 			}
 
-			if (LockonWidgetInstance)
-				UpdateLockonEffect();
+			//if (LockonWidgetInstance)
+			//	UpdateLockonEffect();
 		}
 		else {
 			FRotator MovementDirection = GetVelocity().Rotation();
 			MovementDirection.Pitch = 0;
 			SetActorRotation(MovementDirection);
 		}
+		if (LockonWidgetInstance)
+			UpdateLockonEffect();
 	}
 	else {
 		UpdateLockonEffect();
@@ -170,9 +173,6 @@ float AMyCharacter::TakeDamage(float DamageAmount, FDamageEvent const& DamageEve
 	if (bIsRoll)
 		return 0.f;
 
-	/*if (bIsGuard)
-		return 0.f;*/
-
 	if (auto* PlayerController = Cast<AMyPlayerController>(GetController())) {
 		PlayerController->ClientPlayCameraShake(CameraShake);
 	}
@@ -197,6 +197,8 @@ void AMyCharacter::Move(FVector2D InputValue)
 		const FRotator YawRotation(0.f, GetControlRotation().Yaw, 0.f);
 		const FVector ForwardDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);
 		const FVector RightDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
+
+		LastInputDirection = (ForwardDirection * InputValue.Y + RightDirection * InputValue.X).GetSafeNormal();
 
 		AddMovementInput(ForwardDirection, InputValue.Y);
 		AddMovementInput(RightDirection, InputValue.X);
@@ -310,8 +312,7 @@ void AMyCharacter::GuardUp()
 			bIsGuard = true;
 			if (UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance()) {
 				GuardComponent->SetCollisionProfileName(TEXT("Pawn"));
-				CurrentWeaponComponent->GetLeftHandWeaponInstance()->GetWeaponCollision()->SetCollisionProfileName("Weapon");
-				CurrentWeaponComponent->GetLeftHandWeaponInstance()->GetWeaponCollision()->SetNotifyRigidBodyCollision(true);
+				GuardComponent->SetVisibility(true);
 				AnimInstance->Montage_Play(GuardMontage);
 			}
 		}
@@ -322,9 +323,7 @@ void AMyCharacter::GuardDown()
 {
 	bIsGuard = false;
 	GuardComponent->SetCollisionProfileName(TEXT("NoCollision"));
-	CurrentWeaponComponent->GetLeftHandWeaponInstance()->GetWeaponCollision()->SetCollisionProfileName("NoCollision");
-	CurrentWeaponComponent->GetLeftHandWeaponInstance()->GetWeaponCollision()->SetNotifyRigidBodyCollision(false);
-
+	GuardComponent->SetVisibility(false);
 }
 
 void AMyCharacter::Roll()
@@ -333,10 +332,21 @@ void AMyCharacter::Roll()
 		if (bHasEnoughStamina(RollStaminaCost)) {
 			if (!bIsAttack && CanJump() && !bIsRoll) {
 				if (UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance()) {
+					bIsRoll = true;
+					// LockOn 상태 유지
+					bool bWasLockOn = bIsLockon;
 					ConsumeStaminaForAction(RollStaminaCost);
+
+					if (!LastInputDirection.IsZero()) {
+						SetActorRotation(LastInputDirection.Rotation());
+					}
+
 					bUseControllerRotationYaw = false;
 					GetCharacterMovement()->bOrientRotationToMovement = true;
 					AnimInstance->Montage_Play(RollMontage);
+					if (bWasLockOn) {
+						PrevLockOnTarget = CurrentTarget;
+					}
 				}
 			}
 		}
@@ -549,13 +559,14 @@ void AMyCharacter::OnRootItemBoxOverlapEnd(UPrimitiveComponent* OverlappedCompon
 
 void AMyCharacter::QuickSlot()
 {
-	if (QuickSlotItem && QuickSlotItemAmount > 0) {
+	if (QuickSlotItem && InventoryComponent && QuickSlotItemAmount > 0) {
 		QuickSlotItem->Use();
-		//TODO: 실제 인벤토리의 아이템이 사라지도록 할것
-		QuickSlotItemAmount--;
-		if (InventoryComponent) {
-			InventoryComponent->InventoryWidget->UpdateInventoryWidget(InventoryComponent);
+		InventoryComponent->RemoveItem(QuickSlotItemID, 1);
+		SetQuickSlotItemAmount(QuickSlotItemAmount - 1);
+		if (QuickSlotItemAmount <= 0) {
+			QuickSlotItemAmount = 0;
 		}
+		InventoryComponent->InventoryWidget->UpdateInventoryWidget(InventoryComponent);
 	}
 }
 
@@ -629,7 +640,6 @@ void AMyCharacter::SetupWidget()
 		InventoryQuickSlotWidgetInstance = CreateWidget<UInventoryQuickSlotWidget>(GetWorld(), InventoryQuickSlotWidgetClass);
 		if (InventoryQuickSlotWidgetInstance) {
 			InventoryQuickSlotWidgetInstance->AddToViewport();
-			UE_LOG(LogTemp, Log, TEXT("InventoryQuickSlotWidgetInstance"));
 		}
 	}
 }
@@ -725,6 +735,13 @@ AActor* AMyCharacter::GetCurrentTarget()
 	return nullptr;
 }
 
+AActor* AMyCharacter::GetPrevLockOnTarget()
+{
+	if (PrevLockOnTarget)
+		return PrevLockOnTarget;
+	return nullptr;
+}
+
 float AMyCharacter::GetTargetHeightOffset()
 {
 	return TargetHeightOffset;
@@ -734,6 +751,13 @@ AItemBase* AMyCharacter::GetQuickSlotItem()
 {
 	if (QuickSlotItem)
 		return QuickSlotItem;
+	return nullptr;
+}
+
+UWeaponBaseComponent* AMyCharacter::GetCurrentWeaponComponent()
+{
+	if (CurrentWeaponComponent)
+		return CurrentWeaponComponent;
 	return nullptr;
 }
 
@@ -751,7 +775,12 @@ void AMyCharacter::SetQuickSlotItem(AItemBase* NewQuickSlotItem)
 	}
 }
 
-int32 AMyCharacter::SetQuickSlotItemAmount(int32 Amount)
+void AMyCharacter::SetQuickSlotItemAmount(int32 NewAmount)
 {
-	return QuickSlotItemAmount = Amount;
+	QuickSlotItemAmount = NewAmount;
+}
+
+void AMyCharacter::SetQuickSlotItemID(int32 NewID)
+{
+	QuickSlotItemID = NewID;
 }

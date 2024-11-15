@@ -23,4 +23,10 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Projectile")
 	TSubclassOf<class AMonsterProjectile> AMonsterProjectileClass;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Projectile")
+	int32 MaxSpawnCount = 3;
+	int32 SpawnCount = 0;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Projectile")
+	float SpawnInterval = 0.5;
+	FTimerHandle SpawnTimerHandle;
 };

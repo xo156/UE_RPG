@@ -13,12 +13,17 @@ void UInventoryQuickSlotWidget::NativeConstruct()
 	Super::NativeConstruct();
 
 	if (QuickSlotAmount)
-		QuickSlotAmount->SetText(FText::AsNumber(00));
+		QuickSlotAmount->SetText(FText::AsNumber(0));
+
 }
 
 void UInventoryQuickSlotWidget::SetQuickSlotConsumable(UTexture2D* NewQuickSlotItemIcon, int32 InventoryItemAmount)
 {
-	QuickSlotImage->SetBrushFromTexture(NewQuickSlotItemIcon);
-	QuickSlotAmount->SetText(FText::AsNumber(InventoryItemAmount));
+    if (QuickSlotImage && NewQuickSlotItemIcon) {
+        QuickSlotImage->SetBrushFromTexture(NewQuickSlotItemIcon);
+    }
 
+    if (QuickSlotAmount) {
+        QuickSlotAmount->SetText(FText::AsNumber(InventoryItemAmount));
+    }
 }

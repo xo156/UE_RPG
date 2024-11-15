@@ -90,21 +90,25 @@ void UInventoryItemAction::OnOnlyDestroyClicked()
 void UInventoryItemAction::OnQuickSlotClicked()
 {
 	if (ItemTable) {
-		FItemData* ClickedItem = ItemTable->FindRow<FItemData>(FName(*FString::FromInt(InventoryItemData.ItemTableID)), TEXT("Item Data Context IvnentoryItemAction"));
+		FItemData* ClickedItem = ItemTable->FindRow<FItemData>(FName(*FString::FromInt(InventoryItemData.ItemTableID)), TEXT("Item Data Context InventoryItemAction"));
 		switch (ClickedItem->ItemType) {
 		case EItemType::Consumable:
 			if (auto* ItemInstance = GetWorld()->SpawnActor<AItemBase>(ClickedItem->ItemClass[0])) {
 				if (auto* PlayerController = UGameplayStatics::GetPlayerController(GetWorld(), 0)) {
 					if (auto* PlayerCharacter = Cast<AMyCharacter>(PlayerController->GetPawn())) {
 						PlayerCharacter->SetQuickSlotItem(ItemInstance);
-						PlayerCharacter->SetQuickSlotItemAmount(PlayerCharacter->GetInventory()->FindInventoryItem(ClickedItem->ItemID));
+						int32 ItemAmount = PlayerCharacter->GetInventory()->GetInventoryItemAmount(ClickedItem->ItemID);
 						if (InventoryQuickSlotWidgetClass) {
-							InventoryQuickSlotWidgetInstance = CreateWidget<UInventoryQuickSlotWidget>(this, InventoryQuickSlotWidgetClass);
-							if (InventoryQuickSlotWidgetInstance) {
-								InventoryQuickSlotWidgetInstance->SetQuickSlotConsumable(ClickedItem->ItemIcon, PlayerCharacter->GetInventory()->FindInventoryItem(ClickedItem->ItemID));
+							if (!InventoryQuickSlotWidgetInstance) {
+								InventoryQuickSlotWidgetInstance = CreateWidget<UInventoryQuickSlotWidget>(this, InventoryQuickSlotWidgetClass);
+								if (InventoryQuickSlotWidgetInstance) {
+									InventoryQuickSlotWidgetInstance->AddToViewport();
+								}
 							}
+							InventoryQuickSlotWidgetInstance->SetQuickSlotConsumable(ClickedItem->ItemIcon, ItemAmount);
+							PlayerCharacter->SetQuickSlotItemID(ClickedItem->ItemID);
+							PlayerCharacter->SetQuickSlotItemAmount(ItemAmount);
 						}
-						
 					}
 				}
 			}
@@ -113,6 +117,4 @@ void UInventoryItemAction::OnQuickSlotClicked()
 			break;
 		}
 	}
-
-	//return 0,1,2,3 으로 바꿔보기
 }

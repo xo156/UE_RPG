@@ -66,9 +66,10 @@ public:
 						 bool bFromSweep, const FHitResult& SweepResult);
 	virtual float TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
 	void DroppedItem();
-	void DestroyMonster();
+	void DieMonster();
 	void OnDieMontageEnded(UAnimMontage* NowPlayMontage, bool bInterrupted);
-	void ApplyDamageToActor(AActor* ActorToDamage);
+	void DestroyMonster();
+	void ApplyDamageToActor(AActor* ActorToDamage, UPrimitiveComponent* OtherComponent);
 
 	//getter
 	class UBehaviorTree* GetBehaviorTree() const;
@@ -93,6 +94,7 @@ public:
 
 	//ป๓ลย
 	bool bIsMonsterAttack = false;
+	bool bIsMonsterDead = false;
 
 protected:
 	// Called when the game starts or when spawned
