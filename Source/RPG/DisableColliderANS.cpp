@@ -18,10 +18,7 @@ void UDisableColliderANS::NotifyEnd(USkeletalMeshComponent* MeshComp, UAnimSeque
 	if (auto* PlayerCharacter = Cast<AMyCharacter>(MeshComp->GetOwner())) {
 		PlayerCharacter->bIsRoll = false;
 		PlayerCharacter->bIsNoDamage = false;
-
 		if (PlayerCharacter->bIsLockon && PlayerCharacter->GetCurrentTarget()) {
-			PlayerCharacter->ChangeTarget(PlayerCharacter->GetPrevLockOnTarget());
-
 			FRotator LookAtRotation = UKismetMathLibrary::FindLookAtRotation(PlayerCharacter->GetActorLocation(), PlayerCharacter->GetCurrentTarget()->GetActorLocation());
 			LookAtRotation.Pitch -= PlayerCharacter->GetTargetHeightOffset();
 			PlayerCharacter->GetController()->SetControlRotation(LookAtRotation);

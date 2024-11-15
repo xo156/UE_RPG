@@ -84,7 +84,7 @@ public:
 	void LockOnTarget();
 	AActor* FindLockOnTarget();
 	void UpdateTargetVisibility();
-	bool IsTargetInView(AActor* CheckTarget);
+	bool IsTargetValid(AActor* CheckTarget);
 	void ChangeTarget(AActor* NewTarget);
 	void CreateLockonEffect();
 	void UpdateLockonEffect();

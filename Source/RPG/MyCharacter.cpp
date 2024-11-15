@@ -118,30 +118,24 @@ void AMyCharacter::Tick(float DeltaTime) {
 	//락 온 중이면
 	if (bIsLockon && CurrentTarget) {
 		UpdateTargetVisibility();
-		if (!IsTargetInView(CurrentTarget) || GetDistanceTo(CurrentTarget) > TargetRange) {
+		if (!IsTargetValid(CurrentTarget) || GetDistanceTo(CurrentTarget) > TargetRange) {
 			ChangeTarget(nullptr);
 			UpdateLockonEffect();
 			return;
 		}
-
 		if (!bIsRoll) {
 			bUseControllerRotationYaw = true;
 			GetCharacterMovement()->bOrientRotationToMovement = false;
-
 			//타겟 방향으로 바라보게 함
 			if (bIsMove || bIsAttack || bIsGuard) {
 				FRotator LookAtRotation = UKismetMathLibrary::FindLookAtRotation(GetActorLocation(), CurrentTarget->GetActorLocation());
 				LookAtRotation.Pitch -= TargetHeightOffset;
 				GetController()->SetControlRotation(LookAtRotation);
 			}
-
-			//if (LockonWidgetInstance)
-			//	UpdateLockonEffect();
 		}
 		else {
-			FRotator MovementDirection = GetVelocity().Rotation();
-			MovementDirection.Pitch = 0;
-			SetActorRotation(MovementDirection);
+			FRotator CurrentRotation = GetActorRotation();
+			SetActorRotation(CurrentRotation); // 현재 회전을 유지
 		}
 		if (LockonWidgetInstance)
 			UpdateLockonEffect();
@@ -332,8 +326,6 @@ void AMyCharacter::Roll()
 			if (!bIsAttack && CanJump() && !bIsRoll) {
 				if (UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance()) {
 					bIsRoll = true;
-					// LockOn 상태 유지
-					bool bWasLockOn = bIsLockon;
 					ConsumeStaminaForAction(RollStaminaCost);
 
 					if (!LastInputDirection.IsZero()) {
@@ -343,9 +335,6 @@ void AMyCharacter::Roll()
 					bUseControllerRotationYaw = false;
 					GetCharacterMovement()->bOrientRotationToMovement = true;
 					AnimInstance->Montage_Play(RollMontage);
-					if (bWasLockOn) {
-						PrevLockOnTarget = CurrentTarget;
-					}
 				}
 			}
 		}
@@ -416,13 +405,13 @@ void AMyCharacter::UpdateTargetVisibility()
 
 	if (CurrentTarget) {
 		//타겟이 항상 보이도록
-		if (!IsTargetInView(CurrentTarget)) {
-			ChangeTarget(nullptr); // 타겟이 시야에서 벗어난 경우 lock-on 해제
+		if (!IsTargetValid(CurrentTarget)) {
+			ChangeTarget(nullptr); // 타겟이 유효하지 않으면
 		}
 	}
 }
 
-bool AMyCharacter::IsTargetInView(AActor* CheckTarget)
+bool AMyCharacter::IsTargetValid(AActor* CheckTarget)
 {
 	if (CheckTarget == nullptr)
 		return false;
@@ -433,11 +422,13 @@ bool AMyCharacter::IsTargetInView(AActor* CheckTarget)
 	if (GetDistanceTo(CheckTarget) > TargetRange)
 		return false;
 
-	FVector DirectionToTarget = CheckTarget->GetActorLocation() - GetActorLocation();
-	DirectionToTarget.Normalize();
-	FVector ForwardVector = GetActorForwardVector();
+	if (auto* TargetMonster = Cast<AMonster>(CurrentTarget)) {
+		if (TargetMonster->bIsMonsterDead) {
+			ChangeTarget(nullptr);
+		}
+	}
 
-	return FVector::DotProduct(ForwardVector, DirectionToTarget) > 0;
+	return true;
 }
 
 void AMyCharacter::ChangeTarget(AActor* NewTarget)
