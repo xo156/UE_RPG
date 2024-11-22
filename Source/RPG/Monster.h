@@ -47,7 +47,6 @@ public:
 	class UAnimMontage* GetMonsterAttackMontage() const;
 	TArray<AActor*>& GetOverlapActors();
 	class UWidgetComponent* GetMonsterWidgetComponent() const;
-	TSubclassOf<class UMonsterWidget> GetMonsterWidgetClass() const;
 	UCapsuleComponent* GetAttackCollisionComponent(FName AttackCollisionFName) const;
 	float GetMaxMonsterHP();
 
@@ -80,10 +79,9 @@ private:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AI", meta = (AllowPrivateAccess = "true"))
 	class APatrolPath* PatrolPath;
 
-	//컴포넌트
+	//공격
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Component", meta = (AllowPrivateAccess = "true"))
 	class UMonsterAttackComponent* MonsterAttackComponent;
-
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attack", meta = (AllowPrivateAccess = "true"))
 	class UCapsuleComponent* MonsterAttackCollision0;
 	TArray<class UCapsuleComponent*> MonsterAttackCollisions;
@@ -99,15 +97,11 @@ private:
 
 	//위젯
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UI", meta = (AllowPrivateAccess = "true"))
-	TSubclassOf<class UMonsterWidget> MonsterWidgetClass;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UI", meta = (AllowPrivateAccess = "true"))
 	class UMonsterWidgetComponent* MonsterWidgetComponent;
 
 	//아이템 드랍
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item", meta = (AllowPrivateAccess="true"))
 	TSubclassOf<class ADropItem> DropItemClass;
-	UDataTable* ItemDropTable;
 	TMap<int32, FDropRate*> ItemCache;
 
 	//흔들림

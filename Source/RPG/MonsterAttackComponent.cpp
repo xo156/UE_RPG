@@ -2,11 +2,8 @@
 
 
 #include "MonsterAttackComponent.h"
-#include "GameFramework/Character.h"
 #include "GameFramework/CharacterMovementComponent.h"
-#include "MyCharacter.h"
-#include "Engine/DamageEvents.h"
-#include "Components/BoxComponent.h"
+#include "Monster.h"
 
 // Sets default values for this component's properties
 UMonsterAttackComponent::UMonsterAttackComponent()
@@ -20,60 +17,32 @@ UMonsterAttackComponent::UMonsterAttackComponent()
 
 void UMonsterAttackComponent::MonsterStartAttack()
 {
-	if (!bIsAttack ) {
-		bIsAttack = true;
-		OwnerCharacter->GetCharacterMovement()->bOrientRotationToMovement = false;
-	}
+
+	OwnerMonster->GetCharacterMovement()->bOrientRotationToMovement = false;
 }
 
 void UMonsterAttackComponent::MonsterExecuteAttack()
 {
-	if (auto* AnimInstance = OwnerCharacter->GetMesh()->GetAnimInstance()) {
-		if (AttackMontage && !bIsAttack) {
-			bIsAttack = true;
-			AnimInstance->Montage_Play(AttackMontage);
+	if (auto* AnimInstance = OwnerMonster->GetMesh()->GetAnimInstance()) {
+		if (OwnerMonster->GetMonsterAttackMontage()) {
+			AnimInstance->Montage_Play(OwnerMonster->GetMonsterAttackMontage());
 
 			FOnMontageEnded MontageEndedDelegate;
 			MontageEndedDelegate.BindUObject(this, &UMonsterAttackComponent::OnAttackMontageEnded);
-			AnimInstance->Montage_SetEndDelegate(MontageEndedDelegate, AttackMontage);
+			AnimInstance->Montage_SetEndDelegate(MontageEndedDelegate, OwnerMonster->GetMonsterAttackMontage());
 		}
 	}
 }
 
 void UMonsterAttackComponent::MonsterEndAttack()
 {
-	OwnerCharacter->GetCharacterMovement()->bOrientRotationToMovement = true;
-	bIsAttack = false;
+	OwnerMonster->GetCharacterMovement()->bOrientRotationToMovement = true;
+	//TODO: 델리게이트로 컴포넌트 종료
 }
 
 void UMonsterAttackComponent::OnAttackMontageEnded(UAnimMontage* Montage, bool bInterrupted)
 {
 	MonsterEndAttack();
-}
-
-void UMonsterAttackComponent::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComponent, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
-{
-	if (OtherActor && OtherActor != OwnerCharacter && OtherActor->IsA(AMyCharacter::StaticClass())) {
-		if (!OverlapActors.Contains(OtherActor)) {
-			OverlapActors.Add(OtherActor);
-			ApplyDamageToActor(OtherActor, OtherComponent);
-		}
-	}
-}
-
-void UMonsterAttackComponent::ApplyDamageToActor(AActor* ActorToDamage, UPrimitiveComponent* OtherComponent)
-{
-	if (ActorToDamage) {
-		if (auto* PlayerCharacter = Cast<AMyCharacter>(ActorToDamage)) {
-			if (PlayerCharacter->bIsGuard) { //방어 중이면
-				if (OtherComponent == PlayerCharacter->GetGuardComponent()) {
-					return; // 피해 없음
-				}
-			}
-			FDamageEvent DamageEvent;
-			ActorToDamage->TakeDamage(Damage, DamageEvent, OwnerCharacter ? OwnerCharacter->GetInstigatorController() : nullptr, OwnerCharacter);
-		}
-	}
 }
 
 
@@ -82,8 +51,7 @@ void UMonsterAttackComponent::BeginPlay()
 {
 	Super::BeginPlay();
 
-	if (OwnerCharacter)
-		OwnerCharacter = Cast<ACharacter>(GetOwner());
+	OwnerMonster = Cast<AMonster>(GetOwner());
 }
 
 

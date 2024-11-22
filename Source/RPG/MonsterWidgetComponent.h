@@ -18,6 +18,8 @@ public:
 	UMonsterWidgetComponent();
 
 	void FaceToPlayer();
+	void SetOwnerMonsterWidget();
+	class UMonsterWidget* GetMonsterWidgetClass();
 
 protected:
 	virtual void BeginPlay() override;

@@ -24,25 +24,25 @@ ABossMonster::ABossMonster() : AMonster()
 	MonsterAttackCollisionComponent1->SetupAttachment(GetMesh(), FName("AttackCollision_RightHand"));
 	MonsterAttackCollisionComponent1->SetCollisionProfileName(TEXT("NoCollision"));
 	MonsterAttackCollisionComponent1->OnComponentBeginOverlap.AddDynamic(this, &AMonster::OnOverlapBegin);
-	SetMonsterAttackCollision(MonsterAttackCollisionComponent1);
+	//SetMonsterAttackCollision(MonsterAttackCollisionComponent1);
 
 	MonsterAttackCollisionComponent2 = CreateDefaultSubobject<UCapsuleComponent>(TEXT("AttackCollisionComponent2"));
 	MonsterAttackCollisionComponent2->SetupAttachment(GetMesh(), FName("AttackCollision_LeftLeg"));
 	MonsterAttackCollisionComponent2->SetCollisionProfileName(TEXT("NoCollision"));
 	MonsterAttackCollisionComponent2->OnComponentBeginOverlap.AddDynamic(this, &AMonster::OnOverlapBegin);
-	SetMonsterAttackCollision(MonsterAttackCollisionComponent2);
+	//SetMonsterAttackCollision(MonsterAttackCollisionComponent2);
 
 	MonsterAttackCollisionComponent3 = CreateDefaultSubobject<UCapsuleComponent>(TEXT("AttackCollisionComponent3"));
 	MonsterAttackCollisionComponent3->SetupAttachment(GetMesh(), FName("AttackCollision_RightLeg"));
 	MonsterAttackCollisionComponent3->SetCollisionProfileName(TEXT("NoCollision"));
 	MonsterAttackCollisionComponent3->OnComponentBeginOverlap.AddDynamic(this, &AMonster::OnOverlapBegin);
-	SetMonsterAttackCollision(MonsterAttackCollisionComponent3);
+	//SetMonsterAttackCollision(MonsterAttackCollisionComponent3);
 
 	MonsterAttackCollisionComponent4 = CreateDefaultSubobject<UCapsuleComponent>(TEXT("AttackCollisionComponent4"));
 	MonsterAttackCollisionComponent4->SetupAttachment(GetMesh(), FName("AttackCollision_Jump"));
 	MonsterAttackCollisionComponent4->SetCollisionProfileName(TEXT("NoCollision"));
 	MonsterAttackCollisionComponent4->OnComponentBeginOverlap.AddDynamic(this, &AMonster::OnOverlapBegin);
-	SetMonsterAttackCollision(MonsterAttackCollisionComponent4);
+	//SetMonsterAttackCollision(MonsterAttackCollisionComponent4);
 
 	//±¸Á¶Ã¼
 	MaxMonsterHP = MonsterData.MaxMonsterHP;
@@ -53,8 +53,9 @@ ABossMonster::ABossMonster() : AMonster()
 void ABossMonster::BeginPlay()
 {
 	Super::BeginPlay();
+	
 
-	if (GetMonsterWidgetClass()) {
+	/*if (GetMonsterWidgetClass()) {
 		if (!MonsterWidgetInstance) {
 			MonsterWidgetInstance = CreateWidget<UMonsterWidget>(GetWorld(), GetMonsterWidgetClass());
 			if (MonsterWidgetInstance) {
@@ -62,7 +63,7 @@ void ABossMonster::BeginPlay()
 				MonsterWidgetInstance->SetOwnerMonster(this);
 			}
 		}
-	}
+	}*/
 }
 
 void ABossMonster::Tick(float DeltaTime)

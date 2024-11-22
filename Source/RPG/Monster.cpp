@@ -4,10 +4,8 @@
 #include "Monster.h"
 #include "Components/CapsuleComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
-#include "MonsterWidget.h"
 #include "MyCharacter.h"
 #include "AIController.h"
-#include "Components/WidgetComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Engine/DamageEvents.h"
 #include "DropItem.h"
@@ -37,19 +35,6 @@ AMonster::AMonster()
 	GetCapsuleComponent()->SetCollisionProfileName(TEXT("Enemy"));
 	GetMesh()->SetCollisionProfileName(TEXT("NoCollision"));
 
-	//위젯 컴포넌트 생성 및 초기화
-	//MonsterWidgetComponent = CreateDefaultSubobject<UWidgetComponent>(TEXT("MonsterWidgetComponent"));
-	//MonsterWidgetComponent->SetupAttachment(GetMesh(), FName("HealthWidgetSocket")); // 헤드 소켓에 붙이기
-	//MonsterWidgetComponent->SetRelativeLocation(GetActorLocation());
-	//MonsterWidgetComponent->SetWidgetClass(MonsterWidgetClass); 
-
-	//몬스터 공격 콜리전 검출
-	//MonsterAttackCollision0 = CreateDefaultSubobject<UCapsuleComponent>(TEXT("AttackCollisionComponent0"));
-	//MonsterAttackCollision0->SetupAttachment(GetMesh(), FName("AttackCollision_LeftHand"));
-	//MonsterAttackCollision0->SetCollisionProfileName(TEXT("NoCollision"));
-	//MonsterAttackCollision0->OnComponentBeginOverlap.AddDynamic(this, &AMonster::OnOverlapBegin);
-	//SetMonsterAttackCollision(MonsterAttackCollision0);
-
 	//구조체
 	MaxMonsterHP = MonsterData.MaxMonsterHP;
 	CurrentMonsterHP = MaxMonsterHP;
@@ -58,7 +43,8 @@ AMonster::AMonster()
 	//컴포넌트
 	//위젯
 	MonsterWidgetComponent = CreateDefaultSubobject<UMonsterWidgetComponent>(TEXT("MonsterWidgetComponent"));
-	MonsterWidgetComponent->SetupAttachment(GetMesh(), FName("HealthWidgetSocket"));
+	//MonsterWidgetComponent->SetupAttachment(GetMesh(), FName("HealthWidgetSocket"));
+	MonsterWidgetComponent->SetupAttachment(GetMesh());
 	//공격
 	MonsterAttackComponent = CreateDefaultSubobject<UMonsterAttackComponent>(TEXT("MonsterAttackComponent"));
 
@@ -66,9 +52,8 @@ AMonster::AMonster()
 	MonsterAttackCollision0 = CreateDefaultSubobject<UCapsuleComponent>(TEXT("AttackCollision0"));
 	MonsterAttackCollision0->SetupAttachment(GetMesh(), FName("AttackCollision_LeftHand"));
 	MonsterAttackCollision0->SetCollisionProfileName(TEXT("NoCollision"));
-	MonsterAttackCollision0->OnComponentBeginOverlap.AddDynamic(MonsterAttackComponent, &UMonsterAttackComponent::OnOverlapBegin);
-	MonsterAttackCollision0->RegisterComponent();
-	SetMonsterAttackCollision(MonsterAttackCollision0);
+	MonsterAttackCollision0->OnComponentBeginOverlap.AddDynamic(this, &AMonster::OnOverlapBegin);
+	//SetMonsterAttackCollision(MonsterAttackCollision0);
 
 }
 
@@ -92,14 +77,10 @@ void AMonster::BeginPlay()
 {
 	Super::BeginPlay();
 
-	if (MonsterWidgetComponent) {
-		if (auto* HealthWidget = Cast<UMonsterWidget>(MonsterWidgetComponent->GetUserWidgetObject())) {
-			HealthWidget->SetOwnerMonster(this);
-		}
-	}
+	if (MonsterWidgetComponent)
+		MonsterWidgetComponent->SetOwnerMonsterWidget();
 
 	if (auto* GameInstance = Cast<UDataTableGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()))) {
-		ItemDropTable = GameInstance->GetDropItemTable();
 		CameraShake = GameInstance->GetCameraShake();
 	}
 
@@ -114,7 +95,6 @@ void AMonster::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 	if (MonsterWidgetComponent)
 		MonsterWidgetComponent->FaceToPlayer();
-	//WidgetFaceToPlayer();
 }
 
 // Called to bind functionality to input
@@ -123,68 +103,39 @@ void AMonster::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 }
 
-//void AMonster::WidgetFaceToPlayer()
-//{
-//	if (MonsterWidgetComponent) {
-//		//현재 카메라 위치를 가져오기
-//		if (auto* PlayerController = UGameplayStatics::GetPlayerController(GetWorld(), 0)) {
-//			FVector CameraLocation;
-//			FRotator CameraRotation;
-//			PlayerController->GetPlayerViewPoint(CameraLocation, CameraRotation);
-//
-//			// 위젯이 항상 카메라를 향하도록 회전 설정
-//			FVector DirectionToCamera = (CameraLocation - MonsterWidgetComponent->GetComponentLocation()).GetSafeNormal();
-//			FRotator LookAtRotation = DirectionToCamera.Rotation();
-//			MonsterWidgetComponent->SetWorldRotation(LookAtRotation);
-//		}
-//	}
-//}
 
 void AMonster::MonsterAttackStart()
 {
-	//GetCharacterMovement()->bOrientRotationToMovement = false;
-	MonsterAttackComponent->MonsterStartAttack();
+	if(MonsterAttackComponent)
+		MonsterAttackComponent->MonsterStartAttack();
 }
 
 void AMonster::MonsterAttackExecute()
 {
-	/*if (UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance()) {
-		if (MonsterAttackMontage && !bIsMonsterAttack) {
-			bIsMonsterAttack = true;
-			AnimInstance->Montage_Play(MonsterAttackMontage);
-
-			FOnMontageEnded MontageEndedDelegate;
-			MontageEndedDelegate.BindUObject(this, &AMonster::OnAttackMontageEnded);
-			AnimInstance->Montage_SetEndDelegate(MontageEndedDelegate, MonsterAttackMontage);
-		}
-	}*/
-	MonsterAttackComponent->MonsterExecuteAttack();
+	if (MonsterAttackComponent)
+		MonsterAttackComponent->MonsterExecuteAttack();
 }
 
 void AMonster::MonsterAttackEnd()
 {
-	/*GetCharacterMovement()->bOrientRotationToMovement = true;
-	bIsMonsterAttack = false;*/
-	MonsterAttackComponent->MonsterEndAttack();
+	if(MonsterAttackComponent)
+		MonsterAttackComponent->MonsterEndAttack();
 }
 
 void AMonster::OnAttackMontageEnded(UAnimMontage* NowPlayMontage, bool bInterrupted)
 {
-	/*if (NowPlayMontage == MonsterAttackMontage) {
-		MonsterAttackEnd();
-	}*/
-	MonsterAttackComponent->OnAttackMontageEnded(NowPlayMontage, bInterrupted);
+	if(MonsterAttackComponent)
+		MonsterAttackComponent->OnAttackMontageEnded(NowPlayMontage, bInterrupted);
 }
 
 void AMonster::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComponent, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	/*if (OtherActor && OtherActor != this && OtherActor->IsA(AMyCharacter::StaticClass())) {
+	if (OtherActor && OtherActor != this && OtherActor->IsA(AMyCharacter::StaticClass())) {
 		if (!OverlapActors.Contains(OtherActor)) {
 			OverlapActors.Add(OtherActor);
 			ApplyDamageToActor(OtherActor, OtherComponent);
 		}
-	}*/
-	MonsterAttackComponent->OnOverlapBegin(OverlappedComponent, OtherActor, OtherComponent, OtherBodyIndex, bFromSweep, SweepResult);
+	}
 }
 
 float AMonster::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
@@ -268,7 +219,7 @@ void AMonster::OnDieMontageEnded(UAnimMontage* Montage, bool bInterrupted)
 
 void AMonster::ApplyDamageToActor(AActor* ActorToDamage, UPrimitiveComponent* OtherComponent)
 {
-	/*if (ActorToDamage) {
+	if (ActorToDamage) {
 		if (auto* PlayerCharacter = Cast<AMyCharacter>(ActorToDamage)) {
 			if (PlayerCharacter->bIsGuard) {
 				if (OtherComponent == PlayerCharacter->GetGuardComponent()) {
@@ -278,8 +229,7 @@ void AMonster::ApplyDamageToActor(AActor* ActorToDamage, UPrimitiveComponent* Ot
 			FDamageEvent DamageEvent;
 			ActorToDamage->TakeDamage(Damage, DamageEvent, GetInstigatorController(), this);
 		}
-	}*/
-	MonsterAttackComponent->ApplyDamageToActor(ActorToDamage, OtherComponent);
+	}
 }
 
 UBehaviorTree* AMonster::GetBehaviorTree() const
@@ -305,11 +255,6 @@ TArray<AActor*>& AMonster::GetOverlapActors()
 UWidgetComponent* AMonster::GetMonsterWidgetComponent() const
 {
 	return MonsterWidgetComponent ? MonsterWidgetComponent : nullptr;
-}
-
-TSubclassOf<class UMonsterWidget> AMonster::GetMonsterWidgetClass() const
-{
-	return MonsterWidgetClass ? MonsterWidgetClass : nullptr;
 }
 
 UCapsuleComponent* AMonster::GetAttackCollisionComponent(FName AttackCollisionFName) const

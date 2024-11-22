@@ -20,11 +20,6 @@ public:
 	void MonsterExecuteAttack();
 	void MonsterEndAttack();
 	void OnAttackMontageEnded(UAnimMontage* Montage, bool bInterrupted);
-	UFUNCTION()
-	void OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
-						UPrimitiveComponent* OtherComponent, int32 OtherBodyIndex,
-						bool bFromSweep, const FHitResult& SweepResult);
-	void ApplyDamageToActor(AActor* ActorToDamage, UPrimitiveComponent* OtherComponent);
 
 protected:
 	// Called when the game starts
@@ -35,11 +30,5 @@ public:
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
 private:
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attack", meta = (AllowPrivateAccess = "true"))
-	class UAnimMontage* AttackMontage;
-
-	bool bIsAttack;
-	ACharacter* OwnerCharacter;
-	TArray<AActor*> OverlapActors;
-	float Damage;
+	class AMonster* OwnerMonster;
 };

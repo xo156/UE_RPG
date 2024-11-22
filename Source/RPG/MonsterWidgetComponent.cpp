@@ -3,8 +3,9 @@
 
 #include "MonsterWidgetComponent.h"
 #include "Kismet/GameplayStatics.h"
-#include "MonsterWidgetComponent.h"
+#include "MonsterWidget.h"
 #include "Monster.h"
+#include "BossMonster.h"
 
 UMonsterWidgetComponent::UMonsterWidgetComponent()
 {
@@ -24,14 +25,22 @@ void UMonsterWidgetComponent::FaceToPlayer()
 	}
 }
 
+void UMonsterWidgetComponent::SetOwnerMonsterWidget()
+{
+	if (auto* HealthWidget = Cast<UMonsterWidget>(GetUserWidgetObject())) {
+		HealthWidget->SetOwnerMonster(OwnerMonster);
+	}
+}
+
+UMonsterWidget* UMonsterWidgetComponent::GetMonsterWidgetClass()
+{
+	return MonsterWidget ? MonsterWidget : nullptr;
+}
+
 void UMonsterWidgetComponent::BeginPlay()
 {
 	Super::BeginPlay();
 
-	if (OwnerMonster)
+	if (!OwnerMonster)
 		OwnerMonster = Cast<AMonster>(GetOwner());
-
-	if (auto* HealthWidget = Cast<UMonsterWidget>(GetUserWidgetObject())) {
-		HealthWidget->SetOwnerMonster(OwnerMonster);
-	}
 }
