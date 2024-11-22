@@ -24,8 +24,6 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
-	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
-
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item")
 	class UBoxComponent* DropItemCollision;
 

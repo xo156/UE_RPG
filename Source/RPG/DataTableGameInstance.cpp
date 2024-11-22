@@ -4,31 +4,62 @@
 #include "DataTableGameInstance.h"
 #include "Engine/DataTable.h"
 #include "Camera/CameraShakeBase.h"
+#include "DropRate.h"
+#include "ItemData.h"
+
+
+void UDataTableGameInstance::LoadAllTables()
+{
+	LoadItemCache();
+	LoadItemDropCache();
+}
+
+FDropRate* UDataTableGameInstance::GetDropRate(int32 ItemID)
+{
+	FDropRate** FoundItem = ItemDropCache.Find(ItemID);
+	return FoundItem ? *FoundItem : nullptr;
+}
 
 UDataTable* UDataTableGameInstance::GetItemTable()
 {
-	if (ItemTable)
-		return ItemTable;
-	return nullptr;
+	return ItemTable ? ItemTable : nullptr;
 }
 
 UDataTable* UDataTableGameInstance::GetDropItemTable()
 {
-	if (DropItemTable)
-		return DropItemTable;
-	return nullptr;
+	return DropItemTable ? DropItemTable : nullptr;
 }
 
 TSubclassOf<class UCameraShakeBase> UDataTableGameInstance::GetCameraShake()
 {
-	if (CameraShake)
-		return CameraShake;
-	return nullptr;
+	return CameraShake ? CameraShake : nullptr;
 }
 
 TSubclassOf<class UCameraShakeBase> UDataTableGameInstance::GetBossCameraShake()
 {
-	if (BossCameraShake)
-		return BossCameraShake;
-	return nullptr;
+	return BossCameraShake ? BossCameraShake : nullptr;
+}
+
+void UDataTableGameInstance::LoadItemCache()
+{
+	if (ItemTable) {
+		static const FString ContextString(TEXT("Item Cache Context"));
+		TArray<FItemData*> ItemRows;
+		ItemTable->GetAllRows<FItemData>(ContextString, ItemRows);
+		for (FItemData* Item : ItemRows) {
+			ItemCache.Add(Item->ItemID, Item);
+		}
+	}
+}
+
+void UDataTableGameInstance::LoadItemDropCache()
+{
+	if (DropItemTable) {
+		static const FString ContextString(TEXT("Item Drop Cache Context"));
+		TArray<FDropRate*> ItemRows;
+		DropItemTable->GetAllRows<FDropRate>(ContextString, ItemRows);
+		for (FDropRate* Item : ItemRows) {
+			ItemDropCache.Add(Item->ItemID, Item);
+		}
+	}
 }

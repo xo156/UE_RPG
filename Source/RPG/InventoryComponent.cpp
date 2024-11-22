@@ -47,7 +47,6 @@ bool UInventoryComponent::TryAddItem(ADropItem* AddedItem)
 			UE_LOG(LogTemp, Error, TEXT("Inventory Full"));
 			return false;
 		}
-
 		if (AddedItem->DropItemData.bCounterble) {
 			int32 SlotIndex = FindSlotIndex(AddedItem);
 			if (SlotIndex != INDEX_NONE) {
@@ -72,7 +71,6 @@ int32 UInventoryComponent::FindSlotIndex(ADropItem* AddItem)
 	int32 Index = -1;
 	for (int32 i = 0; i < InventoryItems.Num(); i++) {
 		if (AddItem->DropItemData.ItemID == InventoryItems[i].ItemTableID) {
-            UE_LOG(LogTemp, Log, TEXT("Can Find Slot Index : %d"), i);
 			return i;
 		}
 	}
@@ -83,14 +81,7 @@ void UInventoryComponent::StackItem(ADropItem* AddedItem, int32 SlotIndex)
 {
 	if (InventoryItems.IsValidIndex(SlotIndex) && AddedItem) {
 		FInventoryItemData& SlotItemData = InventoryItems[SlotIndex];
-
 		SlotItemData.ItemAmount += AddedItem->DropItemData.Amount;
-
-        UE_LOG(LogTemp, Log, TEXT("Stack Item With UID: %d, ItemID: %d, Amount: %d, Couterble: %s"),
-               SlotItemData.ItemUID, SlotItemData.ItemTableID, SlotItemData.ItemAmount, 
-               SlotItemData.bCounterble ? TEXT("True") : TEXT("False"));
-
-        UE_LOG(LogTemp, Log, TEXT("Current inventory size: %d"), InventoryItems.Num());
 	}
 }
 
@@ -103,17 +94,8 @@ void UInventoryComponent::AddItem(ADropItem* AddedItem)
 		NewInventoryItemData.ItemTableID = AddedItem->DropItemData.ItemID;
 		NewInventoryItemData.bCounterble = AddedItem->DropItemData.bCounterble;
 
-		UE_LOG(LogTemp, Log, TEXT("Add Item With UID: %d, ItemID: %d, Amount: %d, Couterble: %s, ItemClass"),
-			   NewInventoryItemData.ItemUID, NewInventoryItemData.ItemTableID, 
-			   NewInventoryItemData.ItemAmount,
-			   NewInventoryItemData.bCounterble ? TEXT("True") : TEXT("False"));
-
 		InventoryItems.Add(NewInventoryItemData);
-		for (FInventoryItemData CheckItem : InventoryItems) {
-			UE_LOG(LogTemp, Log, TEXT("CheckItem: %d"), CheckItem.ItemTableID);
-		}
 		CurrentSlotCounter++;
-		UE_LOG(LogTemp, Log, TEXT("Current inventory size: %d"), InventoryItems.Num());
 	}
 
 }
@@ -142,7 +124,6 @@ int32 UInventoryComponent::GetInventoryItemAmount(int32 FindItemID)
 		if (InventoryItem.ItemTableID == FindItemID)
 			return InventoryItem.ItemAmount;
 	}
-
 	return 0;
 }
 

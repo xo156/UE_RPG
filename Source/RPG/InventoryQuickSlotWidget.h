@@ -18,6 +18,8 @@ public:
 	virtual void NativeConstruct();
 
 	void SetQuickSlotConsumable(class UTexture2D* NewQuickSlotItemIcon, int32 InventoryItemAmount);
+	void UpdateQuickSlotItemAmount(int32 NewAmount);
+
 
 	UPROPERTY(meta = (BindWidget))
 	class UOverlay* QuickSlotComsuable;

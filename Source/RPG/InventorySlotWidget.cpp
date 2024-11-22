@@ -22,7 +22,7 @@ void UInventorySlotWidget::NativeConstruct()
 	}
 
 	if (auto* GameInstance = Cast<UDataTableGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()))) {
-		ItemTable = GameInstance->GetItemTable();
+		ItemCache = GameInstance->GetItemCache();
 	}
 }
 
@@ -31,12 +31,10 @@ void UInventorySlotWidget::OnThumbnailHovered()
 	if (auto* PlayerController = Cast<AMyPlayerController>(GetWorld()->GetFirstPlayerController())) {
 		if (InventoryTooltipClass) {
 			InventoryTooltipInstance = CreateWidget<UInventoryTooltip>(this, InventoryTooltipClass);
-			if (InventoryTooltipInstance){
-				if (ItemTable) {
-					FItemData* ShowedData = ItemTable->FindRow<FItemData>(FName(*FString::FromInt(CurrentInventoryItemData.ItemTableID)), TEXT("Item Data Context"));
-					if (ShowedData) {
-						InventoryTooltipInstance->InitTooltip(*ShowedData);
-					}
+			if (InventoryTooltipInstance) {
+				auto* ShowedData = ItemCache.FindRef(CurrentInventoryItemData.ItemTableID); // 캐시에서 찾기
+				if (ShowedData) {
+					InventoryTooltipInstance->InitTooltip(*ShowedData);
 				}
 				PlayerController->ShowTooltipAtMousePosition(InventoryTooltipInstance);
 			}
@@ -70,14 +68,11 @@ FReply UInventorySlotWidget::NativeOnMouseButtonDown(const FGeometry& InGeometry
 	return FReply::Unhandled();
 }
 
-void UInventorySlotWidget::RefreshSlot(TArray<FInventoryItemData> InventoryItem, int32 Index)
+void UInventorySlotWidget::RefreshSlot(TArray<FInventoryItemData> InventoryItem, int32 SlotIndex)
 {
-	CurrentInventoryItemData = InventoryItem[Index];
-	UE_LOG(LogTemp, Log, TEXT("UInventorySlotWidget::RefreshSlot(): ItemID: %d, Amount: %d"), CurrentInventoryItemData.ItemTableID, CurrentInventoryItemData.ItemAmount);
-
-	if (ItemTable) {
-		static const FString ContextString(TEXT("Item Data Context"));
-		FItemData* ItemData = ItemTable->FindRow<FItemData>(FName(*FString::FromInt(CurrentInventoryItemData.ItemTableID)), ContextString);
+	CurrentInventoryItemData = InventoryItem[SlotIndex];
+	if (ItemCache.Contains(CurrentInventoryItemData.ItemTableID)) {
+		FItemData* ItemData = ItemCache.FindRef(CurrentInventoryItemData.ItemTableID);
 		if (ItemData) {
 			FButtonStyle ButtonStyle = Thumbnail->WidgetStyle;
 			FSlateBrush NewBrush;
@@ -92,21 +87,14 @@ void UInventorySlotWidget::RefreshSlot(TArray<FInventoryItemData> InventoryItem,
 			Thumbnail->SetVisibility(ESlateVisibility::Visible);
 			AmountText->SetVisibility(ESlateVisibility::Visible);
 		}
-		else {
-			UE_LOG(LogTemp, Error, TEXT("ItemData Not Found"));
-			ClearSlot();
-		}
+	}
+	else {
+		ClearSlot();
 	}
 }
 
 void UInventorySlotWidget::ClearSlot()
-{
-	if (Thumbnail == nullptr) {
-		UE_LOG(LogTemp, Error, TEXT("InventorySlotWidget ClearSlot() Thumbnail is null"));
-		
-		return;
-	}
-	
+{	
 	FButtonStyle ButtonStyle = Thumbnail->WidgetStyle;
 	FSlateBrush NewBrush;
 	NewBrush.SetResourceObject(nullptr);

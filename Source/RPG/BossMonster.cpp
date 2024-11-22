@@ -45,9 +45,9 @@ ABossMonster::ABossMonster() : AMonster()
 	SetMonsterAttackCollision(MonsterAttackCollisionComponent4);
 
 	//±¸Á¶Ã¼
-	MonsterStatus.MaxMonsterHP = 200.f;
-	MonsterStatus.CurrentMonsterHP = MonsterStatus.MaxMonsterHP;
-	MonsterStatus.Damage = 20.f;
+	MaxMonsterHP = MonsterData.MaxMonsterHP;
+	CurrentMonsterHP = MaxMonsterHP;
+	MonsterDamage = MonsterData.Damage;
 }
 
 void ABossMonster::BeginPlay()
@@ -125,23 +125,17 @@ float ABossMonster::GetMidRange()
 
 UAnimMontage* ABossMonster::GetCloseAttackMontage()
 {
-	if (CloseAttackMontage)
-		return CloseAttackMontage;
-	return nullptr;
+	return CloseAttackMontage ? CloseAttackMontage : nullptr;
 }
 
 UAnimMontage* ABossMonster::GetMidAttackMontage()
 {
-	if (MidAttackMontage)
-		return MidAttackMontage;
-	return nullptr;
+	return MidAttackMontage ? MidAttackMontage : nullptr;
 }
 
 UAnimMontage* ABossMonster::GetLongAttackMontage()
 {
-	if (LongAttackMontage)
-		return LongAttackMontage;
-	return nullptr;
+	return LongAttackMontage ? LongAttackMontage : nullptr;
 }
 
 float ABossMonster::GetWaitForNextActionTime()

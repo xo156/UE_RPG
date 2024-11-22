@@ -80,6 +80,11 @@ AMyCharacter::AMyCharacter() {
 void AMyCharacter::BeginPlay() {
 	Super::BeginPlay();
 
+	if (auto* GameInstance = Cast<UDataTableGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()))) {
+		ItemTable = GameInstance->GetItemTable();
+		CameraShake = GameInstance->GetCameraShake();
+	}
+
 	if (WeaponComponent) {
 		EquipWeapon(WeaponComponent);
 	}
@@ -91,11 +96,6 @@ void AMyCharacter::BeginPlay() {
 	}
 
 	bIsIdle = true;
-
-	if (auto* GameInstance = Cast<UDataTableGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()))) {
-		ItemTable = GameInstance->GetItemTable();
-		CameraShake = GameInstance->GetCameraShake();
-	}
 }
 
 // Called every frame
@@ -289,7 +289,6 @@ void AMyCharacter::StopComboAttackTimer()
 
 void AMyCharacter::AttackEnd()
 {
-	UE_LOG(LogTemp, Log, TEXT("AMyCharacter::AttackEnd()"));
 	if (CurrentWeaponComponent) {
 		CurrentWeaponComponent->CurrentComboCount = 0;
 		CurrentWeaponComponent->GetRightHandWeaponInstance()->GetOverlapActors().Empty();
@@ -483,11 +482,7 @@ void AMyCharacter::RootItem()
 		if (OverlapItems.Num() > 0) {
 			for (ADropItem* Item : OverlapItems) {
 				if (Item) {
-					UE_LOG(LogTemp, Log, TEXT("Adding item with ID: %d to inventory"), Item->DropItemData.ItemID);
 					bool bAdded = InventoryComponent->TryAddItem(Item);
-					if (!bAdded) {
-						UE_LOG(LogTemp, Warning, TEXT("Failed to add item with ID: %d to inventory"), Item->DropItemData.ItemID);
-					}
 					ItemsToRemove.Add(Item);
 				}
 			}
@@ -525,7 +520,6 @@ void AMyCharacter::OnRootItemBoxOverlapBegin(UPrimitiveComponent* OverlappedComp
 		if (auto* Item = Cast<ADropItem>(OtherActor)) {
 			if (!OverlapItems.Contains(Item)) {
 				OverlapItems.Add(Item);
-				UE_LOG(LogTemp, Log, TEXT("Item added to overlap list."));
 			}
 		}
 	}
@@ -537,7 +531,6 @@ void AMyCharacter::OnRootItemBoxOverlapEnd(UPrimitiveComponent* OverlappedCompon
 		if (auto* Item = Cast<ADropItem>(OtherActor)) {
 			if (OverlapItems.Contains(Item)) {
 				OverlapItems.Remove(Item);
-				UE_LOG(LogTemp, Log, TEXT("Item removed from overlap list."));
 			}
 		}
 	}
@@ -548,11 +541,19 @@ void AMyCharacter::QuickSlot()
 	if (QuickSlotItem && InventoryComponent && QuickSlotItemAmount > 0) {
 		QuickSlotItem->Use();
 		InventoryComponent->RemoveItem(QuickSlotItemID, 1);
-		SetQuickSlotItemAmount(QuickSlotItemAmount - 1);
+		QuickSlotItemAmount--;
+		SetQuickSlotItemAmount(QuickSlotItemAmount);
 		if (QuickSlotItemAmount <= 0) {
 			QuickSlotItemAmount = 0;
+			QuickSlotItem = nullptr;
 		}
 		InventoryComponent->InventoryWidget->UpdateInventoryWidget(InventoryComponent);
+		if (InventoryQuickSlotWidgetInstance) {
+			InventoryQuickSlotWidgetInstance->UpdateQuickSlotItemAmount(QuickSlotItemAmount);
+		}
+		else {
+			UE_LOG(LogTemp, Log, TEXT("InventoryQuickSlotWidgetInstance is nullptr"));
+		}
 	}
 }
 
@@ -565,27 +566,27 @@ void AMyCharacter::Close()
 }
 
 void AMyCharacter::EquipWeapon(TSubclassOf<class UWeaponBaseComponent> WeaponBaseComponentClass)
-{
+{	
 	if (WeaponBaseComponentClass) {
 		if (CurrentWeaponComponent) {
-			if (ItemTable) {
-				static const FString ContextString(TEXT("Item Table"));
-				for (const FName& RowName : ItemTable->GetRowNames()) {
-					FItemData* ItemData = ItemTable->FindRow<FItemData>(RowName, ContextString);
-					if (ItemData) {
-						for (const auto& ItemClass : ItemData->ItemClass) {
-							if (ItemClass && CurrentWeaponComponent->GetRightHandWeaponInstance()->IsA(ItemClass)) {
-								if (auto NowEquipWeapon = GetWorld()->SpawnActor<ADropItem>(ADropItem::StaticClass())) {
-									FDropItemData NowEquipWeaponData;
-									NowEquipWeaponData.Amount = 1;
-									NowEquipWeaponData.bCounterble = false;
-									NowEquipWeaponData.ItemID = ItemData->ItemID;
-									NowEquipWeapon->SetDropItem(NowEquipWeaponData);
-									if (InventoryComponent) {
+			if (InventoryComponent) {
+				if (auto* GameInstance = Cast<UDataTableGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()))) {
+					const TMap<int32, FItemData*>& ItemCache = GameInstance->GetItemCache();
+					for (const auto& ItemPair : ItemCache) {
+						FItemData* ItemData = ItemPair.Value;
+						if (ItemData) {
+							for (const auto& ItemClass : ItemData->ItemClass) {
+								if (ItemClass && CurrentWeaponComponent->GetRightHandWeaponInstance()->IsA(ItemClass)) {
+									if (auto NowEquipWeapon = GetWorld()->SpawnActor<ADropItem>(ADropItem::StaticClass())) {
+										FDropItemData NowEquipWeaponData;
+										NowEquipWeaponData.Amount = 1;
+										NowEquipWeaponData.bCounterble = false;
+										NowEquipWeaponData.ItemID = ItemData->ItemID;
+										NowEquipWeapon->SetDropItem(NowEquipWeaponData);
 										InventoryComponent->TryAddItem(NowEquipWeapon);
 									}
+									break;
 								}
-								break;
 							}
 						}
 					}
@@ -595,20 +596,16 @@ void AMyCharacter::EquipWeapon(TSubclassOf<class UWeaponBaseComponent> WeaponBas
 			CurrentWeaponComponent->GetLeftHandWeaponInstance()->Destroy();
 			CurrentWeaponComponent = nullptr;
 		}
-
 		CurrentWeaponComponent = NewObject<UWeaponBaseComponent>(this, WeaponBaseComponentClass);
 		if (CurrentWeaponComponent) {
 			CurrentWeaponComponent->SetOwnerCharacter(this);
-			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, FString::Printf(TEXT("Now EquipWeapon : %s"), *CurrentWeaponComponent->GetName()));
 		}
 	}
 }
 
 UWeaponBaseComponent* AMyCharacter::GetCurrentWeapon() const
 {
-	if (CurrentWeaponComponent)
-		return CurrentWeaponComponent;
-	return nullptr;
+	return CurrentWeaponComponent ? CurrentWeaponComponent : nullptr;
 }
 
 void AMyCharacter::SetupWidget()
@@ -716,16 +713,12 @@ void AMyCharacter::TEST()
 
 AActor* AMyCharacter::GetCurrentTarget()
 {
-	if (CurrentTarget)
-		return CurrentTarget;
-	return nullptr;
+	return CurrentTarget ? CurrentTarget : nullptr;
 }
 
 AActor* AMyCharacter::GetPrevLockOnTarget()
 {
-	if (PrevLockOnTarget)
-		return PrevLockOnTarget;
-	return nullptr;
+	return PrevLockOnTarget ? PrevLockOnTarget : nullptr;
 }
 
 float AMyCharacter::GetTargetHeightOffset()
@@ -735,23 +728,17 @@ float AMyCharacter::GetTargetHeightOffset()
 
 AItemBase* AMyCharacter::GetQuickSlotItem()
 {
-	if (QuickSlotItem)
-		return QuickSlotItem;
-	return nullptr;
+	return QuickSlotItem ? QuickSlotItem : nullptr;
 }
 
 UWeaponBaseComponent* AMyCharacter::GetCurrentWeaponComponent()
 {
-	if (CurrentWeaponComponent)
-		return CurrentWeaponComponent;
-	return nullptr;
+	return CurrentWeaponComponent ? CurrentWeaponComponent : nullptr;
 }
 
 UBoxComponent* AMyCharacter::GetGuardComponent()
 {
-	if (GuardComponent)
-		return GuardComponent;
-	return nullptr;
+	return GuardComponent ? GuardComponent : nullptr;
 }
 
 void AMyCharacter::SetQuickSlotItem(AItemBase* NewQuickSlotItem)

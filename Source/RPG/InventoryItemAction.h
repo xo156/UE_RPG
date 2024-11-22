@@ -43,7 +43,7 @@ public:
 	TSubclassOf<class UInventoryQuickSlotWidget> InventoryQuickSlotWidgetClass;
 	class UInventoryQuickSlotWidget* InventoryQuickSlotWidgetInstance;
 
-	UDataTable* ItemTable;
+	TMap<int32, struct FItemData*> ItemCache;
 
 	UFUNCTION()
 	void OnOnlyUseClicked();

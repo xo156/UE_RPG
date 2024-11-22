@@ -23,7 +23,7 @@ void UMonsterWidget::UpdateHP(float CurrentHP, float MaxHP)
 void UMonsterWidget::OnMonsterHPUpdate(float NewHP)
 {
     if (OwnerMonster) {
-        UpdateHP(NewHP, OwnerMonster->MonsterStatus.MaxMonsterHP);
+        UpdateHP(NewHP, OwnerMonster->GetMaxMonsterHP());
     }
 }
 
@@ -31,7 +31,7 @@ void UMonsterWidget::SetOwnerMonster(AMonster* NewOwningMonster)
 {
     OwnerMonster = NewOwningMonster;
     if (OwnerMonster) {
-        UpdateHP(OwnerMonster->MonsterStatus.CurrentMonsterHP, OwnerMonster->MonsterStatus.MaxMonsterHP);
+        UpdateHP(OwnerMonster->GetMaxMonsterHP(), OwnerMonster->GetMaxMonsterHP());
         if (auto* BossMonster = Cast<ABossMonster>(OwnerMonster)) {
             BossMonster->OnMonsterUIUpdated.AddDynamic(this, &UMonsterWidget::OnMonsterHPUpdate);
         }

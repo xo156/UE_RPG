@@ -79,20 +79,14 @@ void AWeapon::SetOwnerCharacter(AMyCharacter* NewOwnerCharacter)
 	if (NewOwnerCharacter) {
 		OwnerCharacter = NewOwnerCharacter;
 		SetInstigator(NewOwnerCharacter->GetController()->GetPawn());
-		UE_LOG(LogTemp, Log, TEXT("OwnerCharacter set to: %s"), *OwnerCharacter->GetName());
-	}
-	else {
-		UE_LOG(LogTemp, Error, TEXT("SetOwnerCharacter called with null"));
 	}
 }
 
 void AWeapon::Use()
 {
-	UE_LOG(LogTemp, Log, TEXT("AWeapon::Use()"));
 	if (auto* Player = Cast<AMyCharacter>(GetWorld()->GetFirstPlayerController()->GetPawn())) {
 		Player->EquipWeapon(ThisWeaponComponent);
 	}
-
 }
 
 USkeletalMeshComponent* AWeapon::GetWeaponMesh() const

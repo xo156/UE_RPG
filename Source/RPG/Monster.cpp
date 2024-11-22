@@ -10,16 +10,16 @@
 #include "Components/WidgetComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Engine/DamageEvents.h"
-#include "ItemData.h"
 #include "DropItem.h"
-#include "BrainComponent.h"
 #include "DataTableGameInstance.h"
 #include "MyPlayerController.h"
-#include "MyGameModeBase.h"
 #include "BehaviorTree/BehaviorTree.h"
 #include "BehaviorTree/BehaviorTreeComponent.h"
 #include "Components/BoxComponent.h"
 #include "Weapon.h"
+#include "MyGameModeBase.h"
+#include "MonsterWidgetComponent.h"
+#include "MonsterAttackComponent.h"
 
 // Sets default values
 AMonster::AMonster()
@@ -38,33 +38,53 @@ AMonster::AMonster()
 	GetMesh()->SetCollisionProfileName(TEXT("NoCollision"));
 
 	//위젯 컴포넌트 생성 및 초기화
-	MonsterWidgetComponent = CreateDefaultSubobject<UWidgetComponent>(TEXT("MonsterWidgetComponent"));
-	MonsterWidgetComponent->SetupAttachment(GetMesh(), FName("HealthWidgetSocket")); // 헤드 소켓에 붙이기
-	MonsterWidgetComponent->SetRelativeLocation(GetActorLocation());
-	MonsterWidgetComponent->SetWidgetClass(MonsterWidgetClass); 
+	//MonsterWidgetComponent = CreateDefaultSubobject<UWidgetComponent>(TEXT("MonsterWidgetComponent"));
+	//MonsterWidgetComponent->SetupAttachment(GetMesh(), FName("HealthWidgetSocket")); // 헤드 소켓에 붙이기
+	//MonsterWidgetComponent->SetRelativeLocation(GetActorLocation());
+	//MonsterWidgetComponent->SetWidgetClass(MonsterWidgetClass); 
 
 	//몬스터 공격 콜리전 검출
-	MonsterAttackCollisionComponent0 = CreateDefaultSubobject<UCapsuleComponent>(TEXT("AttackCollisionComponent0"));
-	MonsterAttackCollisionComponent0->SetupAttachment(GetMesh(), FName("AttackCollision_LeftHand"));
-	MonsterAttackCollisionComponent0->SetCollisionProfileName(TEXT("NoCollision"));
-	MonsterAttackCollisionComponent0->OnComponentBeginOverlap.AddDynamic(this, &AMonster::OnOverlapBegin);
-	SetMonsterAttackCollision(MonsterAttackCollisionComponent0);
+	//MonsterAttackCollision0 = CreateDefaultSubobject<UCapsuleComponent>(TEXT("AttackCollisionComponent0"));
+	//MonsterAttackCollision0->SetupAttachment(GetMesh(), FName("AttackCollision_LeftHand"));
+	//MonsterAttackCollision0->SetCollisionProfileName(TEXT("NoCollision"));
+	//MonsterAttackCollision0->OnComponentBeginOverlap.AddDynamic(this, &AMonster::OnOverlapBegin);
+	//SetMonsterAttackCollision(MonsterAttackCollision0);
 
 	//구조체
-	MonsterStatus.MaxMonsterHP = 100.f;
-	MonsterStatus.CurrentMonsterHP = MonsterStatus.MaxMonsterHP;
-	MonsterStatus.Damage = 10.f;
+	MaxMonsterHP = MonsterData.MaxMonsterHP;
+	CurrentMonsterHP = MaxMonsterHP;
+	MonsterDamage = MonsterData.Damage;
+
+	//컴포넌트
+	//위젯
+	MonsterWidgetComponent = CreateDefaultSubobject<UMonsterWidgetComponent>(TEXT("MonsterWidgetComponent"));
+	MonsterWidgetComponent->SetupAttachment(GetMesh(), FName("HealthWidgetSocket"));
+	//공격
+	MonsterAttackComponent = CreateDefaultSubobject<UMonsterAttackComponent>(TEXT("MonsterAttackComponent"));
+
+	//공격 콜리전
+	MonsterAttackCollision0 = CreateDefaultSubobject<UCapsuleComponent>(TEXT("AttackCollision0"));
+	MonsterAttackCollision0->SetupAttachment(GetMesh(), FName("AttackCollision_LeftHand"));
+	MonsterAttackCollision0->SetCollisionProfileName(TEXT("NoCollision"));
+	MonsterAttackCollision0->OnComponentBeginOverlap.AddDynamic(MonsterAttackComponent, &UMonsterAttackComponent::OnOverlapBegin);
+	MonsterAttackCollision0->RegisterComponent();
+	SetMonsterAttackCollision(MonsterAttackCollision0);
+
 }
 
 void AMonster::ConsumeHPForAction(float HPCost)
 {
-	MonsterStatus.UseHP(HPCost);
-	OnMonsterUIUpdated.Broadcast(MonsterStatus.CurrentMonsterHP);
-}
+	if (HPCost >= 0) {
+		CurrentMonsterHP = FMath::Max(CurrentMonsterHP - HPCost, 0.f);
+	}
+	else {
+		CurrentMonsterHP = FMath::Min(CurrentMonsterHP - HPCost, MaxMonsterHP);
+	}
 
-bool AMonster::bHasEnoughHP(float HPCost) const
-{
-	return MonsterStatus.CurrentMonsterHP > HPCost;
+	if (CurrentMonsterHP <= 0)
+		bIsMonsterDead = true;
+
+	OnMonsterUIUpdated.Broadcast(CurrentMonsterHP);
 }
 
 // Called when the game starts or when spawned
@@ -82,14 +102,19 @@ void AMonster::BeginPlay()
 		ItemDropTable = GameInstance->GetDropItemTable();
 		CameraShake = GameInstance->GetCameraShake();
 	}
+
+	if (auto* GameMode = Cast<AMyGameModeBase>(UGameplayStatics::GetGameMode(GetWorld()))) {
+		ItemCache = GameMode->GetItemDropCache();
+	}
 }
 
 // Called every frame
 void AMonster::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
-	WidgetFaceToPlayer();
+	if (MonsterWidgetComponent)
+		MonsterWidgetComponent->FaceToPlayer();
+	//WidgetFaceToPlayer();
 }
 
 // Called to bind functionality to input
@@ -98,31 +123,32 @@ void AMonster::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 }
 
-void AMonster::WidgetFaceToPlayer()
-{
-	if (MonsterWidgetComponent) {
-		//현재 카메라 위치를 가져오기
-		if (auto* PlayerController = UGameplayStatics::GetPlayerController(GetWorld(), 0)) {
-			FVector CameraLocation;
-			FRotator CameraRotation;
-			PlayerController->GetPlayerViewPoint(CameraLocation, CameraRotation);
-
-			// 위젯이 항상 카메라를 향하도록 회전 설정
-			FVector DirectionToCamera = (CameraLocation - MonsterWidgetComponent->GetComponentLocation()).GetSafeNormal();
-			FRotator LookAtRotation = DirectionToCamera.Rotation();
-			MonsterWidgetComponent->SetWorldRotation(LookAtRotation);
-		}
-	}
-}
+//void AMonster::WidgetFaceToPlayer()
+//{
+//	if (MonsterWidgetComponent) {
+//		//현재 카메라 위치를 가져오기
+//		if (auto* PlayerController = UGameplayStatics::GetPlayerController(GetWorld(), 0)) {
+//			FVector CameraLocation;
+//			FRotator CameraRotation;
+//			PlayerController->GetPlayerViewPoint(CameraLocation, CameraRotation);
+//
+//			// 위젯이 항상 카메라를 향하도록 회전 설정
+//			FVector DirectionToCamera = (CameraLocation - MonsterWidgetComponent->GetComponentLocation()).GetSafeNormal();
+//			FRotator LookAtRotation = DirectionToCamera.Rotation();
+//			MonsterWidgetComponent->SetWorldRotation(LookAtRotation);
+//		}
+//	}
+//}
 
 void AMonster::MonsterAttackStart()
 {
-	GetCharacterMovement()->bOrientRotationToMovement = false;
+	//GetCharacterMovement()->bOrientRotationToMovement = false;
+	MonsterAttackComponent->MonsterStartAttack();
 }
 
 void AMonster::MonsterAttackExecute()
 {
-	if (UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance()) {
+	/*if (UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance()) {
 		if (MonsterAttackMontage && !bIsMonsterAttack) {
 			bIsMonsterAttack = true;
 			AnimInstance->Montage_Play(MonsterAttackMontage);
@@ -131,30 +157,34 @@ void AMonster::MonsterAttackExecute()
 			MontageEndedDelegate.BindUObject(this, &AMonster::OnAttackMontageEnded);
 			AnimInstance->Montage_SetEndDelegate(MontageEndedDelegate, MonsterAttackMontage);
 		}
-	}
+	}*/
+	MonsterAttackComponent->MonsterExecuteAttack();
 }
 
 void AMonster::MonsterAttackEnd()
 {
-	GetCharacterMovement()->bOrientRotationToMovement = true;
-	bIsMonsterAttack = false;
+	/*GetCharacterMovement()->bOrientRotationToMovement = true;
+	bIsMonsterAttack = false;*/
+	MonsterAttackComponent->MonsterEndAttack();
 }
 
 void AMonster::OnAttackMontageEnded(UAnimMontage* NowPlayMontage, bool bInterrupted)
 {
-	if (NowPlayMontage == MonsterAttackMontage) {
+	/*if (NowPlayMontage == MonsterAttackMontage) {
 		MonsterAttackEnd();
-	}
+	}*/
+	MonsterAttackComponent->OnAttackMontageEnded(NowPlayMontage, bInterrupted);
 }
 
 void AMonster::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComponent, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	if (OtherActor && OtherActor != this && OtherActor->IsA(AMyCharacter::StaticClass())) {
+	/*if (OtherActor && OtherActor != this && OtherActor->IsA(AMyCharacter::StaticClass())) {
 		if (!OverlapActors.Contains(OtherActor)) {
 			OverlapActors.Add(OtherActor);
 			ApplyDamageToActor(OtherActor, OtherComponent);
 		}
-	}
+	}*/
+	MonsterAttackComponent->OnOverlapBegin(OverlappedComponent, OtherActor, OtherComponent, OtherBodyIndex, bFromSweep, SweepResult);
 }
 
 float AMonster::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
@@ -170,10 +200,9 @@ float AMonster::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, 
 		PlayerController->ClientPlayCameraShake(CameraShake);
 	}
 
-	if (bHasEnoughHP(DamageAmount)) {
-		//체력이 충분해서 데미지를 입을때
-		ConsumeHPForAction(DamageAmount);
-		UE_LOG(LogTemp, Log, TEXT("Monster Damaged, CurrentHP: %f"), MonsterStatus.CurrentMonsterHP);
+	ConsumeHPForAction(DamageAmount);
+	if (!bIsMonsterDead) {
+		UE_LOG(LogTemp, Log, TEXT("Monster Damaged, CurrentHP: %f"), CurrentMonsterHP);
 	}
 	else {
 		//체력이 없어서 죽을때
@@ -191,26 +220,20 @@ float AMonster::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, 
 
 void AMonster::DroppedItem()
 {
-	if (ItemDropTable && MonsterStatus.DropRates.Num() > 0) {
-		static const FString ContextString(TEXT("Item Drop Context"));
-		for (const FDropRate& DropRate : MonsterStatus.DropRates) {
-			FDropRate* FoundItem = ItemDropTable->FindRow<FDropRate>(FName(*FString::FromInt(DropRate.ItemID)), ContextString);
-			if (FoundItem) {
-				float RandomNumber = FMath::FRandRange(0.f, 100.f);
-				if (RandomNumber <= FoundItem->Rate) {
-					int32 DropAmount = FMath::RandRange(FoundItem->MinAmount, FoundItem->MaxAmount);
-
-					FVector SpawnLocation = GetActorLocation();
-					FRotator SpawnRotation = GetActorRotation();
-
-					if (ADropItem* DropItemActor = GetWorld()->SpawnActor<ADropItem>(DropItemClass, SpawnLocation, SpawnRotation)) {
-						FDropItemData DropItemData;
-						DropItemData.ItemID = DropRate.ItemID;
-						DropItemData.Amount = DropAmount;
-						DropItemData.bCounterble = DropRate.bCounterble;
-
-						DropItemActor->SetDropItem(DropItemData);
-					}
+	for (const int32& DropItemID : MonsterData.DropItemIDS) {
+		FDropRate* FoundItem = ItemCache.FindRef(DropItemID);
+		if (FoundItem) {
+			float RandomNumber = FMath::FRandRange(0.f, 100.f);
+			if (RandomNumber <= FoundItem->Rate) {
+				int32 DropAmount = FMath::RandRange(FoundItem->MinAmount, FoundItem->MaxAmount);
+				FVector SpawnLocation = GetActorLocation();
+				FRotator SpawnRotation = GetActorRotation();
+				if (auto* DropItemActor = GetWorld()->SpawnActor<ADropItem>(DropItemClass, SpawnLocation, SpawnRotation)) {
+					FDropItemData DropItemData;
+					DropItemData.ItemID = FoundItem->ItemID;
+					DropItemData.Amount = DropAmount;
+					DropItemData.bCounterble = FoundItem->bCounterble;
+					DropItemActor->SetDropItem(DropItemData);
 				}
 			}
 		}
@@ -220,9 +243,6 @@ void AMonster::DroppedItem()
 void AMonster::DieMonster()
 {
 	if (UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance()) {
-		if (auto* MyGameModeBase = GetWorld()->GetAuthGameMode<AMyGameModeBase>()) {
-			MyGameModeBase->MonsterDeadCount += 1;
-		}
 		if (MonsterWidgetComponent) {
 			MonsterWidgetComponent->DestroyComponent();
 		}
@@ -248,9 +268,8 @@ void AMonster::OnDieMontageEnded(UAnimMontage* Montage, bool bInterrupted)
 
 void AMonster::ApplyDamageToActor(AActor* ActorToDamage, UPrimitiveComponent* OtherComponent)
 {
-	if (ActorToDamage) {
+	/*if (ActorToDamage) {
 		if (auto* PlayerCharacter = Cast<AMyCharacter>(ActorToDamage)) {
-			Damage = MonsterStatus.Damage;
 			if (PlayerCharacter->bIsGuard) {
 				if (OtherComponent == PlayerCharacter->GetGuardComponent()) {
 					Damage = 0.f;
@@ -259,7 +278,8 @@ void AMonster::ApplyDamageToActor(AActor* ActorToDamage, UPrimitiveComponent* Ot
 			FDamageEvent DamageEvent;
 			ActorToDamage->TakeDamage(Damage, DamageEvent, GetInstigatorController(), this);
 		}
-	}
+	}*/
+	MonsterAttackComponent->ApplyDamageToActor(ActorToDamage, OtherComponent);
 }
 
 UBehaviorTree* AMonster::GetBehaviorTree() const
@@ -284,32 +304,34 @@ TArray<AActor*>& AMonster::GetOverlapActors()
 
 UWidgetComponent* AMonster::GetMonsterWidgetComponent() const
 {
-	if (MonsterWidgetComponent)
-		return MonsterWidgetComponent;
-	return nullptr;
+	return MonsterWidgetComponent ? MonsterWidgetComponent : nullptr;
 }
 
 TSubclassOf<class UMonsterWidget> AMonster::GetMonsterWidgetClass() const
 {
-	if (MonsterWidgetClass)
-		return MonsterWidgetClass;
-	return TSubclassOf<class UMonsterWidget>();
+	return MonsterWidgetClass ? MonsterWidgetClass : nullptr;
 }
 
 UCapsuleComponent* AMonster::GetAttackCollisionComponent(FName AttackCollisionFName) const
 {
-	if (MonsterAttackCollisionComponents.Num() > 0) {
-		for (auto& CheckAttackCollision : MonsterAttackCollisionComponents) {
+	if (MonsterAttackCollisions.Num() > 0) {
+		for (auto& CheckAttackCollision : MonsterAttackCollisions) {
 			if (CheckAttackCollision->GetFName() == AttackCollisionFName) {
 				return CheckAttackCollision;
 			}
 		}
 	}
-
 	return nullptr;
+}
+
+float AMonster::GetMaxMonsterHP()
+{
+	return MaxMonsterHP;
 }
 
 void AMonster::SetMonsterAttackCollision(UCapsuleComponent* AttackCollision)
 {
-	MonsterAttackCollisionComponents.AddUnique(AttackCollision);
+	if (AttackCollision) {
+		MonsterAttackCollisions.AddUnique(AttackCollision);
+	}
 }

@@ -25,7 +25,6 @@ public:
 
 	virtual FReply NativeOnMouseButtonDown(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent) override;
 
-
 	void RefreshSlot(TArray<FInventoryItemData> InventoryItem, int32 SlotIndex);
 	void ClearSlot();
 
@@ -36,7 +35,7 @@ public:
 	class UTextBlock* AmountText;
 
 	FInventoryItemData CurrentInventoryItemData;
-	UDataTable* ItemTable;
+	TMap<int32, struct FItemData*> ItemCache;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item")
 	TSubclassOf<class UInventoryTooltip> InventoryTooltipClass;

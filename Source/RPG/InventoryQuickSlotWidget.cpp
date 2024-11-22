@@ -27,3 +27,11 @@ void UInventoryQuickSlotWidget::SetQuickSlotConsumable(UTexture2D* NewQuickSlotI
         QuickSlotAmount->SetText(FText::AsNumber(InventoryItemAmount));
     }
 }
+
+void UInventoryQuickSlotWidget::UpdateQuickSlotItemAmount(int32 NewAmount)
+{
+    if (QuickSlotAmount) {
+        QuickSlotAmount->SetText(FText::AsNumber(NewAmount));
+        UE_LOG(LogTemp, Log, TEXT("QuickSlotAmount updated to: %d"), NewAmount);
+    }
+}

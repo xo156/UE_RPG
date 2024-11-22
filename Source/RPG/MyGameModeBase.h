@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/GameModeBase.h"
+#include "DropRate.h"
 #include "MyGameModeBase.generated.h"
 
 /**
@@ -17,19 +18,12 @@ class RPG_API AMyGameModeBase : public AGameModeBase
 public:
 	AMyGameModeBase();
 
+	virtual void BeginPlay() override;
+
 	virtual void Tick(float DeltaTime) override;
 
-public:
-	void SpawnBossMonster(AActor* SpawnPointActor);
+	const TMap<int32, FDropRate*>& GetItemDropCache() { return ItemDropCache; }
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Spawn")
-	TSubclassOf<ABossMonster> BossMonsterClass;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Spawn")
-	AActor* SpawnPoint;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Spawn")
-	AActor* MoveableWall;
-
-	int32 MonsterDeadCount;
+private:
+	TMap<int32, FDropRate*> ItemDropCache;
 };

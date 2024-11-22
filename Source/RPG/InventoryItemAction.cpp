@@ -30,7 +30,7 @@ void UInventoryItemAction::NativeConstruct()
 	}
 
 	if (auto* GameInstance = Cast<UDataTableGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()))) {
-		ItemTable = GameInstance->GetItemTable();
+		ItemCache = GameInstance->GetItemCache();
 	}
 }
 
@@ -42,8 +42,8 @@ void UInventoryItemAction::SetItemData(const FInventoryItemData& InItemData)
 void UInventoryItemAction::OnOnlyUseClicked()
 {
 	if (InventoryItemData.ItemAmount > 0) {
-		if (ItemTable) {
-			FItemData* ClickedItem = ItemTable->FindRow<FItemData>(FName(*FString::FromInt(InventoryItemData.ItemTableID)), TEXT("Item Data Context IvnentoryItemAction"));
+		auto* ClickedItem = ItemCache.FindRef(InventoryItemData.ItemTableID);
+		if (ClickedItem) {
 			switch (ClickedItem->ItemType) {
 			case EItemType::Consumable:
 				if (auto* ItemInstance = GetWorld()->SpawnActor<AItemBase>(ClickedItem->ItemClass[0])) {
@@ -89,32 +89,34 @@ void UInventoryItemAction::OnOnlyDestroyClicked()
 
 void UInventoryItemAction::OnQuickSlotClicked()
 {
-	if (ItemTable) {
-		FItemData* ClickedItem = ItemTable->FindRow<FItemData>(FName(*FString::FromInt(InventoryItemData.ItemTableID)), TEXT("Item Data Context InventoryItemAction"));
-		switch (ClickedItem->ItemType) {
-		case EItemType::Consumable:
-			if (auto* ItemInstance = GetWorld()->SpawnActor<AItemBase>(ClickedItem->ItemClass[0])) {
-				if (auto* PlayerController = UGameplayStatics::GetPlayerController(GetWorld(), 0)) {
-					if (auto* PlayerCharacter = Cast<AMyCharacter>(PlayerController->GetPawn())) {
-						PlayerCharacter->SetQuickSlotItem(ItemInstance);
-						int32 ItemAmount = PlayerCharacter->GetInventory()->GetInventoryItemAmount(ClickedItem->ItemID);
-						if (InventoryQuickSlotWidgetClass) {
-							if (!InventoryQuickSlotWidgetInstance) {
-								InventoryQuickSlotWidgetInstance = CreateWidget<UInventoryQuickSlotWidget>(this, InventoryQuickSlotWidgetClass);
-								if (InventoryQuickSlotWidgetInstance) {
-									InventoryQuickSlotWidgetInstance->AddToViewport();
+	if (ItemCache.Contains(InventoryItemData.ItemTableID)) {
+		FItemData* ClickedItem = ItemCache.FindRef(InventoryItemData.ItemTableID);
+		if (ClickedItem) {
+			switch (ClickedItem->ItemType) {
+			case EItemType::Consumable:
+				if (auto* ItemInstance = GetWorld()->SpawnActor<AItemBase>(ClickedItem->ItemClass[0])) {
+					if (auto* PlayerController = UGameplayStatics::GetPlayerController(GetWorld(), 0)) {
+						if (auto* PlayerCharacter = Cast<AMyCharacter>(PlayerController->GetPawn())) {
+							PlayerCharacter->SetQuickSlotItem(ItemInstance);
+							int32 ItemAmount = PlayerCharacter->GetInventory()->GetInventoryItemAmount(ClickedItem->ItemID);
+							if (InventoryQuickSlotWidgetClass) {
+								if (!InventoryQuickSlotWidgetInstance) {
+									InventoryQuickSlotWidgetInstance = CreateWidget<UInventoryQuickSlotWidget>(this, InventoryQuickSlotWidgetClass);
+									if (InventoryQuickSlotWidgetInstance) {
+										InventoryQuickSlotWidgetInstance->AddToViewport();
+									}
 								}
+								InventoryQuickSlotWidgetInstance->SetQuickSlotConsumable(ClickedItem->ItemIcon, ItemAmount);
+								PlayerCharacter->SetQuickSlotItemID(ClickedItem->ItemID);
+								PlayerCharacter->SetQuickSlotItemAmount(ItemAmount);
 							}
-							InventoryQuickSlotWidgetInstance->SetQuickSlotConsumable(ClickedItem->ItemIcon, ItemAmount);
-							PlayerCharacter->SetQuickSlotItemID(ClickedItem->ItemID);
-							PlayerCharacter->SetQuickSlotItemAmount(ItemAmount);
 						}
 					}
 				}
+				break;
+			default:
+				break;
 			}
-			break;
-		default:
-			break;
 		}
 	}
 }
