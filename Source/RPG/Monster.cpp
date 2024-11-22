@@ -43,7 +43,6 @@ AMonster::AMonster()
 	//ÄÄÆ÷³ÍÆ®
 	//À§Á¬
 	MonsterWidgetComponent = CreateDefaultSubobject<UMonsterWidgetComponent>(TEXT("MonsterWidgetComponent"));
-	//MonsterWidgetComponent->SetupAttachment(GetMesh(), FName("HealthWidgetSocket"));
 	MonsterWidgetComponent->SetupAttachment(GetMesh());
 	//°ø°Ý
 	MonsterAttackComponent = CreateDefaultSubobject<UMonsterAttackComponent>(TEXT("MonsterAttackComponent"));
@@ -106,24 +105,29 @@ void AMonster::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 
 void AMonster::MonsterAttackStart()
 {
+	UE_LOG(LogTemp, Log, TEXT("AMonster::MonsterAttackStart()"));
 	if(MonsterAttackComponent)
 		MonsterAttackComponent->MonsterStartAttack();
 }
 
 void AMonster::MonsterAttackExecute()
 {
+	UE_LOG(LogTemp, Log, TEXT("AMonster::MonsterAttackExecute()"));
 	if (MonsterAttackComponent)
 		MonsterAttackComponent->MonsterExecuteAttack();
+
 }
 
 void AMonster::MonsterAttackEnd()
 {
+	UE_LOG(LogTemp, Log, TEXT("AMonster::MonsterAttackEnd()"));
 	if(MonsterAttackComponent)
 		MonsterAttackComponent->MonsterEndAttack();
 }
 
 void AMonster::OnAttackMontageEnded(UAnimMontage* NowPlayMontage, bool bInterrupted)
 {
+	UE_LOG(LogTemp, Log, TEXT("AMonster::OnAttackMontageEnded"));
 	if(MonsterAttackComponent)
 		MonsterAttackComponent->OnAttackMontageEnded(NowPlayMontage, bInterrupted);
 }

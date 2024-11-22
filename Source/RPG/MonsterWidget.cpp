@@ -34,14 +34,9 @@ void UMonsterWidget::SetOwnerMonster(AMonster* NewOwningMonster)
         UpdateHP(OwnerMonster->GetMaxMonsterHP(), OwnerMonster->GetMaxMonsterHP());
         if (auto* BossMonster = Cast<ABossMonster>(OwnerMonster)) {
             BossMonster->OnMonsterUIUpdated.AddDynamic(this, &UMonsterWidget::OnMonsterHPUpdate);
-            UE_LOG(LogTemp, Log, TEXT("BossMonster Cast"));
         }
         else {
             OwnerMonster->OnMonsterUIUpdated.AddDynamic(this, &UMonsterWidget::OnMonsterHPUpdate);
-            UE_LOG(LogTemp, Log, TEXT("Monster Cast"));
         }
-    }
-    else {
-        UE_LOG(LogTemp, Log, TEXT("OwnerMonster is nullptr"));
     }
 }

@@ -66,6 +66,4 @@ private:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attack", meta = (AllowPrivateAccess = "true"))
 	class UCapsuleComponent* MonsterAttackCollisionComponent4;
-
-	class UMonsterWidget* MonsterWidgetInstance;
 };

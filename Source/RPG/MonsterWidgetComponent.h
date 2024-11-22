@@ -19,14 +19,14 @@ public:
 
 	void FaceToPlayer();
 	void SetOwnerMonsterWidget();
-	class UMonsterWidget* GetMonsterWidgetClass();
 
 protected:
 	virtual void BeginPlay() override;
 
 private:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UI", meta = (AllowPrivateAccess="true"))
-	class UMonsterWidget* MonsterWidget;
+	TSubclassOf<UUserWidget> MonsterWidgetClass;
+	class UMonsterWidget* MonsterWidgetInstance;
 
 	class AMonster* OwnerMonster;
 };

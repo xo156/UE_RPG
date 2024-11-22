@@ -53,17 +53,7 @@ ABossMonster::ABossMonster() : AMonster()
 void ABossMonster::BeginPlay()
 {
 	Super::BeginPlay();
-	
 
-	/*if (GetMonsterWidgetClass()) {
-		if (!MonsterWidgetInstance) {
-			MonsterWidgetInstance = CreateWidget<UMonsterWidget>(GetWorld(), GetMonsterWidgetClass());
-			if (MonsterWidgetInstance) {
-				MonsterWidgetInstance->AddToViewport();
-				MonsterWidgetInstance->SetOwnerMonster(this);
-			}
-		}
-	}*/
 }
 
 void ABossMonster::Tick(float DeltaTime)
@@ -81,7 +71,7 @@ void ABossMonster::Tick(float DeltaTime)
 		}
 	}
 	else {
-		MonsterWidgetInstance->SetVisibility(ESlateVisibility::Hidden);
+		GetMonsterWidgetComponent()->SetVisibility(false);
 	}
 }
 

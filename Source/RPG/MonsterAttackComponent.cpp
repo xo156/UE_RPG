@@ -17,7 +17,6 @@ UMonsterAttackComponent::UMonsterAttackComponent()
 
 void UMonsterAttackComponent::MonsterStartAttack()
 {
-
 	OwnerMonster->GetCharacterMovement()->bOrientRotationToMovement = false;
 }
 
@@ -26,9 +25,8 @@ void UMonsterAttackComponent::MonsterExecuteAttack()
 	if (auto* AnimInstance = OwnerMonster->GetMesh()->GetAnimInstance()) {
 		if (OwnerMonster->GetMonsterAttackMontage()) {
 			AnimInstance->Montage_Play(OwnerMonster->GetMonsterAttackMontage());
-
 			FOnMontageEnded MontageEndedDelegate;
-			MontageEndedDelegate.BindUObject(this, &UMonsterAttackComponent::OnAttackMontageEnded);
+			MontageEndedDelegate.BindUObject(OwnerMonster, &AMonster::OnAttackMontageEnded);
 			AnimInstance->Montage_SetEndDelegate(MontageEndedDelegate, OwnerMonster->GetMonsterAttackMontage());
 		}
 	}
@@ -37,12 +35,11 @@ void UMonsterAttackComponent::MonsterExecuteAttack()
 void UMonsterAttackComponent::MonsterEndAttack()
 {
 	OwnerMonster->GetCharacterMovement()->bOrientRotationToMovement = true;
-	//TODO: 델리게이트로 컴포넌트 종료
 }
 
 void UMonsterAttackComponent::OnAttackMontageEnded(UAnimMontage* Montage, bool bInterrupted)
 {
-	MonsterEndAttack();
+	OwnerMonster->MonsterAttackEnd();
 }
 
 
@@ -51,7 +48,8 @@ void UMonsterAttackComponent::BeginPlay()
 {
 	Super::BeginPlay();
 
-	OwnerMonster = Cast<AMonster>(GetOwner());
+	if(!OwnerMonster)
+		OwnerMonster = Cast<AMonster>(GetOwner());
 }
 
 

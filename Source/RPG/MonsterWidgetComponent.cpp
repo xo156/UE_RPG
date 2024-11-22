@@ -32,15 +32,24 @@ void UMonsterWidgetComponent::SetOwnerMonsterWidget()
 	}
 }
 
-UMonsterWidget* UMonsterWidgetComponent::GetMonsterWidgetClass()
-{
-	return MonsterWidget ? MonsterWidget : nullptr;
-}
-
 void UMonsterWidgetComponent::BeginPlay()
 {
 	Super::BeginPlay();
 
 	if (!OwnerMonster)
 		OwnerMonster = Cast<AMonster>(GetOwner());
+
+	/*if (auto* OwnerBossMonster = Cast<ABossMonster>(OwnerMonster)) {
+		if (MonsterWidgetInstance) {
+			MonsterWidgetInstance->RemoveFromViewport();
+			MonsterWidgetInstance = nullptr;
+		}
+		else {
+			MonsterWidgetInstance = CreateWidget<UMonsterWidget>(GetWorld(), MonsterWidgetClass);
+			if (MonsterWidgetInstance) {
+				MonsterWidgetInstance->AddToViewport();
+				MonsterWidgetInstance->SetVisibility(ESlateVisibility::Visible);
+			}
+		}
+	}*/
 }
