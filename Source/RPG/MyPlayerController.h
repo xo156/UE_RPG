@@ -55,7 +55,7 @@ protected:
 	void QuickSlot();
 	void TalkNPC();
 	void Close();
-	void TEST();
+	void ShowControlKeysWidget();
 
 private:
 	//ÀÎÇ² ¾×¼Ç
@@ -86,7 +86,9 @@ private:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input", meta = (AllowPrivateAccess = "true"))
 	class UInputAction* CloseAction;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input", meta = (AllowPrivateAccess = "true"))
-	class UInputAction* TESTSTATUSAction;
+	class UInputAction* TalkNPCAction;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input", meta = (AllowPrivateAccess = "true"))
+	class UInputAction* ShowControlKeysWidgetAction;
 
 	class AMyCharacter* MyCharacter;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UI", meta = (AllowPrivateAccess = "true"))

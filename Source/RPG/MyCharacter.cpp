@@ -23,6 +23,8 @@
 #include "Monster.h"
 #include "DataTableGameInstance.h"
 #include "InventoryQuickSlotWidget.h"
+#include "NPC.h"
+#include "ShowControlKeysWidget.h"
 
 // Sets default values
 AMyCharacter::AMyCharacter() {
@@ -551,15 +553,72 @@ void AMyCharacter::QuickSlot()
 		if (InventoryQuickSlotWidgetInstance) {
 			InventoryQuickSlotWidgetInstance->UpdateQuickSlotItemAmount(QuickSlotItemAmount);
 		}
-		else {
-			UE_LOG(LogTemp, Log, TEXT("InventoryQuickSlotWidgetInstance is nullptr"));
-		}
 	}
 }
 
 void AMyCharacter::TalkNPC()
 {
-	//TODO: NPC와 상호작용해서 대화 위젯을 생성하도록 만들기
+	FCollisionQueryParams QueryParams;
+	QueryParams.AddIgnoredActor(this); // 자기 자신 무시
+	QueryParams.bTraceComplex = false;
+	QueryParams.bReturnPhysicalMaterial = false;
+
+	TArray<FHitResult> HitResults;
+
+	// 트레이스 수행
+	bool bHit = GetWorld()->SweepMultiByChannel(
+		HitResults,
+		GetActorLocation(),
+		GetActorLocation(),
+		FQuat::Identity,
+		ECC_Visibility,
+		FCollisionShape::MakeSphere(TargetRange),
+		QueryParams
+	);
+
+	float TalkRange = TargetRange;
+
+	if (bHit) {
+		for (FHitResult& Hit : HitResults) {
+			AActor* HitActor = Hit.GetActor();
+			if (HitActor) {
+				UE_LOG(LogTemp, Log, TEXT("HitActor Name : %s"), *HitActor->GetName());
+				if (HitActor->ActorHasTag(FName("NPC"))) {
+					if (auto* NPC = Cast<ANPC>(HitActor)) {
+						NPC->ShowDialogues();
+					}
+					else {
+						UE_LOG(LogTemp, Log, TEXT("Cast Fail"));
+					}
+				}
+				else {
+					UE_LOG(LogTemp, Log, TEXT("Has Not Tag NPC"));
+				}
+			}
+			else {
+				UE_LOG(LogTemp, Log, TEXT("HitActor is null"));
+			}
+		}
+	}
+	else {
+		UE_LOG(LogTemp, Log, TEXT("Trace Fail"));
+	}
+}
+
+void AMyCharacter::ShowControlKeysWidget()
+{
+	if (ShowControlKeysWidgetClass) {
+		if (ShowControlKeysWidgetInstance) {
+			ShowControlKeysWidgetInstance->SetVisibility(ESlateVisibility::Hidden);
+		}
+		else {
+			ShowControlKeysWidgetInstance = CreateWidget<UShowControlKeysWidget>(GetWorld(), ShowControlKeysWidgetClass);
+			if (ShowControlKeysWidgetInstance) {
+				ShowControlKeysWidgetInstance->AddToViewport();
+				ShowControlKeysWidgetInstance->SetVisibility(ESlateVisibility::Visible);
+			}
+		}
+	}
 }
 
 void AMyCharacter::Close()
@@ -705,15 +764,6 @@ void AMyCharacter::SetupStimulusSource()
 		StimulusSource->RegisterForSense(TSubclassOf<UAISense_Hearing>());
 		StimulusSource->RegisterWithPerceptionSystem();
 	}
-}
-
-void AMyCharacter::TEST()
-{	
-	if (QuickSlotItem) {
-		UE_LOG(LogTemp, Log, TEXT("QuickSlotItem : %s"), *QuickSlotItem->GetName());
-	}
-
-	GEngine->AddOnScreenDebugMessage(-1, 2.f, FColor::Cyan, TEXT("TEST"));
 }
 
 AActor* AMyCharacter::GetCurrentTarget()

@@ -30,5 +30,8 @@ protected:
 private:
     UFUNCTION()
     void OnNextButtonClicked();
+
+    UPROPERTY()
+    FText ComunicationEndMessage;
 	
 };

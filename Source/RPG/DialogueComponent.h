@@ -25,11 +25,19 @@ public:
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
-	void LoadDialogues(TArray<FDialogueTable*> InDialogues);
+	void CreateDialogueWidget(UDataTable* InDialogueTable);
+
+	void LoadDialogues(UDataTable* InDialogueTable);
 
 	FString GetNextDialogue();
 
 private:
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Dialogue", meta = (AllowPrivateAccess = "true"))
+	TSubclassOf<UUserWidget> DialogueWidgetClass;
+	class UDialogueWidget* DialogueWidgetInstance;
+
 	TArray<FDialogueTable*> Dialogues;
 	int32 CurrentIndex;
+
+	UDataTable* DialogueTable;
 };

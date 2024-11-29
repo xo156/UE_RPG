@@ -33,20 +33,12 @@ void UDialogueWidget::OnNextButtonClicked()
                 if (NextButton) {
                     auto* ButtonText = Cast<UTextBlock>(NextButton->GetChildAt(0));
                     if (ButtonText) {
-                        ButtonText->SetText(FText::Format(FText::FromString(TEXT("대화\n종료"))));
+                        ButtonText->SetText(ComunicationEndMessage);
                     }
                 }
             }
             else {
                 SetDialogueText(NextDialogue);
-            }
-        }
-        else {
-            if (NextButton && NextButton->GetChildAt(0)) {
-                auto* ButtonText = Cast<UTextBlock>(NextButton->GetChildAt(0));
-                if (ButtonText && ButtonText->GetText().ToString() == "대화 종료") {
-                    SetVisibility(ESlateVisibility::Hidden);
-                }
             }
         }
     }

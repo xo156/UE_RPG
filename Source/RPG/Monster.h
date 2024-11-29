@@ -65,8 +65,6 @@ protected:
 	virtual void BeginPlay() override;
 
 	//ตฅภฬลอ
-	/*UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Data")
-	FMonsterData MonsterData;*/
 	float MaxMonsterHP;
 	float CurrentMonsterHP;
 	float MonsterDamage;

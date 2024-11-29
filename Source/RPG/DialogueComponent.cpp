@@ -23,6 +23,7 @@ void UDialogueComponent::BeginPlay()
 	Super::BeginPlay();
 
 	// ...
+
 }
 
 
@@ -34,9 +35,24 @@ void UDialogueComponent::TickComponent(float DeltaTime, ELevelTick TickType, FAc
 	// ...
 }
 
-void UDialogueComponent::LoadDialogues(TArray<FDialogueTable*> InDialogues)
+void UDialogueComponent::CreateDialogueWidget(UDataTable* InDialogueTable)
 {
-	Dialogues = InDialogues;
+	DialogueTable = InDialogueTable;
+	LoadDialogues(DialogueTable);
+
+	if (DialogueWidgetClass) {
+		DialogueWidgetInstance = CreateWidget<UDialogueWidget>(GetWorld(), DialogueWidgetClass);
+		if (DialogueWidgetInstance) {
+			DialogueWidgetInstance->AddToViewport();
+		}
+	}
+}
+
+void UDialogueComponent::LoadDialogues(UDataTable* InDialogueTable)
+{
+	if (InDialogueTable) {
+		InDialogueTable->GetAllRows<FDialogueTable>(TEXT("Dialogues Context String"), Dialogues);
+	}
 }
 
 FString UDialogueComponent::GetNextDialogue()

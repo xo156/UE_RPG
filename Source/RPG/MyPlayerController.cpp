@@ -126,8 +126,10 @@ void AMyPlayerController::SetupInputComponent() {
 		EnHancedInputComponent->BindAction(InventoryAction, ETriggerEvent::Started, this, &AMyPlayerController::OpenInventory);
 
 		EnHancedInputComponent->BindAction(QuickSlotAction, ETriggerEvent::Started, this, &AMyPlayerController::QuickSlot);
+		
+		EnHancedInputComponent->BindAction(TalkNPCAction, ETriggerEvent::Started, this, &AMyPlayerController::TalkNPC);
 
-		EnHancedInputComponent->BindAction(TESTSTATUSAction, ETriggerEvent::Started, this, &AMyPlayerController::TEST);
+		EnHancedInputComponent->BindAction(ShowControlKeysWidgetAction, ETriggerEvent::Started, this, &AMyPlayerController::ShowControlKeysWidget);
 	}
 
 }
@@ -245,9 +247,9 @@ void AMyPlayerController::Close()
 	}
 }
 
-void AMyPlayerController::TEST()
+void AMyPlayerController::ShowControlKeysWidget()
 {
 	if (GetCharacter() != nullptr) {
-		GetCharacter()->TEST();
+		GetCharacter()->ShowControlKeysWidget();
 	}
 }

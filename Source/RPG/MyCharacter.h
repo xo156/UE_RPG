@@ -97,6 +97,7 @@ public:
 	void OnRootItemBoxOverlapEnd(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComponent, int32 OtherBodyIndex);
 	void QuickSlot();
 	void TalkNPC();
+	void ShowControlKeysWidget();
 	void Close();
 
 	//무기
@@ -138,9 +139,6 @@ public:
 	float GuardStaminaCost = 10.f;
 	float RollStaminaCost = 5.f;
 
-	//테스트
-	void TEST();
-
 	//getter
 	AActor* GetCurrentTarget();
 	AActor* GetPrevLockOnTarget();
@@ -178,6 +176,10 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UI")
 	TSubclassOf<class UInventoryQuickSlotWidget> InventoryQuickSlotWidgetClass;
 	class UInventoryQuickSlotWidget* InventoryQuickSlotWidgetInstance;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UI")
+	TSubclassOf<class UShowControlKeysWidget> ShowControlKeysWidgetClass;
+	class UShowControlKeysWidget* ShowControlKeysWidgetInstance;
 
 	//몽타주
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Montage")
