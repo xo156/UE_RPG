@@ -22,16 +22,6 @@ protected:
     UPROPERTY(meta = (BindWidget))
     class UTextBlock* DialogueText;
 
-    UPROPERTY(meta = (BindWidget))
-    class UButton* NextButton;
-
     virtual void NativeConstruct() override;
-
-private:
-    UFUNCTION()
-    void OnNextButtonClicked();
-
-    UPROPERTY()
-    FText ComunicationEndMessage;
 	
 };

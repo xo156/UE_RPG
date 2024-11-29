@@ -31,6 +31,12 @@ public:
 
 	FString GetNextDialogue();
 
+	void CheckEndDialogueMessage();
+
+	void SetOwnerCharacter(AActor* NewOwnerCharacter);
+
+	class UDialogueWidget* GetDialogueWidgetInstance();
+
 private:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Dialogue", meta = (AllowPrivateAccess = "true"))
 	TSubclassOf<UUserWidget> DialogueWidgetClass;
@@ -40,4 +46,6 @@ private:
 	int32 CurrentIndex;
 
 	UDataTable* DialogueTable;
+
+	AActor* OwnerCharacter;
 };

@@ -30,6 +30,8 @@ public:
 
 	void ShowDialogues();
 
+	class UDialogueComponent* GetDialogueComponent();
+
 private:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Dialogue", meta = (AllowPrivateAccess = "true"))
 	class UDialogueComponent* DialogueComponent;

@@ -131,6 +131,7 @@ public:
 	bool bIsLockon;
 	bool bIsIdle;
 	bool bIsNoDamage;
+	bool bIsTalk;
 
 	//소모되는 스테미나
 	float RunStaminaCost = 0.2f;
@@ -247,4 +248,6 @@ private:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat", meta = (AllowPrivateAccess = "true"))
 	class UBoxComponent* GuardComponent;
+
+	class ANPC* CurrentTalkNPC;
 };

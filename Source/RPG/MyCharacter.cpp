@@ -104,6 +104,13 @@ void AMyCharacter::BeginPlay() {
 void AMyCharacter::Tick(float DeltaTime) {
 	Super::Tick(DeltaTime);
 
+	if (QuickSlotItem) {
+		InventoryQuickSlotWidgetInstance->SetVisibility(ESlateVisibility::Visible);
+	}
+	else {
+		InventoryQuickSlotWidgetInstance->SetVisibility(ESlateVisibility::Hidden);
+	}
+
 	CheckStaminaRecovery(DeltaTime);
 	ChangeMoveSpeed(DeltaTime);
 
@@ -558,65 +565,58 @@ void AMyCharacter::QuickSlot()
 
 void AMyCharacter::TalkNPC()
 {
-	FCollisionQueryParams QueryParams;
-	QueryParams.AddIgnoredActor(this); // 자기 자신 무시
-	QueryParams.bTraceComplex = false;
-	QueryParams.bReturnPhysicalMaterial = false;
+	if (!bIsTalk) {
+		FCollisionQueryParams QueryParams;
+		QueryParams.AddIgnoredActor(this); // 자기 자신 무시
+		QueryParams.bTraceComplex = false;
+		QueryParams.bReturnPhysicalMaterial = false;
 
-	TArray<FHitResult> HitResults;
+		TArray<FHitResult> HitResults;
 
-	// 트레이스 수행
-	bool bHit = GetWorld()->SweepMultiByChannel(
-		HitResults,
-		GetActorLocation(),
-		GetActorLocation(),
-		FQuat::Identity,
-		ECC_Visibility,
-		FCollisionShape::MakeSphere(TargetRange),
-		QueryParams
-	);
+		// 트레이스 수행
+		bool bHit = GetWorld()->SweepMultiByChannel(
+			HitResults,
+			GetActorLocation(),
+			GetActorLocation(),
+			FQuat::Identity,
+			ECC_Visibility,
+			FCollisionShape::MakeSphere(TargetRange),
+			QueryParams
+		);
 
-	float TalkRange = TargetRange;
+		float TalkRange = TargetRange;
 
-	if (bHit) {
-		for (FHitResult& Hit : HitResults) {
-			AActor* HitActor = Hit.GetActor();
-			if (HitActor) {
-				UE_LOG(LogTemp, Log, TEXT("HitActor Name : %s"), *HitActor->GetName());
-				if (HitActor->ActorHasTag(FName("NPC"))) {
-					if (auto* NPC = Cast<ANPC>(HitActor)) {
-						NPC->ShowDialogues();
-					}
-					else {
-						UE_LOG(LogTemp, Log, TEXT("Cast Fail"));
+		if (bHit) {
+			for (FHitResult& Hit : HitResults) {
+				AActor* HitActor = Hit.GetActor();
+				if (HitActor) {
+					if (HitActor->ActorHasTag(FName("NPC"))) {
+						if (auto* NPC = Cast<ANPC>(HitActor)) {
+							NPC->ShowDialogues();
+							if (!CurrentTalkNPC)
+								CurrentTalkNPC = NPC;
+							bIsTalk = true;
+							break;
+						}
 					}
 				}
-				else {
-					UE_LOG(LogTemp, Log, TEXT("Has Not Tag NPC"));
-				}
-			}
-			else {
-				UE_LOG(LogTemp, Log, TEXT("HitActor is null"));
 			}
 		}
 	}
 	else {
-		UE_LOG(LogTemp, Log, TEXT("Trace Fail"));
+		if (CurrentTalkNPC) {
+			CurrentTalkNPC->GetDialogueComponent()->GetDialogueWidgetInstance()->SetDialogueText(CurrentTalkNPC->GetDialogueComponent()->GetNextDialogue());
+		}
 	}
 }
 
 void AMyCharacter::ShowControlKeysWidget()
 {
 	if (ShowControlKeysWidgetClass) {
+		ShowControlKeysWidgetInstance = CreateWidget<UShowControlKeysWidget>(GetWorld(), ShowControlKeysWidgetClass);
 		if (ShowControlKeysWidgetInstance) {
-			ShowControlKeysWidgetInstance->SetVisibility(ESlateVisibility::Hidden);
-		}
-		else {
-			ShowControlKeysWidgetInstance = CreateWidget<UShowControlKeysWidget>(GetWorld(), ShowControlKeysWidgetClass);
-			if (ShowControlKeysWidgetInstance) {
-				ShowControlKeysWidgetInstance->AddToViewport();
-				ShowControlKeysWidgetInstance->SetVisibility(ESlateVisibility::Visible);
-			}
+			ShowControlKeysWidgetInstance->AddToViewport();
+			ShowControlKeysWidgetInstance->SetVisibility(ESlateVisibility::Visible);
 		}
 	}
 }
@@ -625,7 +625,9 @@ void AMyCharacter::Close()
 {
 	if (InventoryComponent->InventoryWidget) {
 		InventoryComponent->InventoryWidget->SetVisibility(ESlateVisibility::Hidden);
-		//TODO:나중에 여기에 게임 종료까지 이어지도록
+	}
+	if (ShowControlKeysWidgetInstance) {
+		ShowControlKeysWidgetInstance->SetVisibility(ESlateVisibility::Hidden);
 	}
 }
 
@@ -687,6 +689,7 @@ void AMyCharacter::SetupWidget()
 		InventoryQuickSlotWidgetInstance = CreateWidget<UInventoryQuickSlotWidget>(GetWorld(), InventoryQuickSlotWidgetClass);
 		if (InventoryQuickSlotWidgetInstance) {
 			InventoryQuickSlotWidgetInstance->AddToViewport();
+			InventoryQuickSlotWidgetInstance->SetVisibility(ESlateVisibility::Hidden);
 		}
 	}
 }

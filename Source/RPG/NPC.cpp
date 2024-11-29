@@ -9,7 +9,7 @@
 ANPC::ANPC()
 {
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
-	PrimaryActorTick.bCanEverTick = false;
+	PrimaryActorTick.bCanEverTick = true;
 
 	Tags.AddUnique(FName("NPC"));
 
@@ -41,12 +41,19 @@ void ANPC::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 
 void ANPC::SetupWidget()
 {
-	if (DialogueComponent)
+	if (DialogueComponent) {
+		DialogueComponent->SetOwnerCharacter(this);
 		DialogueComponent->CreateDialogueWidget(DialogueTable);
+	}
 }
 
 void ANPC::ShowDialogues()
 {
 	SetupWidget();
+}
+
+UDialogueComponent* ANPC::GetDialogueComponent()
+{
+	return DialogueComponent ? DialogueComponent : nullptr;
 }
 
