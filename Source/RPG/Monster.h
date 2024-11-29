@@ -25,7 +25,7 @@ public:
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
-	//void WidgetFaceToPlayer();
+	void SetMonsterInfo();
 
 	void MonsterAttackStart();
 	virtual void MonsterAttackExecute();
@@ -65,11 +65,12 @@ protected:
 	virtual void BeginPlay() override;
 
 	//데이터
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Data")
-	FMonsterData MonsterData;
+	/*UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Data")
+	FMonsterData MonsterData;*/
 	float MaxMonsterHP;
 	float CurrentMonsterHP;
 	float MonsterDamage;
+	TArray<int32> MonsterDropItemIDS;
 
 private:
 	//AI
@@ -106,4 +107,9 @@ private:
 
 	//흔들림
 	TSubclassOf<class UCameraShakeBase> CameraShake;
+
+	class UDataTable* MonsterDataTable;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Data", meta = (AllowPrivateAccess="true"))
+	int32 MonsterID;
 };

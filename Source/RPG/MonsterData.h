@@ -16,7 +16,7 @@ struct RPG_API FMonsterData : public FTableRowBase
 
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Data")
-	int32 MonsterID;
+	FName MonsterName;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Data")
 	float MaxMonsterHP;

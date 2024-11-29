@@ -53,6 +53,7 @@ protected:
 	void RootItem();
 	void OpenInventory();
 	void QuickSlot();
+	void TalkNPC();
 	void Close();
 	void TEST();
 

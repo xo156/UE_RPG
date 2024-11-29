@@ -17,11 +17,14 @@ UMonsterAttackComponent::UMonsterAttackComponent()
 
 void UMonsterAttackComponent::MonsterStartAttack()
 {
-	OwnerMonster->GetCharacterMovement()->bOrientRotationToMovement = false;
+	UE_LOG(LogTemp, Log, TEXT("UMonsterAttackComponent::MonsterStartAttack()"));
+	if(OwnerMonster->bIsMonsterAttack)
+		OwnerMonster->GetCharacterMovement()->bOrientRotationToMovement = false;
 }
 
 void UMonsterAttackComponent::MonsterExecuteAttack()
 {
+	UE_LOG(LogTemp, Log, TEXT("UMonsterAttackComponent::MonsterExecuteAttack()"));
 	if (auto* AnimInstance = OwnerMonster->GetMesh()->GetAnimInstance()) {
 		if (OwnerMonster->GetMonsterAttackMontage()) {
 			AnimInstance->Montage_Play(OwnerMonster->GetMonsterAttackMontage());
@@ -34,11 +37,13 @@ void UMonsterAttackComponent::MonsterExecuteAttack()
 
 void UMonsterAttackComponent::MonsterEndAttack()
 {
+	UE_LOG(LogTemp, Log, TEXT("UMonsterAttackComponent::MonsterEndAttack()"));
 	OwnerMonster->GetCharacterMovement()->bOrientRotationToMovement = true;
 }
 
 void UMonsterAttackComponent::OnAttackMontageEnded(UAnimMontage* Montage, bool bInterrupted)
 {
+	UE_LOG(LogTemp, Log, TEXT("UMonsterAttackComponent::OnAttackMontageEnded"));
 	OwnerMonster->MonsterAttackEnd();
 }
 

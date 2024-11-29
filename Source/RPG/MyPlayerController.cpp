@@ -231,6 +231,13 @@ void AMyPlayerController::QuickSlot()
 	}
 }
 
+void AMyPlayerController::TalkNPC()
+{
+	if (GetCharacter() != nullptr) {
+		GetCharacter()->TalkNPC();
+	}
+}
+
 void AMyPlayerController::Close()
 {
 	if (GetCharacter() != nullptr){

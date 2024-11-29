@@ -24,30 +24,25 @@ ABossMonster::ABossMonster() : AMonster()
 	MonsterAttackCollisionComponent1->SetupAttachment(GetMesh(), FName("AttackCollision_RightHand"));
 	MonsterAttackCollisionComponent1->SetCollisionProfileName(TEXT("NoCollision"));
 	MonsterAttackCollisionComponent1->OnComponentBeginOverlap.AddDynamic(this, &AMonster::OnOverlapBegin);
-	//SetMonsterAttackCollision(MonsterAttackCollisionComponent1);
+	SetMonsterAttackCollision(MonsterAttackCollisionComponent1);
 
 	MonsterAttackCollisionComponent2 = CreateDefaultSubobject<UCapsuleComponent>(TEXT("AttackCollisionComponent2"));
 	MonsterAttackCollisionComponent2->SetupAttachment(GetMesh(), FName("AttackCollision_LeftLeg"));
 	MonsterAttackCollisionComponent2->SetCollisionProfileName(TEXT("NoCollision"));
 	MonsterAttackCollisionComponent2->OnComponentBeginOverlap.AddDynamic(this, &AMonster::OnOverlapBegin);
-	//SetMonsterAttackCollision(MonsterAttackCollisionComponent2);
+	SetMonsterAttackCollision(MonsterAttackCollisionComponent2);
 
 	MonsterAttackCollisionComponent3 = CreateDefaultSubobject<UCapsuleComponent>(TEXT("AttackCollisionComponent3"));
 	MonsterAttackCollisionComponent3->SetupAttachment(GetMesh(), FName("AttackCollision_RightLeg"));
 	MonsterAttackCollisionComponent3->SetCollisionProfileName(TEXT("NoCollision"));
 	MonsterAttackCollisionComponent3->OnComponentBeginOverlap.AddDynamic(this, &AMonster::OnOverlapBegin);
-	//SetMonsterAttackCollision(MonsterAttackCollisionComponent3);
+	SetMonsterAttackCollision(MonsterAttackCollisionComponent3);
 
 	MonsterAttackCollisionComponent4 = CreateDefaultSubobject<UCapsuleComponent>(TEXT("AttackCollisionComponent4"));
 	MonsterAttackCollisionComponent4->SetupAttachment(GetMesh(), FName("AttackCollision_Jump"));
 	MonsterAttackCollisionComponent4->SetCollisionProfileName(TEXT("NoCollision"));
 	MonsterAttackCollisionComponent4->OnComponentBeginOverlap.AddDynamic(this, &AMonster::OnOverlapBegin);
-	//SetMonsterAttackCollision(MonsterAttackCollisionComponent4);
-
-	//±¸Á¶Ã¼
-	MaxMonsterHP = MonsterData.MaxMonsterHP;
-	CurrentMonsterHP = MaxMonsterHP;
-	MonsterDamage = MonsterData.Damage;
+	SetMonsterAttackCollision(MonsterAttackCollisionComponent4);
 }
 
 void ABossMonster::BeginPlay()
@@ -77,29 +72,26 @@ void ABossMonster::Tick(float DeltaTime)
 
 void ABossMonster::MonsterAttackExecute(int32 PatternNumber)
 {
+	UE_LOG(LogTemp, Log, TEXT("ABossMonster::MonsterAttackExecute PatternNumber is : %d"), PatternNumber);
 	if (UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance()) {
-		if (!bIsMonsterAttack) {
-			bIsMonsterAttack = true;
+		FOnMontageEnded MontageEndedDelegate;
+		MontageEndedDelegate.BindUObject(this, &AMonster::OnAttackMontageEnded);
 
-			FOnMontageEnded MontageEndedDelegate;
-			MontageEndedDelegate.BindUObject(this, &AMonster::OnAttackMontageEnded);
-
-			switch (PatternNumber) {
-			case 1:
-				AnimInstance->Montage_Play(CloseAttackMontage);
-				AnimInstance->Montage_SetEndDelegate(MontageEndedDelegate, CloseAttackMontage);
-				break;
-			case 2:
-				AnimInstance->Montage_Play(MidAttackMontage);
-				AnimInstance->Montage_SetEndDelegate(MontageEndedDelegate, MidAttackMontage);
-				break;
-			case 3:
-				AnimInstance->Montage_Play(LongAttackMontage);
-				AnimInstance->Montage_SetEndDelegate(MontageEndedDelegate, LongAttackMontage);
-				break;
-			default:
-				break;
-			}
+		switch (PatternNumber) {
+		case 1:
+			AnimInstance->Montage_Play(CloseAttackMontage);
+			AnimInstance->Montage_SetEndDelegate(MontageEndedDelegate, CloseAttackMontage);
+			break;
+		case 2:
+			AnimInstance->Montage_Play(MidAttackMontage);
+			AnimInstance->Montage_SetEndDelegate(MontageEndedDelegate, MidAttackMontage);
+			break;
+		case 3:
+			AnimInstance->Montage_Play(LongAttackMontage);
+			AnimInstance->Montage_SetEndDelegate(MontageEndedDelegate, LongAttackMontage);
+			break;
+		default:
+			break;
 		}
 	}
 }

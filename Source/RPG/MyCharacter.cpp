@@ -557,6 +557,11 @@ void AMyCharacter::QuickSlot()
 	}
 }
 
+void AMyCharacter::TalkNPC()
+{
+	//TODO: NPC와 상호작용해서 대화 위젯을 생성하도록 만들기
+}
+
 void AMyCharacter::Close()
 {
 	if (InventoryComponent->InventoryWidget) {

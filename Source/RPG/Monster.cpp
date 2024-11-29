@@ -35,11 +35,6 @@ AMonster::AMonster()
 	GetCapsuleComponent()->SetCollisionProfileName(TEXT("Enemy"));
 	GetMesh()->SetCollisionProfileName(TEXT("NoCollision"));
 
-	//구조체
-	MaxMonsterHP = MonsterData.MaxMonsterHP;
-	CurrentMonsterHP = MaxMonsterHP;
-	MonsterDamage = MonsterData.Damage;
-
 	//컴포넌트
 	//위젯
 	MonsterWidgetComponent = CreateDefaultSubobject<UMonsterWidgetComponent>(TEXT("MonsterWidgetComponent"));
@@ -48,11 +43,11 @@ AMonster::AMonster()
 	MonsterAttackComponent = CreateDefaultSubobject<UMonsterAttackComponent>(TEXT("MonsterAttackComponent"));
 
 	//공격 콜리전
-	MonsterAttackCollision0 = CreateDefaultSubobject<UCapsuleComponent>(TEXT("AttackCollision0"));
+	MonsterAttackCollision0 = CreateDefaultSubobject<UCapsuleComponent>(TEXT("AttackCollisionComponent0"));
 	MonsterAttackCollision0->SetupAttachment(GetMesh(), FName("AttackCollision_LeftHand"));
 	MonsterAttackCollision0->SetCollisionProfileName(TEXT("NoCollision"));
 	MonsterAttackCollision0->OnComponentBeginOverlap.AddDynamic(this, &AMonster::OnOverlapBegin);
-	//SetMonsterAttackCollision(MonsterAttackCollision0);
+	SetMonsterAttackCollision(MonsterAttackCollision0);
 
 }
 
@@ -81,6 +76,8 @@ void AMonster::BeginPlay()
 
 	if (auto* GameInstance = Cast<UDataTableGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()))) {
 		CameraShake = GameInstance->GetCameraShake();
+		MonsterDataTable = GameInstance->GetMonsterDataTable();
+		SetMonsterInfo();
 	}
 
 	if (auto* GameMode = Cast<AMyGameModeBase>(UGameplayStatics::GetGameMode(GetWorld()))) {
@@ -102,12 +99,37 @@ void AMonster::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 }
 
+void AMonster::SetMonsterInfo()
+{
+	if (MonsterDataTable) {
+		FMonsterData* MonsterData = MonsterDataTable->FindRow<FMonsterData>(FName(*FString::Printf(TEXT("%d"), MonsterID)), TEXT("SetMonsterInfo"));
+		if (MonsterData) {
+			MaxMonsterHP = MonsterData->MaxMonsterHP;
+			CurrentMonsterHP = MaxMonsterHP;
+			MonsterDamage = MonsterData->Damage;
+			MonsterDropItemIDS = MonsterData->DropItemIDS;
+
+			UE_LOG(LogTemp, Log, TEXT("MonsterInfo: MaxMonsterHP is %f"), MaxMonsterHP);
+			UE_LOG(LogTemp, Log, TEXT("MonsterInfo: CurrentMonsterHP is %f"), CurrentMonsterHP);
+			UE_LOG(LogTemp, Log, TEXT("MonsterInfo: MonsterDamage is %f"), MonsterDamage);
+		}
+		else {
+			UE_LOG(LogTemp, Log, TEXT("Can Not Find MonsterData"));
+		}
+	}
+	else {
+		UE_LOG(LogTemp, Log, TEXT("Can Not Find MonsterDataTable"));
+	}
+}
 
 void AMonster::MonsterAttackStart()
 {
 	UE_LOG(LogTemp, Log, TEXT("AMonster::MonsterAttackStart()"));
-	if(MonsterAttackComponent)
-		MonsterAttackComponent->MonsterStartAttack();
+	if (!bIsMonsterAttack) {
+		bIsMonsterAttack = true;
+		if (MonsterAttackComponent)
+			MonsterAttackComponent->MonsterStartAttack();
+	}
 }
 
 void AMonster::MonsterAttackExecute()
@@ -115,7 +137,6 @@ void AMonster::MonsterAttackExecute()
 	UE_LOG(LogTemp, Log, TEXT("AMonster::MonsterAttackExecute()"));
 	if (MonsterAttackComponent)
 		MonsterAttackComponent->MonsterExecuteAttack();
-
 }
 
 void AMonster::MonsterAttackEnd()
@@ -123,6 +144,7 @@ void AMonster::MonsterAttackEnd()
 	UE_LOG(LogTemp, Log, TEXT("AMonster::MonsterAttackEnd()"));
 	if(MonsterAttackComponent)
 		MonsterAttackComponent->MonsterEndAttack();
+	bIsMonsterAttack = false;
 }
 
 void AMonster::OnAttackMontageEnded(UAnimMontage* NowPlayMontage, bool bInterrupted)
@@ -169,13 +191,12 @@ float AMonster::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, 
 		//몬스터 사라지기
 		DieMonster();
 	}
-	
 	return DamageAmount;
 }
 
 void AMonster::DroppedItem()
 {
-	for (const int32& DropItemID : MonsterData.DropItemIDS) {
+	for (const int32& DropItemID : MonsterDropItemIDS) {
 		FDropRate* FoundItem = ItemCache.FindRef(DropItemID);
 		if (FoundItem) {
 			float RandomNumber = FMath::FRandRange(0.f, 100.f);

@@ -21,7 +21,7 @@ EBTNodeResult::Type UBTTask_ChoosePattern::ExecuteTask(UBehaviorTreeComponent& O
 				DistanceToPlayer = FVector::Dist(BossMonster->GetActorLocation(), PlayerLocation);
 				RandomValue = FMath::RandRange(0.f, 1.f);
 				if (DistanceToPlayer <= BossMonster->GetCloseRange()) {
-					if (RandomValue < 0.6f) {
+					if (RandomValue < 0.8f) {
 						//±Ù°Å¸®
 						OwnerComp.GetBlackboardComponent()->SetValueAsInt(GetSelectedBlackboardKey(), 1);
 						FinishLatentTask(OwnerComp, EBTNodeResult::Succeeded);

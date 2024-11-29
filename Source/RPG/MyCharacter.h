@@ -96,6 +96,7 @@ public:
 	UFUNCTION()
 	void OnRootItemBoxOverlapEnd(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComponent, int32 OtherBodyIndex);
 	void QuickSlot();
+	void TalkNPC();
 	void Close();
 
 	//¹«±â
