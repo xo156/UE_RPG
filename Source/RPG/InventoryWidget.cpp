@@ -11,8 +11,7 @@ void UInventoryWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
 
-    InventoryName->SetText(FText::FromString(TEXT("Inventory")));
-    
+    InventoryName->SetText(FText::FromString(TEXT("Inventory")));    
 }
 
 void UInventoryWidget::CreateInventoryWidget(UInventoryComponent* InventoryComponent)
@@ -57,5 +56,10 @@ void UInventoryWidget::UpdateInventoryWidget(UInventoryComponent* InventoryCompo
             UE_LOG(LogTemp, Error, TEXT("Failed to create widget instance at index %d"), Index);
         }
     }
+}
+
+void UInventoryWidget::SetPlayerMoney(int32 PlayerMoney)
+{
+
 }
 

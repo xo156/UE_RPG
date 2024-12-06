@@ -85,7 +85,6 @@ private:
 	class UCapsuleComponent* MonsterAttackCollision0;
 	TArray<class UCapsuleComponent*> MonsterAttackCollisions;
 	TArray<AActor*> OverlapActors; //몬스터가 때릴 때 콜리전 검출하기
-	float Damage = 0.f;
 
 	//몽타주
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Montage", meta = (AllowPrivateAccess = "true"))

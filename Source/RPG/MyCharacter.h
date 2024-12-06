@@ -88,6 +88,7 @@ public:
 	void ChangeTarget(AActor* NewTarget);
 	void CreateLockonEffect();
 	void UpdateLockonEffect();
+	void UpdateCameraRotation();
 	void RootItem();
 	void OpenInventory();
 	UInventoryComponent* GetInventory();
@@ -147,6 +148,7 @@ public:
 	class AItemBase* GetQuickSlotItem();
 	class UWeaponBaseComponent* GetCurrentWeaponComponent();
 	class UBoxComponent* GetGuardComponent();
+	class UUserWidget* GetLockonWidgetInstance();
 
 	//setter
 	void SetQuickSlotItem(class AItemBase* NewQuickSlotItem);
@@ -225,7 +227,9 @@ private:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "LockOn", meta = (AllowPrivateAccess = "true"))
 	float TargetHeightOffset = 20.f;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "LockOn", meta = (AllowPrivateAccess = "true"))
-	float TargetRange = 5000.f;
+	float TargetRange = 1000.f;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "LockOn", meta = (AllowPrivateAccess = "true"))
+	float MaxTargetAngle = 45.f;
 	AActor* CurrentTarget = nullptr;
 	AActor* PrevLockOnTarget = nullptr;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "LockOn", meta = (AllowPrivateAccess = "true"))

@@ -5,6 +5,7 @@
 #include "DialogueWidget.h"
 #include "DialogueTable.h"
 #include "MyCharacter.h"
+#include "Kismet/GameplayStatics.h"
 
 // Sets default values for this component's properties
 UDialogueComponent::UDialogueComponent()
@@ -34,9 +35,6 @@ void UDialogueComponent::TickComponent(float DeltaTime, ELevelTick TickType, FAc
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
 	// ...
-	if (Dialogues.Num() <= CurrentIndex) {
-		CheckEndDialogueMessage();
-	}
 
 }
 
@@ -64,27 +62,24 @@ void UDialogueComponent::LoadDialogues(UDataTable* InDialogueTable)
 
 FString UDialogueComponent::GetNextDialogue()
 {
-	if (CurrentIndex <= Dialogues.Num()) {
-		CurrentIndex += 1;
-		return Dialogues[CurrentIndex]->Content;
+	if (CurrentIndex < Dialogues.Num()) {
+		return Dialogues[CurrentIndex++]->Content;
 	}
-	return FString("더 이상 대화가 없습니다.");
+	else {
+		CheckEndDialogueMessage();
+		return FString("");
+	}
 }
 
 void UDialogueComponent::CheckEndDialogueMessage()
 {
-	UE_LOG(LogTemp, Log, TEXT("UDialogueComponent::CheckEndDialogueMessage()"));
 	if (DialogueWidgetInstance) {
-		if (OwnerCharacter) {
-			if (auto* PlayerCharacter = Cast<AMyCharacter>(OwnerCharacter)) {
-				PlayerCharacter->bIsTalk = false;
-			}
+		if (auto* PlayerCharacter = Cast<AMyCharacter>(UGameplayStatics::GetPlayerCharacter(GetWorld(),0))) {
+			PlayerCharacter->bIsTalk = false;
 		}
 		DialogueWidgetInstance->RemoveFromViewport();
+		DialogueWidgetInstance = nullptr;
 		CurrentIndex = 0;
-		if (DialogueWidgetInstance->IsInViewport()) {
-			UE_LOG(LogTemp, Warning, TEXT("DialogueWidgetInstance is still in viewport!"));
-		}
 	}
 }
 

@@ -104,6 +104,7 @@ void AMyCharacter::BeginPlay() {
 void AMyCharacter::Tick(float DeltaTime) {
 	Super::Tick(DeltaTime);
 
+	//퀵 슬롯
 	if (QuickSlotItem) {
 		InventoryQuickSlotWidgetInstance->SetVisibility(ESlateVisibility::Visible);
 	}
@@ -111,6 +112,7 @@ void AMyCharacter::Tick(float DeltaTime) {
 		InventoryQuickSlotWidgetInstance->SetVisibility(ESlateVisibility::Hidden);
 	}
 
+	//구조체
 	CheckStaminaRecovery(DeltaTime);
 	ChangeMoveSpeed(DeltaTime);
 
@@ -137,9 +139,10 @@ void AMyCharacter::Tick(float DeltaTime) {
 			GetCharacterMovement()->bOrientRotationToMovement = false;
 			//타겟 방향으로 바라보게 함
 			if (bIsMove || bIsAttack || bIsGuard) {
-				FRotator LookAtRotation = UKismetMathLibrary::FindLookAtRotation(GetActorLocation(), CurrentTarget->GetActorLocation());
+				/*FRotator LookAtRotation = UKismetMathLibrary::FindLookAtRotation(GetActorLocation(), CurrentTarget->GetActorLocation());
 				LookAtRotation.Pitch -= TargetHeightOffset;
-				GetController()->SetControlRotation(LookAtRotation);
+				GetController()->SetControlRotation(LookAtRotation);*/
+				UpdateCameraRotation();
 			}
 		}
 		else {
@@ -354,8 +357,13 @@ void AMyCharacter::LockOnTarget()
 	if (bIsLockon) {
 		//이미 락온된 상태에서는 새로운 타겟
 		AActor* NewTarget = FindLockOnTarget();
-		ChangeTarget(NewTarget);
-		CreateLockonEffect();
+		if (NewTarget) {
+			ChangeTarget(NewTarget);
+			CreateLockonEffect();
+		}
+		else {
+			ChangeTarget(nullptr);
+		}
 	}
 	else {
 		AActor* NewTarget = FindLockOnTarget();
@@ -481,6 +489,34 @@ void AMyCharacter::UpdateLockonEffect()
 		LockonWidgetInstance->SetVisibility(ESlateVisibility::Visible);
 
 		LockonWidgetInstance->SetPositionInViewport(ScreenPosition);
+	}
+}
+
+void AMyCharacter::UpdateCameraRotation()
+{
+	if (CurrentTarget) {
+		FVector DirectionToTarget = (CurrentTarget->GetActorLocation() - GetActorLocation()).GetSafeNormal();
+		FRotator TargetRotation = DirectionToTarget.Rotation();
+
+		FRotator CurrentRotation = GetControlRotation();
+
+		//시야각 제한
+		float AngleDifference = FMath::Abs(FMath::FindDeltaAngleDegrees(CurrentRotation.Yaw, TargetRotation.Yaw));
+
+		if (AngleDifference > MaxTargetAngle) {
+			//제한된 각도 내에서만 회전하도록 조정
+			float AdjustedYaw = CurrentRotation.Yaw + FMath::Sign(TargetRotation.Yaw - CurrentRotation.Yaw) * MaxTargetAngle;
+			CurrentRotation.Yaw = AdjustedYaw;
+			if (auto* PlayerController = Cast<AMyPlayerController>(GetController())) {
+				PlayerController->SetControlRotation(CurrentRotation);
+			}
+		}
+		else {
+			//제한이 없으면 자연스럽게 회전
+			if (auto* PlayerController = Cast<AMyPlayerController>(GetController())) {
+				PlayerController->SetControlRotation(TargetRotation);
+			}
+		}
 	}
 }
 
@@ -612,10 +648,11 @@ void AMyCharacter::TalkNPC()
 
 void AMyCharacter::ShowControlKeysWidget()
 {
-	if (ShowControlKeysWidgetClass) {
-		ShowControlKeysWidgetInstance = CreateWidget<UShowControlKeysWidget>(GetWorld(), ShowControlKeysWidgetClass);
-		if (ShowControlKeysWidgetInstance) {
-			ShowControlKeysWidgetInstance->AddToViewport();
+	if (ShowControlKeysWidgetInstance) {
+		if (ShowControlKeysWidgetInstance->IsVisible()) {
+			ShowControlKeysWidgetInstance->SetVisibility(ESlateVisibility::Hidden);
+		}
+		else {
 			ShowControlKeysWidgetInstance->SetVisibility(ESlateVisibility::Visible);
 		}
 	}
@@ -690,6 +727,14 @@ void AMyCharacter::SetupWidget()
 		if (InventoryQuickSlotWidgetInstance) {
 			InventoryQuickSlotWidgetInstance->AddToViewport();
 			InventoryQuickSlotWidgetInstance->SetVisibility(ESlateVisibility::Hidden);
+		}
+	}
+
+	if (ShowControlKeysWidgetClass) {
+		ShowControlKeysWidgetInstance = CreateWidget<UShowControlKeysWidget>(GetWorld(), ShowControlKeysWidgetClass);
+		if (ShowControlKeysWidgetInstance) {
+			ShowControlKeysWidgetInstance->AddToViewport();
+			ShowControlKeysWidgetInstance->SetVisibility(ESlateVisibility::Visible);
 		}
 	}
 }
@@ -797,6 +842,11 @@ UWeaponBaseComponent* AMyCharacter::GetCurrentWeaponComponent()
 UBoxComponent* AMyCharacter::GetGuardComponent()
 {
 	return GuardComponent ? GuardComponent : nullptr;
+}
+
+UUserWidget* AMyCharacter::GetLockonWidgetInstance()
+{
+	return LockonWidgetInstance ? LockonWidgetInstance : nullptr;
 }
 
 void AMyCharacter::SetQuickSlotItem(AItemBase* NewQuickSlotItem)

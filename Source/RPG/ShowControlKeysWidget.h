@@ -14,7 +14,6 @@ class RPG_API UShowControlKeysWidget : public UUserWidget
 {
 	GENERATED_BODY()
 
-
 protected:
 	virtual void NativeConstruct() override;
 

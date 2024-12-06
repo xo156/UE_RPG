@@ -8,13 +8,13 @@ void UMonsterProjectileNotify::Notify(USkeletalMeshComponent* MeshComp, UAnimSeq
 {
 	if (MeshComp && MeshComp->GetOwner()) {
 		if (AMonsterProjectileClass) {
-			FVector SpawnLocation = MeshComp->GetSocketLocation(FName("MonsterProjectile")) + FVector(100.f, 100.f, 100.f);
+			FVector SpawnLocation = MeshComp->GetSocketLocation(FName("MonsterProjectile")) + FVector(0.f, 0.f, 250.f);
 			auto* MonsterProjectile = MeshComp->GetWorld()->SpawnActor<AMonsterProjectile>(AMonsterProjectileClass, SpawnLocation, FRotator::ZeroRotator);
 			if (MonsterProjectile) {
 				AActor* OwnerActor = MeshComp->GetOwner();
 				MonsterProjectile->SetOwner(OwnerActor);
 				MonsterProjectile->SetInstigator(Cast<APawn>(OwnerActor));
-				MonsterProjectile->DamageAmount = 10.f;
+				MonsterProjectile->DamageAmount = ProjectileDamage;
 			}
 		}
 	}

@@ -113,12 +113,6 @@ void AMonster::SetMonsterInfo()
 			UE_LOG(LogTemp, Log, TEXT("MonsterInfo: CurrentMonsterHP is %f"), CurrentMonsterHP);
 			UE_LOG(LogTemp, Log, TEXT("MonsterInfo: MonsterDamage is %f"), MonsterDamage);
 		}
-		else {
-			UE_LOG(LogTemp, Log, TEXT("Can Not Find MonsterData"));
-		}
-	}
-	else {
-		UE_LOG(LogTemp, Log, TEXT("Can Not Find MonsterDataTable"));
 	}
 }
 
@@ -186,6 +180,14 @@ float AMonster::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, 
 		UE_LOG(LogTemp, Log, TEXT("Monster Die"));
 		ConsumeHPForAction(DamageAmount); //체력을 0으로 하기
 		bIsMonsterDead = true;
+		if (auto* PlayerCharacter = Cast<AMyCharacter>(DamageCauser)) {
+			PlayerCharacter->ChangeTarget(nullptr);
+			if (PlayerCharacter->GetLockonWidgetInstance()) {
+				PlayerCharacter->GetLockonWidgetInstance()->SetVisibility(ESlateVisibility::Hidden);
+				PlayerCharacter->GetLockonWidgetInstance()->RemoveFromViewport();
+			}
+		}
+
 		//아이템 드랍
 		DroppedItem();
 		//몬스터 사라지기
@@ -248,11 +250,11 @@ void AMonster::ApplyDamageToActor(AActor* ActorToDamage, UPrimitiveComponent* Ot
 		if (auto* PlayerCharacter = Cast<AMyCharacter>(ActorToDamage)) {
 			if (PlayerCharacter->bIsGuard) {
 				if (OtherComponent == PlayerCharacter->GetGuardComponent()) {
-					Damage = 0.f;
+					MonsterDamage = 0.f;
 				}
 			}
 			FDamageEvent DamageEvent;
-			ActorToDamage->TakeDamage(Damage, DamageEvent, GetInstigatorController(), this);
+			ActorToDamage->TakeDamage(MonsterDamage, DamageEvent, GetInstigatorController(), this);
 		}
 	}
 }

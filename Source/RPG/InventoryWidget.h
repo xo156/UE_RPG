@@ -20,6 +20,8 @@ public:
 	void CreateInventoryWidget(class UInventoryComponent* InventoryComponent);
 	void UpdateInventoryWidget(class UInventoryComponent* InventoryComponent);
 
+	void SetPlayerMoney(int32 PlayerMoney);
+
 	UPROPERTY(meta = (BindWidget))
 	class UTextBlock* InventoryName;
 
