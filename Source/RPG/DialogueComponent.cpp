@@ -46,7 +46,8 @@ void UDialogueComponent::CreateDialogueWidget(UDataTable* InDialogueTable)
 	if (DialogueWidgetClass) {
 		DialogueWidgetInstance = CreateWidget<UDialogueWidget>(OwnerCharacter->GetWorld(), DialogueWidgetClass);
 		if (DialogueWidgetInstance) {
-			DialogueWidgetInstance->SetDialogueText(GetNextDialogue());
+			CurrentIndex = 0; //인덱스를 0으로
+			DialogueWidgetInstance->SetDialogueText(Dialogues[CurrentIndex]->Content);
 			DialogueWidgetInstance->AddToViewport();
 			DialogueWidgetInstance->SetVisibility(ESlateVisibility::Visible);
 		}
@@ -55,31 +56,32 @@ void UDialogueComponent::CreateDialogueWidget(UDataTable* InDialogueTable)
 
 void UDialogueComponent::LoadDialogues(UDataTable* InDialogueTable)
 {
+	//이거 DataTableGameInstance에서 캐시 했던거처럼 하기
+	//Dialogues가 계속 늘어나느 문제 있음
 	if (InDialogueTable) {
 		InDialogueTable->GetAllRows<FDialogueTable>(TEXT("Dialogues Context String"), Dialogues);
 	}
 }
 
-FString UDialogueComponent::GetNextDialogue()
+void UDialogueComponent::NextDialogue()
 {
-	if (CurrentIndex < Dialogues.Num()) {
-		return Dialogues[CurrentIndex++]->Content;
-	}
-	else {
-		CheckEndDialogueMessage();
-		return FString("더 이상 대화가 없습니다.");
-	}
-}
+	if (DialogueWidgetInstance) { //이미 위젯이 존재한다면
+		CurrentIndex++; //다음 대화를 위해 인덱스 증가
+		if (CurrentIndex < Dialogues.Num()) { //만약 최대 대화 수를 넘어서지 않는다면
+			DialogueWidgetInstance->SetDialogueText(Dialogues[CurrentIndex]->Content); //다음 대화 출력			
 
-void UDialogueComponent::CheckEndDialogueMessage()
-{
-	if (DialogueWidgetInstance) {
-		if (auto* PlayerCharacter = Cast<AMyCharacter>(UGameplayStatics::GetPlayerCharacter(GetWorld(),0))) {
-			PlayerCharacter->bIsTalk = false;
+			UE_LOG(LogTemp, Log, TEXT("CurrentIndex: %d"), CurrentIndex);
 		}
-		DialogueWidgetInstance->RemoveFromViewport();
-		DialogueWidgetInstance = nullptr;
-		CurrentIndex = 0;
+		else { //최대 대화 수를 넘어서면 제거
+			DialogueWidgetInstance->RemoveFromViewport();
+			DialogueWidgetInstance = nullptr;
+			if (auto* PlayerCharacter = Cast<AMyCharacter>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0))) {
+				PlayerCharacter->bIsTalk = false; //대화 종료 상태 설정
+				PlayerCharacter->SetCurrentTalkNPC(nullptr);
+			}
+			CurrentIndex = 0;
+			dia
+		}
 	}
 }
 

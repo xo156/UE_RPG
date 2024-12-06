@@ -24,7 +24,6 @@
 #include "DataTableGameInstance.h"
 #include "InventoryQuickSlotWidget.h"
 #include "NPC.h"
-#include "DialogueComponent.h"
 #include "ShowControlKeysWidget.h"
 
 // Sets default values
@@ -613,7 +612,7 @@ void AMyCharacter::QuickSlot()
 
 void AMyCharacter::TalkNPC()
 {
-	if (!bIsTalk) {
+	if (!bIsTalk && !CurrentTalkNPC) {
 		FCollisionQueryParams QueryParams;
 		QueryParams.AddIgnoredActor(this); // 자기 자신 무시
 		QueryParams.bTraceComplex = false;
@@ -638,8 +637,7 @@ void AMyCharacter::TalkNPC()
 				if (HitActor) {
 					if (HitActor->ActorHasTag(FName("NPC"))) {
 						if (auto* NPC = Cast<ANPC>(HitActor)) {
-							if (!CurrentTalkNPC)
-								CurrentTalkNPC = NPC;
+							CurrentTalkNPC = NPC;
 							NPC->ShowDialogues();
 							bIsTalk = true;
 							break;
@@ -651,7 +649,7 @@ void AMyCharacter::TalkNPC()
 	}
 	else {
 		if (CurrentTalkNPC) {
-			CurrentTalkNPC->GetDialogueComponent()->GetDialogueWidgetInstance()->SetDialogueText(CurrentTalkNPC->GetDialogueComponent()->GetNextDialogue());
+			CurrentTalkNPC->GetDialogueComponent()->NextDialogue();
 		}
 	}
 }
@@ -910,4 +908,9 @@ void AMyCharacter::SetQuickSlotItemAmount(int32 NewAmount)
 void AMyCharacter::SetQuickSlotItemID(int32 NewID)
 {
 	QuickSlotItemID = NewID;
+}
+
+void AMyCharacter::SetCurrentTalkNPC(ANPC* TalkNPC)
+{
+	CurrentTalkNPC = TalkNPC;
 }

@@ -120,6 +120,7 @@ public:
 	void SetQuickSlotItem(class AItemBase* NewQuickSlotItem);
 	void SetQuickSlotItemAmount(int32 NewAmount);
 	void SetQuickSlotItemID(int32 NewID);
+	void SetCurrentTalkNPC(class ANPC* TalkNPC);
 
 	//µ®∏Æ∞‘¿Ã∆Æ
 	FOnPlayerUIUpdated OnPlayerUIUpdated;

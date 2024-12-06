@@ -29,9 +29,7 @@ public:
 
 	void LoadDialogues(UDataTable* InDialogueTable);
 
-	FString GetNextDialogue();
-
-	void CheckEndDialogueMessage();
+	void NextDialogue();
 
 	void SetOwnerCharacter(AActor* NewOwnerCharacter);
 
