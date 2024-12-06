@@ -23,6 +23,7 @@ public:
 	class UDataTable* GetItemTable();
 	class UDataTable* GetDropItemTable();
 	class UDataTable* GetMonsterDataTable();
+	class UDataTable* GetCharacterDataTable();
 	TSubclassOf<class UCameraShakeBase> GetCameraShake();
 	TSubclassOf<class UCameraShakeBase> GetBossCameraShake();
 
@@ -41,6 +42,9 @@ private:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Data", meta = (AllowPrivateAccess = "true"))
 	class UDataTable* MonsterDataTable;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Data", meta = (AllowPrivateAccess = "true"))
+	class UDataTable* CharacterDataTable;
 
 	TMap<int32, struct FDropRate*> ItemDropCache;
 	TMap<int32, struct FItemData*> ItemCache;

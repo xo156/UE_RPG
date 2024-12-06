@@ -106,7 +106,6 @@ private:
 	TSubclassOf<class UCameraShakeBase> CameraShake;
 
 	class UDataTable* MonsterDataTable;
-
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Data", meta = (AllowPrivateAccess="true"))
 	int32 MonsterID;
 };

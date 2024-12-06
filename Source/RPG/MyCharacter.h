@@ -5,50 +5,8 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 #include "InventoryComponent.h"
+#include "CharacterData.h"
 #include "MyCharacter.generated.h"
-
-USTRUCT(BlueprintType)
-struct FCharacterStatus
-{
-	GENERATED_BODY()
-
-public:
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Status")
-	float CurrentHP;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Status")
-	float MaxHP;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Status")
-	float CurrentStamina;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Status")
-	float MaxStamina;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Status")
-	float Damage;
-
-	float UseStamina(float StaminaCost) {
-		if (StaminaCost >= 0) {
-			CurrentStamina = FMath::Max(CurrentStamina - StaminaCost, 0.0f);
-		}
-		else {
-			CurrentStamina = FMath::Min(CurrentStamina + StaminaCost, MaxStamina);
-		}
-		UE_LOG(LogTemp, Warning, TEXT("CurrentStamina: %f"), CurrentStamina);
-		return CurrentStamina;
-	}
-	float UseHP(float HPCost) {
-		if (HPCost >= 0) {
-			CurrentHP = FMath::Max(CurrentHP - HPCost, 0.0f);
-		}
-		else {
-			CurrentHP = FMath::Min(CurrentHP - HPCost, MaxHP);
-		}
-		UE_LOG(LogTemp, Warning, TEXT("CurrentHP: %f"), CurrentHP);
-		return CurrentHP;
-	}
-};
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnPlayerUIUpdated, float, NewHP, float, NewStamina);
 UCLASS()
@@ -88,7 +46,8 @@ public:
 	void ChangeTarget(AActor* NewTarget);
 	void CreateLockonEffect();
 	void UpdateLockonEffect();
-	void UpdateCameraRotation();
+	void UpdateLockOnCameraRotation();
+	void UpdateLockOnCameraPosition();
 	void RootItem();
 	void OpenInventory();
 	UInventoryComponent* GetInventory();
@@ -109,9 +68,16 @@ public:
 	//위젯
 	void SetupWidget();
 
-	//구조체 사용
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Status")
-	FCharacterStatus CharacterStatus;
+	//데이터
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Data")
+	int32 PlayerCharacterType;
+	float MaxHP;
+	float CurrentHP;
+	float MaxStamina;
+	float CurrentStamina;
+	float Damage;
+	float UseStamina(float StaminaCost);
+	float UseHP(float HPCost);
 	void ConsumeStaminaForAction(float StaminaCost);
 	bool bHasEnoughStamina(float StaminaCost) const;
 	void ConsumeHPForAction(float HPCost);
@@ -144,13 +110,13 @@ public:
 	//getter
 	AActor* GetCurrentTarget();
 	AActor* GetPrevLockOnTarget();
-	float GetTargetHeightOffset();
 	class AItemBase* GetQuickSlotItem();
 	class UWeaponBaseComponent* GetCurrentWeaponComponent();
 	class UBoxComponent* GetGuardComponent();
 	class UUserWidget* GetLockonWidgetInstance();
 
 	//setter
+	void SetPlayerInfo();
 	void SetQuickSlotItem(class AItemBase* NewQuickSlotItem);
 	void SetQuickSlotItemAmount(int32 NewAmount);
 	void SetQuickSlotItemID(int32 NewID);
@@ -166,6 +132,7 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
+	//소리
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AI")
 	float RunLoudness;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AI")
@@ -175,11 +142,9 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UI")
 	TSubclassOf<class UPlayerWidget> PlayerWidgetClass;
 	class UPlayerWidget* PlayerWidgetInstance;
-
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UI")
 	TSubclassOf<class UInventoryQuickSlotWidget> InventoryQuickSlotWidgetClass;
 	class UInventoryQuickSlotWidget* InventoryQuickSlotWidgetInstance;
-
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UI")
 	TSubclassOf<class UShowControlKeysWidget> ShowControlKeysWidgetClass;
 	class UShowControlKeysWidget* ShowControlKeysWidgetInstance;
@@ -225,8 +190,6 @@ private:
 
 	//락온
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "LockOn", meta = (AllowPrivateAccess = "true"))
-	float TargetHeightOffset = 20.f;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "LockOn", meta = (AllowPrivateAccess = "true"))
 	float TargetRange = 1000.f;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "LockOn", meta = (AllowPrivateAccess = "true"))
 	float MaxTargetAngle = 45.f;
@@ -250,8 +213,14 @@ private:
 	//흔들림
 	TSubclassOf<class UCameraShakeBase> CameraShake;
 
+	//가드
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat", meta = (AllowPrivateAccess = "true"))
 	class UBoxComponent* GuardComponent;
 
+	//대화
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "LockOn", meta = (AllowPrivateAccess = "true"))
+	float TalkRange = 300.f;
 	class ANPC* CurrentTalkNPC;
+
+	class UDataTable* CharacterDataTable;
 };

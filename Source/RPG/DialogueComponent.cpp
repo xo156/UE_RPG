@@ -67,7 +67,7 @@ FString UDialogueComponent::GetNextDialogue()
 	}
 	else {
 		CheckEndDialogueMessage();
-		return FString("");
+		return FString("더 이상 대화가 없습니다.");
 	}
 }
 

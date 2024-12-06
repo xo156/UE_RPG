@@ -31,7 +31,7 @@ void UPlayerWidget::UpdateStamina(float CurrentStamina, float MaxStamina)
 void UPlayerWidget::OnPlayerStatusUswerWidgetUpdate(float NewHP, float NewStamina)
 {
 	if (auto* PlayerCharacter = Cast<AMyCharacter>(GetOwningPlayerPawn())) {
-		UpdateHP(NewHP, PlayerCharacter->CharacterStatus.MaxHP);
-		UpdateStamina(NewStamina, PlayerCharacter->CharacterStatus.MaxStamina);
+		UpdateHP(NewHP, PlayerCharacter->MaxHP);
+		UpdateStamina(NewStamina, PlayerCharacter->MaxStamina);
 	}
 }

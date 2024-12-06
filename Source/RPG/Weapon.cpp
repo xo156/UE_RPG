@@ -64,7 +64,7 @@ void AWeapon::ApplyDamageToActor(AActor* ActorToDamage)
 		return;
 	}
 
-	float Damage = OwnerCharacter->CharacterStatus.Damage;
+	float Damage = OwnerCharacter->Damage;
 	FDamageEvent DamageEvent;
 	if (GetInstigator() == nullptr) {
 		return;

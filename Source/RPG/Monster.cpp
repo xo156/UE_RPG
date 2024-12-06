@@ -108,10 +108,6 @@ void AMonster::SetMonsterInfo()
 			CurrentMonsterHP = MaxMonsterHP;
 			MonsterDamage = MonsterData->Damage;
 			MonsterDropItemIDS = MonsterData->DropItemIDS;
-
-			UE_LOG(LogTemp, Log, TEXT("MonsterInfo: MaxMonsterHP is %f"), MaxMonsterHP);
-			UE_LOG(LogTemp, Log, TEXT("MonsterInfo: CurrentMonsterHP is %f"), CurrentMonsterHP);
-			UE_LOG(LogTemp, Log, TEXT("MonsterInfo: MonsterDamage is %f"), MonsterDamage);
 		}
 	}
 }

@@ -24,6 +24,7 @@
 #include "DataTableGameInstance.h"
 #include "InventoryQuickSlotWidget.h"
 #include "NPC.h"
+#include "DialogueComponent.h"
 #include "ShowControlKeysWidget.h"
 
 // Sets default values
@@ -52,13 +53,6 @@ AMyCharacter::AMyCharacter() {
 	CameraComponent = CreateDefaultSubobject<UCameraComponent>(TEXT("VGCamera"));
 	CameraComponent->SetupAttachment(CameraBoom, USpringArmComponent::SocketName);
 
-	//구조체
-	CharacterStatus.MaxHP = 100.f;
-	CharacterStatus.CurrentHP = CharacterStatus.MaxHP;
-	CharacterStatus.MaxStamina = 50.f;
-	CharacterStatus.CurrentStamina = CharacterStatus.MaxStamina;
-	CharacterStatus.Damage = 20.f;
-
 	//위젯
 	PlayerWidgetClass = UPlayerWidget::StaticClass();
 
@@ -85,6 +79,8 @@ void AMyCharacter::BeginPlay() {
 	if (auto* GameInstance = Cast<UDataTableGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()))) {
 		ItemTable = GameInstance->GetItemTable();
 		CameraShake = GameInstance->GetCameraShake();
+		CharacterDataTable = GameInstance->GetCharacterDataTable();
+		SetPlayerInfo();
 	}
 
 	if (WeaponComponent) {
@@ -138,11 +134,9 @@ void AMyCharacter::Tick(float DeltaTime) {
 			bUseControllerRotationYaw = true;
 			GetCharacterMovement()->bOrientRotationToMovement = false;
 			//타겟 방향으로 바라보게 함
-			if (bIsMove || bIsAttack || bIsGuard) {
-				/*FRotator LookAtRotation = UKismetMathLibrary::FindLookAtRotation(GetActorLocation(), CurrentTarget->GetActorLocation());
-				LookAtRotation.Pitch -= TargetHeightOffset;
-				GetController()->SetControlRotation(LookAtRotation);*/
-				UpdateCameraRotation();
+			if (bIsMove || bIsGuard) {
+				UpdateLockOnCameraRotation();
+				UpdateLockOnCameraPosition();
 			}
 		}
 		else {
@@ -185,7 +179,7 @@ float AMyCharacter::TakeDamage(float DamageAmount, FDamageEvent const& DamageEve
 	if (bHasEnoughHP(DamageAmount)) {
 		//체력이 충분해서 데미지를 입을때
 		ConsumeHPForAction(DamageAmount);
-		UE_LOG(LogTemp, Log, TEXT("Player Damaged, CurrentHP: %f"), CharacterStatus.CurrentHP);
+		UE_LOG(LogTemp, Log, TEXT("Player Damaged, CurrentHP: %f"), CurrentHP);
 	}
 	else {
 		//체력이 없어서 죽을때
@@ -492,7 +486,7 @@ void AMyCharacter::UpdateLockonEffect()
 	}
 }
 
-void AMyCharacter::UpdateCameraRotation()
+void AMyCharacter::UpdateLockOnCameraRotation()
 {
 	if (CurrentTarget) {
 		FVector DirectionToTarget = (CurrentTarget->GetActorLocation() - GetActorLocation()).GetSafeNormal();
@@ -516,6 +510,24 @@ void AMyCharacter::UpdateCameraRotation()
 			if (auto* PlayerController = Cast<AMyPlayerController>(GetController())) {
 				PlayerController->SetControlRotation(TargetRotation);
 			}
+		}
+	}
+}
+
+void AMyCharacter::UpdateLockOnCameraPosition()
+{
+	if (!bIsLockon) {
+		if (auto* PlayerController = Cast<AMyPlayerController>(GetController())) {
+			PlayerController->SetControlRotation(GetActorRotation()); //원래 회전으로 되돌림
+		}
+	}
+	else {
+		//카메라를 우상단으로 살짝 이동
+		FRotator CurrentRotation = GetControlRotation();
+		CurrentRotation.Pitch -= 15.0f;
+		CurrentRotation.Yaw += 5.0f;
+		if (auto* PlayerController = Cast<AMyPlayerController>(GetController())) {
+			PlayerController->SetControlRotation(CurrentRotation);
 		}
 	}
 }
@@ -616,11 +628,9 @@ void AMyCharacter::TalkNPC()
 			GetActorLocation(),
 			FQuat::Identity,
 			ECC_Visibility,
-			FCollisionShape::MakeSphere(TargetRange),
+			FCollisionShape::MakeSphere(TalkRange),
 			QueryParams
 		);
-
-		float TalkRange = TargetRange;
 
 		if (bHit) {
 			for (FHitResult& Hit : HitResults) {
@@ -628,9 +638,9 @@ void AMyCharacter::TalkNPC()
 				if (HitActor) {
 					if (HitActor->ActorHasTag(FName("NPC"))) {
 						if (auto* NPC = Cast<ANPC>(HitActor)) {
-							NPC->ShowDialogues();
 							if (!CurrentTalkNPC)
 								CurrentTalkNPC = NPC;
+							NPC->ShowDialogues();
 							bIsTalk = true;
 							break;
 						}
@@ -717,8 +727,8 @@ void AMyCharacter::SetupWidget()
 		PlayerWidgetInstance = CreateWidget<UPlayerWidget>(GetWorld(), PlayerWidgetClass);
 		if (PlayerWidgetInstance) {
 			PlayerWidgetInstance->AddToViewport();
-			PlayerWidgetInstance->UpdateHP(CharacterStatus.CurrentHP, CharacterStatus.MaxHP);
-			PlayerWidgetInstance->UpdateStamina(CharacterStatus.CurrentStamina, CharacterStatus.MaxStamina);
+			PlayerWidgetInstance->UpdateHP(CurrentHP, MaxHP);
+			PlayerWidgetInstance->UpdateStamina(CurrentStamina, MaxStamina);
 		}
 	}
 
@@ -739,26 +749,48 @@ void AMyCharacter::SetupWidget()
 	}
 }
 
+float AMyCharacter::UseStamina(float StaminaCost)
+{
+	if (StaminaCost >= 0) {
+		CurrentStamina = FMath::Max(CurrentStamina - StaminaCost, 0.0f);
+	}
+	else {
+		CurrentStamina = FMath::Min(CurrentStamina + StaminaCost, MaxStamina);
+	}
+	return CurrentStamina;
+}
+
+float AMyCharacter::UseHP(float HPCost)
+{
+	if (HPCost >= 0) {
+		CurrentHP = FMath::Max(CurrentHP - HPCost, 0.0f);
+	}
+	else {
+		CurrentHP = FMath::Min(CurrentHP - HPCost, MaxHP);
+	}
+	return CurrentHP;
+}
+
 void AMyCharacter::ConsumeStaminaForAction(float StaminaCost)
 {
-	CharacterStatus.UseStamina(StaminaCost);
-	OnPlayerUIUpdated.Broadcast(CharacterStatus.CurrentHP, CharacterStatus.CurrentStamina);
+	UseStamina(StaminaCost);
+	OnPlayerUIUpdated.Broadcast(CurrentHP, CurrentStamina);
 }
 
 bool AMyCharacter::bHasEnoughStamina(float StaminaCost) const
 {
-	return CharacterStatus.CurrentStamina >= StaminaCost;
+	return CurrentStamina >= StaminaCost;
 }
 
 void AMyCharacter::ConsumeHPForAction(float HPCost)
 {
-	CharacterStatus.UseHP(HPCost);	
-	OnPlayerUIUpdated.Broadcast(CharacterStatus.CurrentHP, CharacterStatus.CurrentStamina);
+	UseHP(HPCost);	
+	OnPlayerUIUpdated.Broadcast(CurrentHP, CurrentStamina);
 }
 
 bool AMyCharacter::bHasEnoughHP(float HPCost) const
 {
-	return CharacterStatus.CurrentHP > HPCost;
+	return CurrentHP > HPCost;
 }
 
 void AMyCharacter::ChangeMoveSpeed(float DeltaTime)
@@ -784,7 +816,7 @@ void AMyCharacter::ChangeMoveSpeed(float DeltaTime)
 void AMyCharacter::CheckStaminaRecovery(float DeltaTime)
 {
 	if (!bIsAttack && !bIsRun && !bIsRoll) {
-		if (CharacterStatus.CurrentStamina < CharacterStatus.MaxStamina) {
+		if (CurrentStamina < MaxStamina) {
 			TimeWithoutAction += DeltaTime;
 			if (TimeWithoutAction >= 1.0f) {
 				RecoveryStaminia(DeltaTime);
@@ -800,8 +832,8 @@ void AMyCharacter::CheckStaminaRecovery(float DeltaTime)
 void AMyCharacter::RecoveryStaminia(float DeltaTime)
 {
 	float StaminaRecoveryRate = 1000.0f;
-	CharacterStatus.CurrentStamina = FMath::Min(CharacterStatus.CurrentStamina + (StaminaRecoveryRate * DeltaTime), CharacterStatus.MaxStamina);
-	OnPlayerUIUpdated.Broadcast(CharacterStatus.CurrentHP, CharacterStatus.CurrentStamina);
+	CurrentStamina = FMath::Min(CurrentStamina + (StaminaRecoveryRate * DeltaTime), MaxStamina);
+	OnPlayerUIUpdated.Broadcast(CurrentHP, CurrentStamina);
 }
 
 void AMyCharacter::SetupStimulusSource()
@@ -824,10 +856,10 @@ AActor* AMyCharacter::GetPrevLockOnTarget()
 	return PrevLockOnTarget ? PrevLockOnTarget : nullptr;
 }
 
-float AMyCharacter::GetTargetHeightOffset()
-{
-	return TargetHeightOffset;
-}
+//float AMyCharacter::GetTargetHeightOffset()
+//{
+//	return TargetHeightOffset;
+//}
 
 AItemBase* AMyCharacter::GetQuickSlotItem()
 {
@@ -847,6 +879,20 @@ UBoxComponent* AMyCharacter::GetGuardComponent()
 UUserWidget* AMyCharacter::GetLockonWidgetInstance()
 {
 	return LockonWidgetInstance ? LockonWidgetInstance : nullptr;
+}
+
+void AMyCharacter::SetPlayerInfo()
+{
+	if (CharacterDataTable) {
+		FCharacterData* CharacterData = CharacterDataTable->FindRow<FCharacterData>(FName(*FString::Printf(TEXT("%d"), PlayerCharacterType)), TEXT("SetPlayerInfo"));
+		if (CharacterData) {
+			MaxHP = CharacterData->MaxCharacterHP;
+			CurrentHP = MaxHP;
+			MaxStamina = CharacterData->MaxCharacterStamina;
+			CurrentStamina = MaxStamina;
+			Damage = CharacterData->CharacterDamage;
+		}
+	}
 }
 
 void AMyCharacter::SetQuickSlotItem(AItemBase* NewQuickSlotItem)

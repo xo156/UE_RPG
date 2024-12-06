@@ -35,6 +35,11 @@ UDataTable* UDataTableGameInstance::GetMonsterDataTable()
 	return MonsterDataTable ? MonsterDataTable : nullptr;
 }
 
+UDataTable* UDataTableGameInstance::GetCharacterDataTable()
+{
+	return CharacterDataTable ? CharacterDataTable : nullptr;
+}
+
 TSubclassOf<class UCameraShakeBase> UDataTableGameInstance::GetCameraShake()
 {
 	return CameraShake ? CameraShake : nullptr;

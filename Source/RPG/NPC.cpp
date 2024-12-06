@@ -22,7 +22,7 @@ ANPC::ANPC()
 void ANPC::BeginPlay()
 {
 	Super::BeginPlay();
-	
+	SetupWidget();
 }
 
 // Called every frame
@@ -43,13 +43,14 @@ void ANPC::SetupWidget()
 {
 	if (DialogueComponent) {
 		DialogueComponent->SetOwnerCharacter(this);
-		DialogueComponent->CreateDialogueWidget(DialogueTable);
 	}
 }
 
 void ANPC::ShowDialogues()
 {
-	SetupWidget();
+	if (DialogueComponent) {
+		DialogueComponent->CreateDialogueWidget(DialogueTable);
+	}
 }
 
 UDialogueComponent* ANPC::GetDialogueComponent()
