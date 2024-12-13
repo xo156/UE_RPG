@@ -114,6 +114,7 @@ public:
 	class UWeaponBaseComponent* GetCurrentWeaponComponent();
 	class UBoxComponent* GetGuardComponent();
 	class UUserWidget* GetLockonWidgetInstance();
+	class UInventoryQuickSlotWidget* GetInventoryQuickSlotWidgetInstance();
 
 	//setter
 	void SetPlayerInfo();
@@ -206,7 +207,6 @@ private:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Inventory", meta = (AllowPrivateAccess = "true"))
 	class UBoxComponent* RootItemBoxComponent;
 	TArray<class ADropItem*> OverlapItems;
-	UDataTable* ItemTable;
 	class AItemBase* QuickSlotItem;
 	int32 QuickSlotItemAmount = 0;
 	int32 QuickSlotItemID;

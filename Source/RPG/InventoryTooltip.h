@@ -15,7 +15,7 @@ class RPG_API UInventoryTooltip : public UUserWidget
 	GENERATED_BODY()
 	
 public:
-	virtual void PreConstruct(bool bIsDesignTime); //원래 여기 overried 있었음
+	virtual void PreConstruct(bool bIsDesignTime);
 
 	void InitTooltip(const struct FItemData& InItemData);
 

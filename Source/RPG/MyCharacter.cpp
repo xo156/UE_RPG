@@ -76,7 +76,6 @@ void AMyCharacter::BeginPlay() {
 	Super::BeginPlay();
 
 	if (auto* GameInstance = Cast<UDataTableGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()))) {
-		ItemTable = GameInstance->GetItemTable();
 		CameraShake = GameInstance->GetCameraShake();
 		CharacterDataTable = GameInstance->GetCharacterDataTable();
 		SetPlayerInfo();
@@ -98,14 +97,6 @@ void AMyCharacter::BeginPlay() {
 // Called every frame
 void AMyCharacter::Tick(float DeltaTime) {
 	Super::Tick(DeltaTime);
-
-	//Äü ½½·Ô
-	if (QuickSlotItem) {
-		InventoryQuickSlotWidgetInstance->SetVisibility(ESlateVisibility::Visible);
-	}
-	else {
-		InventoryQuickSlotWidgetInstance->SetVisibility(ESlateVisibility::Hidden);
-	}
 
 	//±¸Á¶Ã¼
 	CheckStaminaRecovery(DeltaTime);
@@ -597,15 +588,17 @@ void AMyCharacter::QuickSlot()
 	if (QuickSlotItem && InventoryComponent && QuickSlotItemAmount > 0) {
 		QuickSlotItem->Use();
 		InventoryComponent->RemoveItem(QuickSlotItemID, 1);
-		QuickSlotItemAmount--;
-		SetQuickSlotItemAmount(QuickSlotItemAmount);
-		if (QuickSlotItemAmount <= 0) {
-			QuickSlotItemAmount = 0;
-			QuickSlotItem = nullptr;
-		}
-		InventoryComponent->InventoryWidget->UpdateInventoryWidget(InventoryComponent);
+		SetQuickSlotItemAmount(--QuickSlotItemAmount);
 		if (InventoryQuickSlotWidgetInstance) {
-			InventoryQuickSlotWidgetInstance->UpdateQuickSlotItemAmount(QuickSlotItemAmount);
+			if (QuickSlotItemAmount <= 0) {
+				InventoryQuickSlotWidgetInstance->SetVisibility(ESlateVisibility::Hidden);
+				QuickSlotItemAmount = 0;
+				QuickSlotItem = nullptr;
+			}
+			else {
+				InventoryComponent->InventoryWidget->UpdateInventoryWidget(InventoryComponent);
+				InventoryQuickSlotWidgetInstance->UpdateQuickSlotItemAmount(QuickSlotItemAmount);
+			}
 		}
 	}
 }
@@ -872,6 +865,11 @@ UBoxComponent* AMyCharacter::GetGuardComponent()
 UUserWidget* AMyCharacter::GetLockonWidgetInstance()
 {
 	return LockonWidgetInstance ? LockonWidgetInstance : nullptr;
+}
+
+UInventoryQuickSlotWidget* AMyCharacter::GetInventoryQuickSlotWidgetInstance()
+{
+	return InventoryQuickSlotWidgetInstance ? InventoryQuickSlotWidgetInstance : nullptr;
 }
 
 void AMyCharacter::SetPlayerInfo()

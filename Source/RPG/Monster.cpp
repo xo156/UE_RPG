@@ -13,6 +13,8 @@
 #include "MyPlayerController.h"
 #include "BehaviorTree/BehaviorTree.h"
 #include "BehaviorTree/BehaviorTreeComponent.h"
+#include "MonsterAICHearing.h"
+#include "MonsterAICSight.h"
 #include "Components/BoxComponent.h"
 #include "Weapon.h"
 #include "MyGameModeBase.h"

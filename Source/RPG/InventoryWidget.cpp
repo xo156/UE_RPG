@@ -58,8 +58,3 @@ void UInventoryWidget::UpdateInventoryWidget(UInventoryComponent* InventoryCompo
     }
 }
 
-void UInventoryWidget::SetPlayerMoney(int32 PlayerMoney)
-{
-
-}
-

@@ -99,14 +99,9 @@ void UInventoryItemAction::OnQuickSlotClicked()
 						if (auto* PlayerCharacter = Cast<AMyCharacter>(PlayerController->GetPawn())) {
 							PlayerCharacter->SetQuickSlotItem(ItemInstance);
 							int32 ItemAmount = PlayerCharacter->GetInventory()->GetInventoryItemAmount(ClickedItem->ItemID);
-							if (InventoryQuickSlotWidgetClass) {
-								if (!InventoryQuickSlotWidgetInstance) {
-									InventoryQuickSlotWidgetInstance = CreateWidget<UInventoryQuickSlotWidget>(this, InventoryQuickSlotWidgetClass);
-									if (InventoryQuickSlotWidgetInstance) {
-										InventoryQuickSlotWidgetInstance->AddToViewport();
-									}
-								}
-								InventoryQuickSlotWidgetInstance->SetQuickSlotConsumable(ClickedItem->ItemIcon, ItemAmount);
+							if (PlayerCharacter->GetInventoryQuickSlotWidgetInstance()) {
+								PlayerCharacter->GetInventoryQuickSlotWidgetInstance()->SetVisibility(ESlateVisibility::Visible);
+								PlayerCharacter->GetInventoryQuickSlotWidgetInstance()->SetQuickSlotConsumable(ClickedItem->ItemIcon, ItemAmount);
 								PlayerCharacter->SetQuickSlotItemID(ClickedItem->ItemID);
 								PlayerCharacter->SetQuickSlotItemAmount(ItemAmount);
 							}
