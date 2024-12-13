@@ -25,13 +25,13 @@ public:
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
-	void CreateDialogueWidget(UDataTable* InDialogueTable);
+	void CreateDialogueWidget();
 
-	void LoadDialogues(UDataTable* InDialogueTable);
+	//void LoadDialogues(UDataTable* InDialogueTable);
 
 	void NextDialogue();
 
-	void SetOwnerCharacter(AActor* NewOwnerCharacter);
+	void SetDialogueCache(UDataTable* InDialogueTable);
 
 	class UDialogueWidget* GetDialogueWidgetInstance();
 
@@ -40,10 +40,8 @@ private:
 	TSubclassOf<UUserWidget> DialogueWidgetClass;
 	class UDialogueWidget* DialogueWidgetInstance;
 
-	TArray<FDialogueTable*> Dialogues;
-	int32 CurrentIndex;
+	UDataTable* NowDialogueTable;
 
-	UDataTable* DialogueTable;
-
-	AActor* OwnerCharacter;
+	TMap<int32, FDialogueTable*> DialogueCache;
+	int32 CurrentIndex = 0;
 };

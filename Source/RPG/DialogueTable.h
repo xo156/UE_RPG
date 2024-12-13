@@ -17,9 +17,9 @@ struct RPG_API FDialogueTable : public FTableRowBase
 public:
     //대화 ID
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    int32 ID;
+    int32 TableID;
 
     //대화 메시지
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    FString Content;
+    FString TableContent;
 };

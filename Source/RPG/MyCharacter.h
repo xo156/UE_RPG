@@ -120,7 +120,7 @@ public:
 	void SetQuickSlotItem(class AItemBase* NewQuickSlotItem);
 	void SetQuickSlotItemAmount(int32 NewAmount);
 	void SetQuickSlotItemID(int32 NewID);
-	void SetCurrentTalkNPC(class ANPC* TalkNPC);
+	void SetCurrentTalkNPC(class ADialogueNPC* TalkNPC);
 
 	//델리게이트
 	FOnPlayerUIUpdated OnPlayerUIUpdated;
@@ -221,7 +221,7 @@ private:
 	//대화
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "LockOn", meta = (AllowPrivateAccess = "true"))
 	float TalkRange = 300.f;
-	class ANPC* CurrentTalkNPC;
+	class ADialogueNPC* CurrentTalkNPC;
 
 	class UDataTable* CharacterDataTable;
 };

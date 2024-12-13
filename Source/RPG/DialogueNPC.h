@@ -4,16 +4,16 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
-#include "NPC.generated.h"
+#include "DialogueNPC.generated.h"
 
 UCLASS()
-class RPG_API ANPC : public ACharacter
+class RPG_API ADialogueNPC : public ACharacter
 {
 	GENERATED_BODY()
 
 public:
 	// Sets default values for this character's properties
-	ANPC();
+	ADialogueNPC();
 
 protected:
 	// Called when the game starts or when spawned
@@ -25,8 +25,6 @@ public:
 
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
-
-	void SetupWidget();
 
 	void ShowDialogues();
 

@@ -1,0 +1,403 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ClassDiagram MajorVersion="1" MinorVersion="1">
+  <Class Name="ABossMonster">
+    <Position X="2.25" Y="8" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AhAEQAABIAAgAAAEGAAAAMAAAAoJAAAAAAAEACAgQAA=</HashCode>
+      <FileName>D:\GitHub\UE_RPG\Source\RPG\BossMonster.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ABossMonsterAIC">
+    <Position X="4" Y="13" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAIAAAAAAACAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>D:\GitHub\UE_RPG\Source\RPG\BossMonsterAIC.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="UBTService_ChangeSpeed">
+    <Position X="5.75" Y="12.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAEABAgAAAAAAIAAAAAAQAAA=</HashCode>
+      <FileName>D:\GitHub\UE_RPG\Source\RPG\BTService_ChangeSpeed.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="UBTService_PlayerIsInAttackRange">
+    <Position X="5.75" Y="15.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAACAAAAAAAAAAAAAAAEAAAwAAAAAAJAAAAAAAAAA=</HashCode>
+      <FileName>D:\GitHub\UE_RPG\Source\RPG\BTService_PlayerIsInAttackRange.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="UBTTask_ChasePlayer">
+    <Position X="7.5" Y="8" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAABAAAAAAAAAAAAAEAAEAAAgAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>D:\GitHub\UE_RPG\Source\RPG\BTTask_ChasePlayer.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="UBTTask_ChoosePattern">
+    <Position X="7.5" Y="10.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAgCAAAAAEAAIAAAAAAAAIAAAAAAAAAAAA=</HashCode>
+      <FileName>D:\GitHub\UE_RPG\Source\RPG\BTTask_ChoosePattern.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="UBTTask_FindPathPoint">
+    <Position X="7.5" Y="12.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAEAAAAAAAAAAACEAAAAAAAAAAA=</HashCode>
+      <FileName>D:\GitHub\UE_RPG\Source\RPG\BTTask_FindPathPoint.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="UBTTask_FindPlayerLocation">
+    <Position X="7.5" Y="14.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>EAAAAiAAAAAAAAAAAAEAAAAABAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>D:\GitHub\UE_RPG\Source\RPG\BTTask_FindPlayerLocation.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="UBTTask_FindRandomLocation">
+    <Position X="9.25" Y="8" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AEAAAAAAAAAAAAAAAAEAAAAABAAAAAAAAAIEAAAAAAE=</HashCode>
+      <FileName>D:\GitHub\UE_RPG\Source\RPG\BTTask_FindRandomLocation.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="UBTTask_IncrementPatrolPath">
+    <Position X="9.25" Y="10.75" Width="1.5" />
+    <NestedTypes>
+      <Enum Name="UBTTask_IncrementPatrolPath::EDirectionType" Collapsed="true">
+        <TypeIdentifier>
+          <NewMemberFileName>D:\GitHub\UE_RPG\Source\RPG\BTTask_IncrementPatrolPath.h</NewMemberFileName>
+        </TypeIdentifier>
+      </Enum>
+    </NestedTypes>
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAACEQAAAAAAAAAAAAAAAAAAAAAQA=</HashCode>
+      <FileName>D:\GitHub\UE_RPG\Source\RPG\BTTask_IncrementPatrolPath.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="UBTTask_MonsterAttack">
+    <Position X="9.25" Y="13.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAACABAAAAoAAAAAEAAEAAAgAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>D:\GitHub\UE_RPG\Source\RPG\BTTask_MonsterAttack.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="UBTTask_WaitForNext">
+    <Position X="9.25" Y="16" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>ABABIAABEAAgAAAAACEAAAAAAAAAAAIAAAAAAAAAAAA=</HashCode>
+      <FileName>D:\GitHub\UE_RPG\Source\RPG\BTTask_WaitForNext.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="UComboCheckANS">
+    <Position X="19.75" Y="3.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAACAAAAAAAAAAAAABAAAAAAAAA=</HashCode>
+      <FileName>D:\GitHub\UE_RPG\Source\RPG\ComboCheckANS.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="UDataTableGameInstance">
+    <Position X="2.25" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAEAAhghAAkABABFAAAAAAAAA0AAACAAACgEABA=</HashCode>
+      <FileName>D:\GitHub\UE_RPG\Source\RPG\DataTableGameInstance.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="UDialogueComponent">
+    <Position X="4" Y="3.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAgQAAARgAAAAAAAAAggECAAAAAAAAAAAIAAAIgAAA=</HashCode>
+      <FileName>D:\GitHub\UE_RPG\Source\RPG\DialogueComponent.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ADialogueNPC">
+    <Position X="4" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAABAAAAABAAEAAAAAAAAIAAAAAAAAAAAgAAAwQAA=</HashCode>
+      <FileName>D:\GitHub\UE_RPG\Source\RPG\DialogueNPC.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="UDialogueWidget">
+    <Position X="5.75" Y="2.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAICAAAAAAAIAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>D:\GitHub\UE_RPG\Source\RPG\DialogueWidget.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="UDieParticleNotify">
+    <Position X="12.75" Y="12.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAAAABAAAAAAA=</HashCode>
+      <FileName>D:\GitHub\UE_RPG\Source\RPG\DieParticleNotify.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="UDisableColliderANS">
+    <Position X="18" Y="5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAACAAAAAAAAAAAAABAAAAAAAAA=</HashCode>
+      <FileName>D:\GitHub\UE_RPG\Source\RPG\DisableColliderANS.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ADropItem">
+    <Position X="12.75" Y="8" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAYAAAAAAAAAACAAgAAAAAAAAgAAAAAAAAAAgQAA=</HashCode>
+      <FileName>D:\GitHub\UE_RPG\Source\RPG\DropItem.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="AHPPotion">
+    <Position X="11" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAIAEAAAABAAAAAAgQAA=</HashCode>
+      <FileName>D:\GitHub\UE_RPG\Source\RPG\HPPotion.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="UInventoryComponent">
+    <Position X="16.25" Y="12" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAhCEgAAIIAQABAAQEBAhAAAAQAEAAAACAQgAEA=</HashCode>
+      <FileName>D:\GitHub\UE_RPG\Source\RPG\InventoryComponent.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="UInventoryItemAction">
+    <Position X="23.25" Y="12" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AACAAIAAEQgAAAAAABAQAJAEAAACEAAAAAAAAAAAAJg=</HashCode>
+      <FileName>D:\GitHub\UE_RPG\Source\RPG\InventoryItemAction.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="UInventoryQuickSlotWidget">
+    <Position X="21.5" Y="14.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAgAACAAAAIAAABAAAAIAAAIAAAAAAAQAAAAAAAAA=</HashCode>
+      <FileName>D:\GitHub\UE_RPG\Source\RPG\InventoryQuickSlotWidget.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="UInventorySlotWidget">
+    <Position X="19.75" Y="12" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAgACABAAAAAiIAQAACIAQAAAAAAgAAAAAIAgAABA=</HashCode>
+      <FileName>D:\GitHub\UE_RPG\Source\RPG\InventorySlotWidget.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="UInventoryTooltip">
+    <Position X="21.5" Y="12" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAECAAACAIAAAAAAAAAAAAAAAACAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>D:\GitHub\UE_RPG\Source\RPG\InventoryTooltip.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="UInventoryWidget">
+    <Position X="18" Y="12" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAIAACgAAAAAQIAAAAgAAIAAAAAAAAAAAAAACAAAAAA=</HashCode>
+      <FileName>D:\GitHub\UE_RPG\Source\RPG\InventoryWidget.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="AItemBase">
+    <Position X="9.25" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAQAAAAAAAAAAEAAAAgAAAAAAgQAA=</HashCode>
+      <FileName>D:\GitHub\UE_RPG\Source\RPG\ItemBase.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ULeftCollisionEnableANS">
+    <Position X="19.75" Y="2" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAACAAAAAAAAAAAAABAAAAAAAAA=</HashCode>
+      <FileName>D:\GitHub\UE_RPG\Source\RPG\LeftCollisionEnableANS.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="AMonster">
+    <Position X="0.5" Y="8" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>CAADIAMBBAgJAYAABUACEIARAA20AIAAGAAEhgSmSBA=</HashCode>
+      <FileName>D:\GitHub\UE_RPG\Source\RPG\Monster.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="AMonsterAICHearing">
+    <Position X="4" Y="10.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAACAAAAAAACAAEAAACAAAAAAAAAAAAAAAgAAA=</HashCode>
+      <FileName>D:\GitHub\UE_RPG\Source\RPG\MonsterAICHearing.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="AMonsterAICSight">
+    <Position X="4" Y="8" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>ACAAAAAAAAAAAAAAAAAEAAACABAAAAAAAAAAAAAgAAA=</HashCode>
+      <FileName>D:\GitHub\UE_RPG\Source\RPG\MonsterAICSight.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="UMonsterAttackComponent">
+    <Position X="11" Y="13.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAgCAACEAgAAAAAAAAAAAAAAAAAAABIAgAAA=</HashCode>
+      <FileName>D:\GitHub\UE_RPG\Source\RPG\MonsterAttackComponent.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="UMonsterCollisionEnableANS">
+    <Position X="11" Y="16.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAACAAAAAAAAAAAAABAAAAIAAAA=</HashCode>
+      <FileName>D:\GitHub\UE_RPG\Source\RPG\MonsterCollisionEnableANS.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="AMonsterProjectile">
+    <Position X="4" Y="14.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>EjACAAAAEAAAAAQAAAAAAAAAAAAAAIAgAAIAAAAgYEA=</HashCode>
+      <FileName>D:\GitHub\UE_RPG\Source\RPG\MonsterProjectile.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="UMonsterProjectileNotify">
+    <Position X="5.75" Y="10.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAEAAAAAAAAAAAAAJAAAAAAAAAAAA=</HashCode>
+      <FileName>D:\GitHub\UE_RPG\Source\RPG\MonsterProjectileNotify.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="UMonsterWidget">
+    <Position X="11" Y="8" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAACAAAAAEAIAAAAAAIAAAAAAAIAAABAA=</HashCode>
+      <FileName>D:\GitHub\UE_RPG\Source\RPG\MonsterWidget.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="UMonsterWidgetComponent">
+    <Position X="11" Y="10.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAIAAAAAACAAABAEAAIAAAAAAAAAAAAAAAAwAAA=</HashCode>
+      <FileName>D:\GitHub\UE_RPG\Source\RPG\MonsterWidgetComponent.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="UMoveToPlayerANS">
+    <Position X="7.5" Y="17.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEAAA=</HashCode>
+      <FileName>D:\GitHub\UE_RPG\Source\RPG\MoveToPlayerANS.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="UMyAnimInstance">
+    <Position X="0.5" Y="3.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAABAAAAEAAAAASAIAAAAAQAAAAAAA=</HashCode>
+      <FileName>D:\GitHub\UE_RPG\Source\RPG\MyAnimInstance.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="AMyCharacter">
+    <Position X="14.5" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>9CDyiASB2JRSLiQLBqgTXGiXoBICEoYwkCFk8EW8WY4=</HashCode>
+      <FileName>D:\GitHub\UE_RPG\Source\RPG\MyCharacter.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="AMyGameModeBase">
+    <Position X="0.5" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAEAABAIAAAAAAAAAAAAAAAAAQAAAAAAAAAgQBA=</HashCode>
+      <FileName>D:\GitHub\UE_RPG\Source\RPG\MyGameModeBase.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="AMyPlayerController">
+    <Position X="16.25" Y="2.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAgQAAWIQrAgAKSAiCAAQAADAAAKWQAAEAIIUACsMCQ=</HashCode>
+      <FileName>D:\GitHub\UE_RPG\Source\RPG\MyPlayerController.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="APatrolPath">
+    <Position X="5.75" Y="8" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAACAAAAAAABAIAAAAAAAAAACAAAAAAgQAA=</HashCode>
+      <FileName>D:\GitHub\UE_RPG\Source\RPG\PatrolPath.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="UPlayerWidget">
+    <Position X="21.5" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AIAAAEAAAAAAAAAAAAAEAIAAAAAAAAAAAAAAIAAAAAA=</HashCode>
+      <FileName>D:\GitHub\UE_RPG\Source\RPG\PlayerWidget.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="URightCollisionEnableANS">
+    <Position X="19.75" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAACAAAAAAAAAAAAABAAAAAAAAA=</HashCode>
+      <FileName>D:\GitHub\UE_RPG\Source\RPG\RightCollisionEnableANS.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="UShowControlKeysWidget">
+    <Position X="7.5" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAgAABAAAQAgAAAAICAAQBEBACBAAAAAAEEAAA=</HashCode>
+      <FileName>D:\GitHub\UE_RPG\Source\RPG\ShowControlKeysWidget.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="AWeapon">
+    <Position X="11" Y="3.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAgKBAAIAAoAAAAABAAAAAAQBAAUAAEAAAAAAoAgQAA=</HashCode>
+      <FileName>D:\GitHub\UE_RPG\Source\RPG\Weapon.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="UWeaponBaseComponent">
+    <Position X="18" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>IACIACAAAiIAAAAIAAAAAAQAIAAACAAAAAAAAAAkAJE=</HashCode>
+      <FileName>D:\GitHub\UE_RPG\Source\RPG\WeaponBaseComponent.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Struct Name="FCharacterData">
+    <Position X="16.25" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>IAAAAAAAAAAAAAAAAAABIAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>D:\GitHub\UE_RPG\Source\RPG\CharacterData.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="FDialogueTable">
+    <Position X="5.75" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAEAAAAAAAAABAAAAA=</HashCode>
+      <FileName>D:\GitHub\UE_RPG\Source\RPG\DialogueTable.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="FDropItemData">
+    <Position X="12.75" Y="10.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAgAAAAACAAAAAAAAAAAAAAAAAQAA=</HashCode>
+      <FileName>D:\GitHub\UE_RPG\Source\RPG\DropItemData.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="FDropRate">
+    <Position X="2.25" Y="15.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>QAAAAAAAAAAAAAAAgAAAAAAAAAAAAAACAAAAAAIAQAA=</HashCode>
+      <FileName>D:\GitHub\UE_RPG\Source\RPG\DropRate.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="FInventoryItemData">
+    <Position X="18" Y="15" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAgAAAAACAAAAAAAAAAAAAAAAAAAAAAAAAAAAIAAQAA=</HashCode>
+      <FileName>D:\GitHub\UE_RPG\Source\RPG\InventoryItemData.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="FItemData">
+    <Position X="9.25" Y="3.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAEAAAAAAAAAAAAgAAAAAAAAAACEAAwAAAACAAAAgA=</HashCode>
+      <FileName>D:\GitHub\UE_RPG\Source\RPG\ItemData.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="FMonsterData">
+    <Position X="2.25" Y="13.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>ACABAACAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACAAA=</HashCode>
+      <FileName>D:\GitHub\UE_RPG\Source\RPG\MonsterData.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Font Name="맑은 고딕" Size="9" />
+</ClassDiagram>

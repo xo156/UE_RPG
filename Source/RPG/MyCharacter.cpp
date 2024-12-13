@@ -23,7 +23,7 @@
 #include "Monster.h"
 #include "DataTableGameInstance.h"
 #include "InventoryQuickSlotWidget.h"
-#include "NPC.h"
+#include "DialogueNPC.h"
 #include "ShowControlKeysWidget.h"
 
 // Sets default values
@@ -636,9 +636,9 @@ void AMyCharacter::TalkNPC()
 				AActor* HitActor = Hit.GetActor();
 				if (HitActor) {
 					if (HitActor->ActorHasTag(FName("NPC"))) {
-						if (auto* NPC = Cast<ANPC>(HitActor)) {
-							CurrentTalkNPC = NPC;
-							NPC->ShowDialogues();
+						if (auto* DialogueNPC = Cast<ADialogueNPC>(HitActor)) {
+							CurrentTalkNPC = DialogueNPC;
+							DialogueNPC->ShowDialogues();
 							bIsTalk = true;
 							break;
 						}
@@ -854,11 +854,6 @@ AActor* AMyCharacter::GetPrevLockOnTarget()
 	return PrevLockOnTarget ? PrevLockOnTarget : nullptr;
 }
 
-//float AMyCharacter::GetTargetHeightOffset()
-//{
-//	return TargetHeightOffset;
-//}
-
 AItemBase* AMyCharacter::GetQuickSlotItem()
 {
 	return QuickSlotItem ? QuickSlotItem : nullptr;
@@ -910,7 +905,7 @@ void AMyCharacter::SetQuickSlotItemID(int32 NewID)
 	QuickSlotItemID = NewID;
 }
 
-void AMyCharacter::SetCurrentTalkNPC(ANPC* TalkNPC)
+void AMyCharacter::SetCurrentTalkNPC(ADialogueNPC* TalkNPC)
 {
 	CurrentTalkNPC = TalkNPC;
 }

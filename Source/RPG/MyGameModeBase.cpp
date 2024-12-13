@@ -20,6 +20,7 @@ void AMyGameModeBase::BeginPlay()
 	if (GameInstance) {
 		GameInstance->LoadAllTables();
 		ItemDropCache = GameInstance->GetItemDropCache();
+		ItemCache = GameInstance->GetItemCache();
 	}
 }
 

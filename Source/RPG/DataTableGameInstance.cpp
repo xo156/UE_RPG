@@ -6,6 +6,7 @@
 #include "Camera/CameraShakeBase.h"
 #include "DropRate.h"
 #include "ItemData.h"
+#include "DialogueTable.h"
 
 
 void UDataTableGameInstance::LoadAllTables()
