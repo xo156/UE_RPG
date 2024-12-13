@@ -37,7 +37,6 @@ public:
 	void OpenInventoryWidget();
 	void CloseInventoryWidget();
 
-	FInventoryItemData InventoryItemData;
 	TArray<FInventoryItemData> InventoryItems;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UI")

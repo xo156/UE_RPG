@@ -506,14 +506,16 @@ void AMyCharacter::UpdateLockOnCameraRotation()
 
 void AMyCharacter::UpdateLockOnCameraPosition()
 {
+	FRotator CurrentRotation = GetControlRotation();
 	if (!bIsLockon) {
 		if (auto* PlayerController = Cast<AMyPlayerController>(GetController())) {
+			CurrentRotation.Pitch += 15.0f;
+			CurrentRotation.Yaw -= 5.0f;
 			PlayerController->SetControlRotation(GetActorRotation()); //원래 회전으로 되돌림
 		}
 	}
 	else {
 		//카메라를 우상단으로 살짝 이동
-		FRotator CurrentRotation = GetControlRotation();
 		CurrentRotation.Pitch -= 15.0f;
 		CurrentRotation.Yaw += 5.0f;
 		if (auto* PlayerController = Cast<AMyPlayerController>(GetController())) {
@@ -835,16 +837,6 @@ void AMyCharacter::SetupStimulusSource()
 		StimulusSource->RegisterForSense(TSubclassOf<UAISense_Hearing>());
 		StimulusSource->RegisterWithPerceptionSystem();
 	}
-}
-
-AActor* AMyCharacter::GetCurrentTarget()
-{
-	return CurrentTarget ? CurrentTarget : nullptr;
-}
-
-AActor* AMyCharacter::GetPrevLockOnTarget()
-{
-	return PrevLockOnTarget ? PrevLockOnTarget : nullptr;
 }
 
 AItemBase* AMyCharacter::GetQuickSlotItem()

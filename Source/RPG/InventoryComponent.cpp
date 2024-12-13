@@ -97,7 +97,6 @@ void UInventoryComponent::AddItem(ADropItem* AddedItem)
 		InventoryItems.Add(NewInventoryItemData);
 		CurrentSlotCounter++;
 	}
-
 }
 
 void UInventoryComponent::RemoveItem(int32 ItemTableID, int32 Amount)

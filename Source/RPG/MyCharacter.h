@@ -108,8 +108,6 @@ public:
 	float RollStaminaCost = 5.f;
 
 	//getter
-	AActor* GetCurrentTarget();
-	AActor* GetPrevLockOnTarget();
 	class AItemBase* GetQuickSlotItem();
 	class UWeaponBaseComponent* GetCurrentWeaponComponent();
 	class UBoxComponent* GetGuardComponent();
@@ -196,7 +194,6 @@ private:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "LockOn", meta = (AllowPrivateAccess = "true"))
 	float MaxTargetAngle = 45.f;
 	AActor* CurrentTarget = nullptr;
-	AActor* PrevLockOnTarget = nullptr;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "LockOn", meta = (AllowPrivateAccess = "true"))
 	TSubclassOf<class UUserWidget> LockonWidgetClass;
 	class UUserWidget* LockonWidgetInstance;

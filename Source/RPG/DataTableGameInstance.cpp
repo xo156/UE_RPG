@@ -6,8 +6,7 @@
 #include "Camera/CameraShakeBase.h"
 #include "DropRate.h"
 #include "ItemData.h"
-#include "DialogueTable.h"
-
+#include "InventoryItemData.h"
 
 void UDataTableGameInstance::LoadAllTables()
 {
@@ -41,6 +40,11 @@ UDataTable* UDataTableGameInstance::GetCharacterDataTable()
 	return CharacterDataTable ? CharacterDataTable : nullptr;
 }
 
+UDataTable* UDataTableGameInstance::GetInventoryItemTable()
+{
+	return InventoryItemTable ? InventoryItemTable : nullptr;
+}
+
 TSubclassOf<class UCameraShakeBase> UDataTableGameInstance::GetCameraShake()
 {
 	return CameraShake ? CameraShake : nullptr;
@@ -71,6 +75,18 @@ void UDataTableGameInstance::LoadItemDropCache()
 		DropItemTable->GetAllRows<FDropRate>(ContextString, ItemRows);
 		for (FDropRate* Item : ItemRows) {
 			ItemDropCache.Add(Item->ItemID, Item);
+		}
+	}
+}
+
+void UDataTableGameInstance::LoadInventoryItemCache()
+{
+	if (InventoryItemTable) {
+		static const FString ContextString(TEXT("Inventory Item Cache Context"));
+		TArray<FInventoryItemData*> ItemRows;
+		InventoryItemTable->GetAllRows<FInventoryItemData>(ContextString, ItemRows);
+		for (FInventoryItemData* Item : ItemRows) {
+			InventoryItemDataCache.Add(Item->ItemTableID, Item);
 		}
 	}
 }

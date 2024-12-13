@@ -24,16 +24,20 @@ public:
 	class UDataTable* GetDropItemTable();
 	class UDataTable* GetMonsterDataTable();
 	class UDataTable* GetCharacterDataTable();
+	class UDataTable* GetInventoryItemTable();
 	TSubclassOf<class UCameraShakeBase> GetCameraShake();
 	TSubclassOf<class UCameraShakeBase> GetBossCameraShake();
 
 	const TMap<int32, struct FDropRate*>& GetItemDropCache() const { return ItemDropCache; }
 	const TMap<int32, struct FItemData*>& GetItemCache() const { return ItemCache; }
+	const TMap<int32, struct FInventoryItemData*>& GetInventoryItemDataCache() const { return InventoryItemDataCache; }
 
 private:
 	void LoadItemCache();
 	void LoadItemDropCache();
+	void LoadInventoryItemCache();
 
+	//테이블
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Data", meta = (AllowPrivateAccess = "true"))
 	class UDataTable* ItemTable;
 
@@ -41,7 +45,7 @@ private:
 	class UDataTable* DropItemTable;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Data", meta = (AllowPrivateAccess = "true"))
-	class UDataTable* DialogueTable;
+	class UDataTable* InventoryItemTable;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Data", meta = (AllowPrivateAccess = "true"))
 	class UDataTable* MonsterDataTable;
@@ -49,8 +53,10 @@ private:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Data", meta = (AllowPrivateAccess = "true"))
 	class UDataTable* CharacterDataTable;
 
+	//캐시
 	TMap<int32, struct FDropRate*> ItemDropCache;
 	TMap<int32, struct FItemData*> ItemCache;
+	TMap<int32, struct FInventoryItemData*> InventoryItemDataCache;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "CameraShake", meta = (AllowPrivateAccess = "true"))
 	TSubclassOf<class UCameraShakeBase> CameraShake;

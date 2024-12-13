@@ -55,7 +55,7 @@ FReply UInventorySlotWidget::NativeOnMouseButtonDown(const FGeometry& InGeometry
 {
 	Super::NativeOnMouseButtonDown(InGeometry, InMouseEvent);
 
-	if (InMouseEvent.GetEffectingButton() == EKeys::RightMouseButton && bIsHover) { //우클릭하면 사용 혹은 버리기 선택
+	if (InMouseEvent.GetEffectingButton() == EKeys::RightMouseButton && bIsHover) {
 		if (auto* PlayerController = Cast<AMyPlayerController>(GetWorld()->GetFirstPlayerController())) {
 			if (InventoryItemActionClass) {
 				InventoryItemActionInstance = CreateWidget<UInventoryItemAction>(this, InventoryItemActionClass);
