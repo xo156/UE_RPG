@@ -33,14 +33,24 @@ public:
 	void RideAnimal();
 	void DropOutAnimal();
 
+	bool bIsMove = false;
+	bool bIsRun = false;
+
 private:
+	////컨트롤러
+	//class AMyPlayerController* PlayerCharacterController;
+	//class AVehicleController* VehicleAnimalController;
+
+	//탑승 및 하차
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Ride", meta = (AllowPrivateAccess = "true"))
+	class USceneComponent* RideLocationComponent;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Ride", meta = (AllowPrivateAccess = "true"))
+	class USceneComponent* DropOutLocationComponent;
+
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera", meta = (AllowPrivateAccess = "true"))
 	class UCameraComponent* CameraComponent;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera", meta = (AllowPrivateAccess = "true"))
 	class USpringArmComponent* CameraBoom;
-
-	bool bIsMove = false;
-	bool bIsRun = false;
 
 	FVector PreviousLocation;
 	FVector CurrentLocation;

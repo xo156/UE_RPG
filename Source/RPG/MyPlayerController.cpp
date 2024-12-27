@@ -3,7 +3,6 @@
 
 #include "MyPlayerController.h"
 #include "MyCharacter.h"
-#include "Animal.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "InputMappingContext.h"
@@ -15,24 +14,17 @@
 #include "InventoryItemAction.h"
 #include "Camera/CameraShakeBase.h"
 
-AMyPlayerController::AMyPlayerController() {
+AMyPlayerController::AMyPlayerController()
+{
 
 }
 
-AMyCharacter* AMyPlayerController::GetCharacter() {
+AMyCharacter* AMyPlayerController::GetCharacter()
+{
 	if (MyCharacter == nullptr) {
 		MyCharacter = Cast<AMyCharacter>(GetPawn());
 	}
-
 	return MyCharacter;
-}
-
-AAnimal* AMyPlayerController::GetVehicleAnimal()
-{
-	if (MyVehicleAnimal == nullptr) {
-		MyVehicleAnimal = Cast<AAnimal>(GetPawn());
-	}
-	return MyVehicleAnimal;
 }
 
 void AMyPlayerController::ShowTooltipAtMousePosition(UInventoryTooltip* TooltipWidget)
@@ -149,10 +141,7 @@ void AMyPlayerController::SetupInputComponent() {
 void AMyPlayerController::Move(const FInputActionValue& Value)
 {
 	const FVector2D InputValue = Value.Get<FVector2D>();
-	if (auto* Vehicle = GetVehicleAnimal()) {
-		Vehicle->Move(InputValue);
-	}
-	else if (GetCharacter() != nullptr) {
+	if (GetCharacter() != nullptr) {
 		if (!GetCharacter()->bIsAttack) {
 			GetCharacter()->Move(InputValue);
 		}
@@ -161,10 +150,7 @@ void AMyPlayerController::Move(const FInputActionValue& Value)
 
 void AMyPlayerController::RunStart()
 {
-	if (auto* Vehicle = GetVehicleAnimal()) {
-		Vehicle->RunStart();
-	}
-	else if (GetCharacter() != nullptr) {
+	if (GetCharacter() != nullptr) {
 		if (!GetCharacter()->bIsRun) {
 			GetCharacter()->RunStart();
 		}
@@ -173,9 +159,6 @@ void AMyPlayerController::RunStart()
 
 void AMyPlayerController::RunEnd()
 {
-	if (auto* Vehicle = GetVehicleAnimal()) {
-		Vehicle->RunEnd();
-	}
 	if (GetCharacter() != nullptr) {
 		if (GetCharacter()->bIsRun) {
 			GetCharacter()->RunEnd();
@@ -183,12 +166,8 @@ void AMyPlayerController::RunEnd()
 	}
 }
 
-void AMyPlayerController::Jump() {
-	if (auto* Vehicle = GetVehicleAnimal()) {
-		if (Vehicle->CanJump()) {
-			Vehicle->Jump();
-		}
-	}
+void AMyPlayerController::Jump() 
+{
 	if (GetCharacter() != nullptr) {
 		if (GetCharacter()->CanJump() && GetCharacter()->bHasEnoughStamina(GetCharacter()->JumpStaminaCost)) {
 			GetCharacter()->ConsumeStaminaForAction(GetCharacter()->JumpStaminaCost);
@@ -197,17 +176,16 @@ void AMyPlayerController::Jump() {
 	}
 }
 
-void AMyPlayerController::Look(const FInputActionValue& Value) {
+void AMyPlayerController::Look(const FInputActionValue& Value) 
+{
 	const FVector2D InputValue = Value.Get<FVector2D>();
-	if (auto* Vehicle = GetVehicleAnimal()) {
-		Vehicle->Look(InputValue);
-	}
-	else if (GetCharacter() != nullptr) {
+	if (GetCharacter() != nullptr) {
 		GetCharacter()->Look(InputValue);
 	}
 }
 
-void AMyPlayerController::AttackStart(const FInputActionValue& Value) {
+void AMyPlayerController::AttackStart(const FInputActionValue& Value) 
+{
 	if (GetCharacter() != nullptr) {
 		GetCharacter()->AttackStart();
 	}

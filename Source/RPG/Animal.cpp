@@ -4,10 +4,15 @@
 #include "Animal.h"
 #include "MyCharacter.h"
 #include "MyPlayerController.h"
+#include "VehicleController.h"
+#include "Components/SceneComponent.h"
 #include "Kismet/GameplayStatics.h"
+#include "Kismet/KismetSystemLibrary.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "Camera/CameraComponent.h"
+#include "DataTableGameInstance.h"
+
 
 // Sets default values
 AAnimal::AAnimal()
@@ -16,6 +21,14 @@ AAnimal::AAnimal()
 	PrimaryActorTick.bCanEverTick = true;
 
 	GetCharacterMovement()->MaxWalkSpeed = NormalMoveSpeed;
+
+	RideLocationComponent = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("RideLocation"));
+	RideLocationComponent->SetVisibility(false);
+	RideLocationComponent->SetupAttachment(GetMesh());
+
+	DropOutLocationComponent = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("DropOutLocation"));
+	DropOutLocationComponent->SetVisibility(false);
+	DropOutLocationComponent->SetupAttachment(GetMesh());
 
 	CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));
 	CameraBoom->SetupAttachment(RootComponent);
@@ -36,6 +49,10 @@ void AAnimal::BeginPlay()
 {
 	Super::BeginPlay();
 
+	/*if (auto* GameInstance = Cast<UDataTableGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()))) {
+		PlayerCharacterController = Cast<AMyPlayerController>(GameInstance->GetPlayerCharacterController());
+		VehicleAnimalController = Cast<AVehicleController>(GameInstance->GetVehicleAnimalController());
+	}*/
 }
 
 // Called every frame
@@ -49,12 +66,14 @@ void AAnimal::Tick(float DeltaTime)
 
 	//이전 위치와 현재 위치가 다른 경우 움직임이 있음
 	bIsMove = (CurrentLocation != PreviousLocation);
+
+	FVector StartLocation = GetActorLocation();
+	FVector EndLocation = StartLocation + GetActorForwardVector() * 100.0f;
+	UKismetSystemLibrary::DrawDebugArrow(GetWorld(), StartLocation, EndLocation, 5.f, FLinearColor::Red);
 }
 
 void AAnimal::Move(FVector2D InputValue)
 {
-	UE_LOG(LogTemp, Log, TEXT("AAnimal::Move(const FInputActionValue& Value)"));
-
 	const FRotator YawRotation(0.f, GetControlRotation().Yaw, 0.f);
 	const FVector ForwardDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);
 	const FVector RightDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
@@ -83,7 +102,6 @@ void AAnimal::RunEnd()
 
 void AAnimal::Jump()
 {
-	UE_LOG(LogTemp, Log, TEXT("AAnimal::Jump()"));
 	if (CanJump()) {
 		ACharacter::Jump();
 	}
@@ -91,8 +109,6 @@ void AAnimal::Jump()
 
 void AAnimal::Look(FVector2D InputValue)
 {
-	UE_LOG(LogTemp, Log, TEXT("AAnimal::Look(const FInputActionValue& Value)"));
-
 	AddControllerPitchInput(InputValue.Y);
 	AddControllerYawInput(InputValue.X);
 }
@@ -109,16 +125,24 @@ void AAnimal::TaimAnimal(ACharacter* NewOwnerCharacter)
 
 void AAnimal::RideAnimal()
 {
-	if (OwnerCharacter) {
-		OwnerCharacter->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetNotIncludingScale, FName("MountPos"));
+	UE_LOG(LogTemp, Log, TEXT("!!!!"));
+	if (auto* PlayerCharacter = Cast<AMyCharacter>(OwnerCharacter)) {
+		PlayerCharacter->AttachToComponent(RideLocationComponent, FAttachmentTransformRules::SnapToTargetNotIncludingScale);
 		OwnerCharacter->GetController()->Possess(this);
-		GetCharacterMovement()->MaxWalkSpeed = WalkMoveSpeed;
+		//VehicleAnimalController->Possess(this);
+		//PlayerCharacter->GetController()->Possess(VehicleAnimalController->GetPawn());
+		GetCharacterMovement()->MaxWalkSpeed = WalkMoveSpeed;		
 	}
 }
 
 void AAnimal::DropOutAnimal()
 {
-	DetachFromActor(FDetachmentTransformRules::KeepRelativeTransform);
-	UnPossessed();
+	UE_LOG(LogTemp, Log, TEXT("@@@@"));
+	//TODO: 여기에서 다시 플레이어한테 빙의
+	if (auto* PlayerCharacter = Cast<AMyCharacter>(OwnerCharacter)) {
+		PlayerCharacter->bIsRide = false;
+		PlayerCharacter->SetActorLocation(DropOutLocationComponent->GetComponentLocation());
+		PlayerCharacter->DetachFromActor(FDetachmentTransformRules::KeepRelativeTransform);
+	}
 	GetCharacterMovement()->MaxWalkSpeed = NormalMoveSpeed;
 }

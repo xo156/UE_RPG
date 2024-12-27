@@ -90,6 +90,7 @@ void AMonster::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 	if (MonsterWidgetComponent)
 		MonsterWidgetComponent->FaceToPlayer();
+
 }
 
 // Called to bind functionality to input

@@ -98,6 +98,10 @@ void AMyCharacter::BeginPlay() {
 void AMyCharacter::Tick(float DeltaTime) {
 	Super::Tick(DeltaTime);
 
+	FVector StartLocation = GetActorLocation();
+	FVector EndLocation = StartLocation + GetActorForwardVector() * 100.0f;
+	UKismetSystemLibrary::DrawDebugArrow(GetWorld(), StartLocation, EndLocation, 5.f, FLinearColor::Green);
+
 	//스테미나
 	CheckStaminaRecovery(DeltaTime);
 	ChangeMoveSpeed(DeltaTime);
@@ -183,7 +187,6 @@ float AMyCharacter::TakeDamage(float DamageAmount, FDamageEvent const& DamageEve
 
 void AMyCharacter::Move(FVector2D InputValue)
 {
-	UE_LOG(LogTemp, Log, TEXT("AMyCharacter::Move(FVector2D InputValue)"));
 	if (!bIsRoll) {
 		const FRotator YawRotation(0.f, GetControlRotation().Yaw, 0.f);
 		const FVector ForwardDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);
@@ -216,7 +219,6 @@ void AMyCharacter::RunEnd()
 
 void AMyCharacter::Look(FVector2D InputValue)
 {
-	UE_LOG(LogTemp, Log, TEXT("AMyCharacter::Look(FVector2D InputValue)"));
 	if (!InventoryComponent->bIsOpen) {
 		AddControllerPitchInput(InputValue.Y);
 		AddControllerYawInput(InputValue.X);
@@ -682,12 +684,11 @@ void AMyCharacter::RideVehicle()
 {
 	if (TaimmedAnimal) {
 		if (!bIsRide) {
+			//TODO:동물에서 하지말고 여기에서
+
+
 			TaimmedAnimal->RideAnimal();
 			bIsRide = true;
-		}
-		else {
-			TaimmedAnimal->DropOutAnimal();
-			bIsRide = false;
 		}
 	}
 }

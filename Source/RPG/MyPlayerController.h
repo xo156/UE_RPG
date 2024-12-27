@@ -20,9 +20,9 @@ class RPG_API AMyPlayerController : public APlayerController
 public:
 	AMyPlayerController();
 
+
 	//getter
 	AMyCharacter* GetCharacter();
-	class AAnimal* GetVehicleAnimal();
 
 	//UI
 	void ShowTooltipAtMousePosition(class UInventoryTooltip* TooltipWidget);
@@ -100,5 +100,4 @@ private:
 	class UInventoryItemAction* InventoryItemAction;
 
 	class AMyCharacter* MyCharacter;
-	class AAnimal* MyVehicleAnimal;
 };
