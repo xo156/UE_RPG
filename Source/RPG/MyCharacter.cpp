@@ -16,7 +16,6 @@
 #include "Perception/AISense_Hearing.h"
 #include "PlayerWidget.h"
 #include "DropItem.h"
-#include "Components/BoxComponent.h"
 #include "InventoryWidget.h"
 #include "InventoryItemAction.h"
 #include "Kismet/KismetMathLibrary.h"
@@ -24,6 +23,7 @@
 #include "DataTableGameInstance.h"
 #include "InventoryQuickSlotWidget.h"
 #include "DialogueNPC.h"
+#include "Animal.h"
 #include "ShowControlKeysWidget.h"
 
 // Sets default values
@@ -77,7 +77,7 @@ void AMyCharacter::BeginPlay() {
 
 	if (auto* GameInstance = Cast<UDataTableGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()))) {
 		CameraShake = GameInstance->GetCameraShake();
-		CharacterDataTable = GameInstance->GetCharacterDataTable();
+		CharacterData = GameInstance->GetCharacterInfo(PlayerCharacterID);
 		SetPlayerInfo();
 	}
 
@@ -98,7 +98,7 @@ void AMyCharacter::BeginPlay() {
 void AMyCharacter::Tick(float DeltaTime) {
 	Super::Tick(DeltaTime);
 
-	//구조체
+	//스테미나
 	CheckStaminaRecovery(DeltaTime);
 	ChangeMoveSpeed(DeltaTime);
 
@@ -169,11 +169,12 @@ float AMyCharacter::TakeDamage(float DamageAmount, FDamageEvent const& DamageEve
 	if (bHasEnoughHP(DamageAmount)) {
 		//체력이 충분해서 데미지를 입을때
 		ConsumeHPForAction(DamageAmount);
-		UE_LOG(LogTemp, Log, TEXT("Player Damaged, CurrentHP: %f"), CurrentHP);
+		UE_LOG(LogTemp, Log, TEXT("Player Damaged, CurrentPlayerHP: %f"), CurrentPlayerHP);
 	}
 	else {
 		//체력이 없어서 죽을때
 		ConsumeHPForAction(DamageAmount);
+		PlayerDie();
 		UE_LOG(LogTemp, Log, TEXT("Player Die"));
 	}
 
@@ -182,6 +183,7 @@ float AMyCharacter::TakeDamage(float DamageAmount, FDamageEvent const& DamageEve
 
 void AMyCharacter::Move(FVector2D InputValue)
 {
+	UE_LOG(LogTemp, Log, TEXT("AMyCharacter::Move(FVector2D InputValue)"));
 	if (!bIsRoll) {
 		const FRotator YawRotation(0.f, GetControlRotation().Yaw, 0.f);
 		const FVector ForwardDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);
@@ -214,6 +216,7 @@ void AMyCharacter::RunEnd()
 
 void AMyCharacter::Look(FVector2D InputValue)
 {
+	UE_LOG(LogTemp, Log, TEXT("AMyCharacter::Look(FVector2D InputValue)"));
 	if (!InventoryComponent->bIsOpen) {
 		AddControllerPitchInput(InputValue.Y);
 		AddControllerYawInput(InputValue.X);
@@ -239,26 +242,25 @@ void AMyCharacter::AttackExecute()
 		CurrentWeaponComponent->GetRightHandWeaponInstance()->GetOverlapActors().Empty();
 		CurrentWeaponComponent->GetLeftHandWeaponInstance()->GetOverlapActors().Empty();
 
-		int32 SectionCount = CurrentWeaponComponent->GetSectionCount(CurrentWeaponComponent->AttackMontage);
-
+		int32 SectionCount = CurrentWeaponComponent->GetSectionCount(CurrentWeaponComponent->LightAttackMontage);
 		ConsumeStaminaForAction(AttackStaminaCost);
 		UAISense_Hearing::ReportNoiseEvent(GetWorld(), GetActorLocation(), AttackLoudness, this);
 		if (CurrentWeaponComponent->CurrentComboCount < SectionCount) {
 			FString SectionName = "Combo" + FString::FromInt(CurrentWeaponComponent->CurrentComboCount);
-			if (AnimInstance->Montage_IsPlaying(CurrentWeaponComponent->AttackMontage)) {
-				AnimInstance->Montage_JumpToSection(FName(*SectionName), CurrentWeaponComponent->AttackMontage);
+			if (AnimInstance->Montage_IsPlaying(CurrentWeaponComponent->LightAttackMontage)) {
+				AnimInstance->Montage_JumpToSection(FName(*SectionName), CurrentWeaponComponent->LightAttackMontage);
 			}
 			else {
-				AnimInstance->Montage_Play(CurrentWeaponComponent->AttackMontage);
-				AnimInstance->Montage_JumpToSection(FName(*SectionName), CurrentWeaponComponent->AttackMontage);
+				AnimInstance->Montage_Play(CurrentWeaponComponent->LightAttackMontage);
+				AnimInstance->Montage_JumpToSection(FName(*SectionName), CurrentWeaponComponent->LightAttackMontage);
 			}
 			CurrentWeaponComponent->CurrentComboCount++;
 		}
 		else {
 			CurrentWeaponComponent->CurrentComboCount = 0;
 			FString SectionName = "Combo0";
-			AnimInstance->Montage_Play(CurrentWeaponComponent->AttackMontage);
-			AnimInstance->Montage_JumpToSection(FName(*SectionName), CurrentWeaponComponent->AttackMontage);
+			AnimInstance->Montage_Play(CurrentWeaponComponent->LightAttackMontage);
+			AnimInstance->Montage_JumpToSection(FName(*SectionName), CurrentWeaponComponent->LightAttackMontage);
 		}
 	}
 }
@@ -266,12 +268,12 @@ void AMyCharacter::AttackExecute()
 void AMyCharacter::SetComboAttackTimer()
 {
 	if (auto* AnimInstance = GetMesh()->GetAnimInstance()) {
-		if (AnimInstance->Montage_IsPlaying(CurrentWeaponComponent->AttackMontage)) {
-			FName CurrentSectionName = AnimInstance->Montage_GetCurrentSection(CurrentWeaponComponent->AttackMontage);
+		if (AnimInstance->Montage_IsPlaying(CurrentWeaponComponent->LightAttackMontage)) {
+			FName CurrentSectionName = AnimInstance->Montage_GetCurrentSection(CurrentWeaponComponent->LightAttackMontage);
 			if (!CurrentSectionName.IsNone()) {
-				float SectionLength = CurrentWeaponComponent->AttackMontage->GetSectionLength(CurrentWeaponComponent->AttackMontage->GetSectionIndex(CurrentSectionName));
+				float SectionLength = CurrentWeaponComponent->LightAttackMontage->GetSectionLength(CurrentWeaponComponent->LightAttackMontage->GetSectionIndex(CurrentSectionName));
 				GetWorld()->GetTimerManager().SetTimer(ComboCheckTimerHandle, this, &AMyCharacter::StopComboAttackTimer, SectionLength, false);
-				GetCurrentWeapon()->WaitComboTime = SectionLength;
+				GetCurrentWeaponComponent()->WaitComboTime = SectionLength;
 			}
 		}
 	}
@@ -280,7 +282,7 @@ void AMyCharacter::SetComboAttackTimer()
 void AMyCharacter::StopComboAttackTimer()
 {
 	GetWorld()->GetTimerManager().ClearTimer(ComboCheckTimerHandle);
-	GetCurrentWeapon()->WaitComboTime = 0;
+	GetCurrentWeaponComponent()->WaitComboTime = 0;
 }
 
 void AMyCharacter::AttackEnd()
@@ -509,14 +511,11 @@ void AMyCharacter::UpdateLockOnCameraPosition()
 	FRotator CurrentRotation = GetControlRotation();
 	if (!bIsLockon) {
 		if (auto* PlayerController = Cast<AMyPlayerController>(GetController())) {
-			CurrentRotation.Pitch += 15.0f;
 			CurrentRotation.Yaw -= 5.0f;
-			PlayerController->SetControlRotation(GetActorRotation()); //원래 회전으로 되돌림
+			PlayerController->SetControlRotation(GetActorRotation());
 		}
 	}
 	else {
-		//카메라를 우상단으로 살짝 이동
-		CurrentRotation.Pitch -= 15.0f;
 		CurrentRotation.Yaw += 5.0f;
 		if (auto* PlayerController = Cast<AMyPlayerController>(GetController())) {
 			PlayerController->SetControlRotation(CurrentRotation);
@@ -605,46 +604,90 @@ void AMyCharacter::QuickSlot()
 	}
 }
 
-void AMyCharacter::TalkNPC()
+void AMyCharacter::Interact()
 {
-	if (!bIsTalk && !CurrentTalkNPC) {
-		FCollisionQueryParams QueryParams;
-		QueryParams.AddIgnoredActor(this); // 자기 자신 무시
-		QueryParams.bTraceComplex = false;
-		QueryParams.bReturnPhysicalMaterial = false;
+	//상호작용 가능한 NPC 또는 동물 찾기
+	FCollisionQueryParams QueryParams;
+	QueryParams.AddIgnoredActor(this); //자기 자신 무시
+	QueryParams.bTraceComplex = false;
+	QueryParams.bReturnPhysicalMaterial = false;
 
-		TArray<FHitResult> HitResults;
+	TArray<FHitResult> HitResults;
 
-		// 트레이스 수행
-		bool bHit = GetWorld()->SweepMultiByChannel(
-			HitResults,
-			GetActorLocation(),
-			GetActorLocation(),
-			FQuat::Identity,
-			ECC_Visibility,
-			FCollisionShape::MakeSphere(TalkRange),
-			QueryParams
-		);
+	//트레이스 수행
+	bool bHit = GetWorld()->SweepMultiByChannel(
+		HitResults,
+		GetActorLocation(),
+		GetActorLocation(),
+		FQuat::Identity,
+		ECC_Visibility,
+		FCollisionShape::MakeSphere(InteractRange),
+		QueryParams
+	);
 
-		if (bHit) {
-			for (FHitResult& Hit : HitResults) {
-				AActor* HitActor = Hit.GetActor();
-				if (HitActor) {
-					if (HitActor->ActorHasTag(FName("NPC"))) {
-						if (auto* DialogueNPC = Cast<ADialogueNPC>(HitActor)) {
-							CurrentTalkNPC = DialogueNPC;
-							DialogueNPC->ShowDialogues();
-							bIsTalk = true;
-							break;
-						}
+	if (bHit) {
+		for (FHitResult& Hit : HitResults) {
+			AActor* HitActor = Hit.GetActor();
+			if (HitActor) {
+				if (HitActor->ActorHasTag(FName("NPC"))) {
+					if (auto* NPC = Cast<ADialogueNPC>(HitActor)) {
+						CurrentTalkNPC = NPC;
+						TalkNPC();
+						return; //NPC가 발견되면 함수 종료
+					}
+				}
+				// 동물 체크
+				else if (HitActor->ActorHasTag(FName("Animal"))) {
+					if (auto* WildAnimal = Cast<AAnimal>(HitActor)) {
+						CurrentAnimal = WildAnimal;
+						CommuneAnimal();
+						return; //동물이 발견되면 함수 종료
 					}
 				}
 			}
 		}
 	}
-	else {
-		if (CurrentTalkNPC) {
+}
+
+void AMyCharacter::TalkNPC()
+{
+	if (CurrentTalkNPC) {
+		if (bIsTalk) {
 			CurrentTalkNPC->GetDialogueComponent()->NextDialogue();
+		}
+		else {
+			CurrentTalkNPC->ShowDialogues();
+			bIsTalk = true;
+		}
+	}
+}
+
+void AMyCharacter::CommuneAnimal()
+{
+	if (CurrentAnimal) {
+		if (TaimmedAnimal) { //새로운 동물이랑 상호작용 시도시
+			TaimmedAnimal = nullptr;
+		}
+		if (auto* AnimInstance = GetMesh()->GetAnimInstance()) {
+			if (TaimMontage) {
+				AnimInstance->Montage_Play(TaimMontage);
+				CurrentAnimal->TaimAnimal(this);
+				CurrentAnimal = nullptr;
+			}
+		}
+	}
+}
+
+void AMyCharacter::RideVehicle()
+{
+	if (TaimmedAnimal) {
+		if (!bIsRide) {
+			TaimmedAnimal->RideAnimal();
+			bIsRide = true;
+		}
+		else {
+			TaimmedAnimal->DropOutAnimal();
+			bIsRide = false;
 		}
 	}
 }
@@ -709,19 +752,14 @@ void AMyCharacter::EquipWeapon(TSubclassOf<class UWeaponBaseComponent> WeaponBas
 	}
 }
 
-UWeaponBaseComponent* AMyCharacter::GetCurrentWeapon() const
-{
-	return CurrentWeaponComponent ? CurrentWeaponComponent : nullptr;
-}
-
 void AMyCharacter::SetupWidget()
 {
 	if (PlayerWidgetClass) {
 		PlayerWidgetInstance = CreateWidget<UPlayerWidget>(GetWorld(), PlayerWidgetClass);
 		if (PlayerWidgetInstance) {
 			PlayerWidgetInstance->AddToViewport();
-			PlayerWidgetInstance->UpdateHP(CurrentHP, MaxHP);
-			PlayerWidgetInstance->UpdateStamina(CurrentStamina, MaxStamina);
+			PlayerWidgetInstance->UpdateHP(CurrentPlayerHP, MaxPlayerHP);
+			PlayerWidgetInstance->UpdateStamina(CurrentPlayerStamina, MaxPlayerStamina);
 		}
 	}
 
@@ -745,45 +783,45 @@ void AMyCharacter::SetupWidget()
 float AMyCharacter::UseStamina(float StaminaCost)
 {
 	if (StaminaCost >= 0) {
-		CurrentStamina = FMath::Max(CurrentStamina - StaminaCost, 0.0f);
+		CurrentPlayerStamina = FMath::Max(CurrentPlayerStamina - StaminaCost, 0.0f);
 	}
 	else {
-		CurrentStamina = FMath::Min(CurrentStamina + StaminaCost, MaxStamina);
+		CurrentPlayerStamina = FMath::Min(CurrentPlayerStamina + StaminaCost, MaxPlayerStamina);
 	}
-	return CurrentStamina;
+	return CurrentPlayerStamina;
 }
 
 float AMyCharacter::UseHP(float HPCost)
 {
 	if (HPCost >= 0) {
-		CurrentHP = FMath::Max(CurrentHP - HPCost, 0.0f);
+		CurrentPlayerHP = FMath::Max(CurrentPlayerHP - HPCost, 0.0f);
 	}
 	else {
-		CurrentHP = FMath::Min(CurrentHP - HPCost, MaxHP);
+		CurrentPlayerHP = FMath::Min(CurrentPlayerHP - HPCost, MaxPlayerHP);
 	}
-	return CurrentHP;
+	return CurrentPlayerHP;
 }
 
 void AMyCharacter::ConsumeStaminaForAction(float StaminaCost)
 {
 	UseStamina(StaminaCost);
-	OnPlayerUIUpdated.Broadcast(CurrentHP, CurrentStamina);
+	OnPlayerUIUpdated.Broadcast(CurrentPlayerHP, CurrentPlayerStamina);
 }
 
 bool AMyCharacter::bHasEnoughStamina(float StaminaCost) const
 {
-	return CurrentStamina >= StaminaCost;
+	return CurrentPlayerStamina >= StaminaCost;
 }
 
 void AMyCharacter::ConsumeHPForAction(float HPCost)
 {
 	UseHP(HPCost);	
-	OnPlayerUIUpdated.Broadcast(CurrentHP, CurrentStamina);
+	OnPlayerUIUpdated.Broadcast(CurrentPlayerHP, CurrentPlayerStamina);
 }
 
 bool AMyCharacter::bHasEnoughHP(float HPCost) const
 {
-	return CurrentHP > HPCost;
+	return CurrentPlayerHP > HPCost;
 }
 
 void AMyCharacter::ChangeMoveSpeed(float DeltaTime)
@@ -809,7 +847,7 @@ void AMyCharacter::ChangeMoveSpeed(float DeltaTime)
 void AMyCharacter::CheckStaminaRecovery(float DeltaTime)
 {
 	if (!bIsAttack && !bIsRun && !bIsRoll) {
-		if (CurrentStamina < MaxStamina) {
+		if (CurrentPlayerStamina < MaxPlayerStamina) {
 			TimeWithoutAction += DeltaTime;
 			if (TimeWithoutAction >= 1.0f) {
 				RecoveryStaminia(DeltaTime);
@@ -825,8 +863,22 @@ void AMyCharacter::CheckStaminaRecovery(float DeltaTime)
 void AMyCharacter::RecoveryStaminia(float DeltaTime)
 {
 	float StaminaRecoveryRate = 1000.0f;
-	CurrentStamina = FMath::Min(CurrentStamina + (StaminaRecoveryRate * DeltaTime), MaxStamina);
-	OnPlayerUIUpdated.Broadcast(CurrentHP, CurrentStamina);
+	CurrentPlayerStamina = FMath::Min(CurrentPlayerStamina + (StaminaRecoveryRate * DeltaTime), MaxPlayerStamina);
+	OnPlayerUIUpdated.Broadcast(CurrentPlayerHP, CurrentPlayerStamina);
+}
+
+void AMyCharacter::PlayerDie()
+{
+	if (auto* AnimInstance = GetMesh()->GetAnimInstance()) {
+		GetMesh()->SetSimulatePhysics(true);
+		GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+		if (auto* PlayerController = Cast<AMyPlayerController>(GetController())) {
+			DisableInput(PlayerController);
+		}
+		if (DieMontage) {
+			AnimInstance->Montage_Play(DieMontage);
+		}
+	}
 }
 
 void AMyCharacter::SetupStimulusSource()
@@ -864,17 +916,34 @@ UInventoryQuickSlotWidget* AMyCharacter::GetInventoryQuickSlotWidgetInstance()
 	return InventoryQuickSlotWidgetInstance ? InventoryQuickSlotWidgetInstance : nullptr;
 }
 
+float AMyCharacter::GetMaxPlayerHP()
+{
+	return MaxPlayerHP;
+}
+
+float AMyCharacter::GetCurrentPlayerHP()
+{
+	return CurrentPlayerHP;
+}
+
+float AMyCharacter::GetMaxPlayerStamina()
+{
+	return MaxPlayerStamina;
+}
+
+float AMyCharacter::GetPlayerDamage()
+{
+	return PlayerDamage;
+}
+
 void AMyCharacter::SetPlayerInfo()
 {
-	if (CharacterDataTable) {
-		FCharacterData* CharacterData = CharacterDataTable->FindRow<FCharacterData>(FName(*FString::Printf(TEXT("%d"), PlayerCharacterType)), TEXT("SetPlayerInfo"));
-		if (CharacterData) {
-			MaxHP = CharacterData->MaxCharacterHP;
-			CurrentHP = MaxHP;
-			MaxStamina = CharacterData->MaxCharacterStamina;
-			CurrentStamina = MaxStamina;
-			Damage = CharacterData->CharacterDamage;
-		}
+	if (CharacterData) {
+		MaxPlayerHP = CharacterData->MaxCharacterHP;
+		CurrentPlayerHP = MaxPlayerHP;
+		MaxPlayerStamina = CharacterData->MaxCharacterStamina;
+		CurrentPlayerStamina = MaxPlayerStamina;
+		PlayerDamage = CharacterData->CharacterDamage;
 	}
 }
 
@@ -898,4 +967,10 @@ void AMyCharacter::SetQuickSlotItemID(int32 NewID)
 void AMyCharacter::SetCurrentTalkNPC(ADialogueNPC* TalkNPC)
 {
 	CurrentTalkNPC = TalkNPC;
+}
+
+void AMyCharacter::SetTaimmedAnimal(AAnimal* NewTaimAnimal)
+{
+	TaimmedAnimal = NewTaimAnimal;
+	UE_LOG(LogTemp, Log, TEXT("TaimmedAnimal is : %s"), *TaimmedAnimal->GetName());
 }

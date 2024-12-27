@@ -66,13 +66,12 @@ void ABossMonster::Tick(float DeltaTime)
 		}
 	}
 	else {
-		GetMonsterWidgetComponent()->SetVisibility(false);
+		GetMonsterWidgetComponent()->GetHealthWidget()->RemoveFromViewport();
 	}
 }
 
 void ABossMonster::MonsterAttackExecute(int32 PatternNumber)
 {
-	UE_LOG(LogTemp, Log, TEXT("ABossMonster::MonsterAttackExecute PatternNumber is : %d"), PatternNumber);
 	if (UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance()) {
 		FOnMontageEnded MontageEndedDelegate;
 		MontageEndedDelegate.BindUObject(this, &AMonster::OnAttackMontageEnded);

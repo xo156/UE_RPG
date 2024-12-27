@@ -2,7 +2,6 @@
 
 
 #include "MyGameModeBase.h"
-#include "BossMonster.h"
 #include "DataTableGameInstance.h"
 #include "Kismet/GameplayStatics.h"
 
@@ -18,9 +17,11 @@ void AMyGameModeBase::BeginPlay()
 
 	auto* GameInstance = Cast<UDataTableGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
 	if (GameInstance) {
-		GameInstance->LoadAllTables();
+		GameInstance->LoadAllTableAndCache();
 		ItemDropCache = GameInstance->GetItemDropCache();
 		ItemCache = GameInstance->GetItemCache();
+		MonsterDataCache = GameInstance->GetMonsterDataCache();
+		CharacterDataCache = GameInstance->GetCharacterDataCache();
 	}
 }
 

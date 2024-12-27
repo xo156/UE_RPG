@@ -22,6 +22,7 @@ public:
 
 	//getter
 	AMyCharacter* GetCharacter();
+	class AAnimal* GetVehicleAnimal();
 
 	//UI
 	void ShowTooltipAtMousePosition(class UInventoryTooltip* TooltipWidget);
@@ -53,7 +54,8 @@ protected:
 	void RootItem();
 	void OpenInventory();
 	void QuickSlot();
-	void TalkNPC();
+	void Interact();
+	void RideVehicle();
 	void Close();
 	void ShowControlKeysWidget();
 
@@ -68,7 +70,7 @@ private:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input", meta = (AllowPrivateAccess = "true"))
 	class UInputAction* JumpAction;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input", meta = (AllowPrivateAccess = "true"))
-	class UInputAction* AttackAction;
+	class UInputAction* LightAttackAction;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input", meta = (AllowPrivateAccess = "true"))
 	class UInputAction* LookAction;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input", meta = (AllowPrivateAccess = "true"))
@@ -86,15 +88,17 @@ private:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input", meta = (AllowPrivateAccess = "true"))
 	class UInputAction* CloseAction;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input", meta = (AllowPrivateAccess = "true"))
-	class UInputAction* TalkNPCAction;
+	class UInputAction* InteractAction;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input", meta = (AllowPrivateAccess = "true"))
+	class UInputAction* RideVehicleAction;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input", meta = (AllowPrivateAccess = "true"))
 	class UInputAction* ShowControlKeysWidgetAction;
 
-	class AMyCharacter* MyCharacter;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UI", meta = (AllowPrivateAccess = "true"))
 	class UInventoryTooltip* CurrentTooltip;
-
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UI", meta = (AllowPrivateAccess = "true"))
 	class UInventoryItemAction* InventoryItemAction;
 
+	class AMyCharacter* MyCharacter;
+	class AAnimal* MyVehicleAnimal;
 };

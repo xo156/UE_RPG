@@ -27,15 +27,9 @@ EBTNodeResult::Type UBTTask_ChoosePattern::ExecuteTask(UBehaviorTreeComponent& O
 						FinishLatentTask(OwnerComp, EBTNodeResult::Succeeded);
 						return EBTNodeResult::Succeeded;
 					}
-					else if (RandomValue < 0.9f) {
+					else {
 						//중거리
 						OwnerComp.GetBlackboardComponent()->SetValueAsInt(GetSelectedBlackboardKey(), 2);
-						FinishLatentTask(OwnerComp, EBTNodeResult::Succeeded);
-						return EBTNodeResult::Succeeded;
-					}
-					else {
-						//원거리
-						OwnerComp.GetBlackboardComponent()->SetValueAsInt(GetSelectedBlackboardKey(), 3);
 						FinishLatentTask(OwnerComp, EBTNodeResult::Succeeded);
 						return EBTNodeResult::Succeeded;
 					}

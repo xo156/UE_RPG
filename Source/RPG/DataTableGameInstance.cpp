@@ -7,17 +7,33 @@
 #include "DropRate.h"
 #include "ItemData.h"
 #include "InventoryItemData.h"
+#include "MonsterData.h"
+#include "CharacterData.h"
 
-void UDataTableGameInstance::LoadAllTables()
+void UDataTableGameInstance::LoadAllTableAndCache()
 {
 	LoadItemCache();
 	LoadItemDropCache();
+	LoadMonsterDataCache();
+	LoadCharacterDataCache();
 }
 
 FDropRate* UDataTableGameInstance::GetDropRate(int32 ItemID)
 {
 	FDropRate** FoundItem = ItemDropCache.Find(ItemID);
 	return FoundItem ? *FoundItem : nullptr;
+}
+
+FMonsterData* UDataTableGameInstance::GetMonsterInfo(int32 MonsterID)
+{
+	FMonsterData** FoundMonster = MonsterDataCache.Find(MonsterID);
+	return FoundMonster ? *FoundMonster : nullptr;
+}
+
+FCharacterData* UDataTableGameInstance::GetCharacterInfo(int32 CharacterID)
+{
+	FCharacterData** FoundCharacter = CharacterDataCache.Find(CharacterID);
+	return FoundCharacter ? *FoundCharacter : nullptr;
 }
 
 UDataTable* UDataTableGameInstance::GetItemTable()
@@ -38,11 +54,6 @@ UDataTable* UDataTableGameInstance::GetMonsterDataTable()
 UDataTable* UDataTableGameInstance::GetCharacterDataTable()
 {
 	return CharacterDataTable ? CharacterDataTable : nullptr;
-}
-
-UDataTable* UDataTableGameInstance::GetInventoryItemTable()
-{
-	return InventoryItemTable ? InventoryItemTable : nullptr;
 }
 
 TSubclassOf<class UCameraShakeBase> UDataTableGameInstance::GetCameraShake()
@@ -71,22 +82,34 @@ void UDataTableGameInstance::LoadItemDropCache()
 {
 	if (DropItemTable) {
 		static const FString ContextString(TEXT("Item Drop Cache Context"));
-		TArray<FDropRate*> ItemRows;
-		DropItemTable->GetAllRows<FDropRate>(ContextString, ItemRows);
-		for (FDropRate* Item : ItemRows) {
-			ItemDropCache.Add(Item->ItemID, Item);
+		TArray<FDropRate*> ItemDropRows;
+		DropItemTable->GetAllRows<FDropRate>(ContextString, ItemDropRows);
+		for (FDropRate* ItemDrop : ItemDropRows) {
+			ItemDropCache.Add(ItemDrop->ItemID, ItemDrop);
 		}
 	}
 }
 
-void UDataTableGameInstance::LoadInventoryItemCache()
+void UDataTableGameInstance::LoadMonsterDataCache()
 {
-	if (InventoryItemTable) {
-		static const FString ContextString(TEXT("Inventory Item Cache Context"));
-		TArray<FInventoryItemData*> ItemRows;
-		InventoryItemTable->GetAllRows<FInventoryItemData>(ContextString, ItemRows);
-		for (FInventoryItemData* Item : ItemRows) {
-			InventoryItemDataCache.Add(Item->ItemTableID, Item);
+	if (MonsterDataTable) {
+		static const FString ContextString(TEXT("Monster Data Cache Context"));
+		TArray<FMonsterData*> MonsterDataRows;
+		MonsterDataTable->GetAllRows<FMonsterData>(ContextString, MonsterDataRows);
+		for (FMonsterData* MonsterData : MonsterDataRows) {
+			MonsterDataCache.Add(MonsterData->MonsterID, MonsterData);
+		}
+	}
+}
+
+void UDataTableGameInstance::LoadCharacterDataCache()
+{
+	if (CharacterDataTable) {
+		static const FString ContextString(TEXT("Character Data Cache Context"));
+		TArray<FCharacterData*> CharacterDataRows;
+		CharacterDataTable->GetAllRows<FCharacterData>(ContextString, CharacterDataRows);
+		for (FCharacterData* CharacterData : CharacterDataRows) {
+			CharacterDataCache.Add(CharacterData->PlayerCharacterID, CharacterData);
 		}
 	}
 }

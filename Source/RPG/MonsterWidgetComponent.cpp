@@ -27,15 +27,25 @@ void UMonsterWidgetComponent::FaceToPlayer()
 
 void UMonsterWidgetComponent::SetOwnerMonsterWidget()
 {
-	if (auto* HealthWidget = Cast<UMonsterWidget>(GetUserWidgetObject())) {
+	HealthWidget = Cast<UMonsterWidget>(GetUserWidgetObject());
+	if (HealthWidget && OwnerMonster) {
+		if (Cast<ABossMonster>(OwnerMonster)) {
+			HealthWidget->AddToViewport();
+		}
 		HealthWidget->SetOwnerMonster(OwnerMonster);
 	}
+}
+
+UMonsterWidget* UMonsterWidgetComponent::GetHealthWidget()
+{
+	return HealthWidget ? HealthWidget : nullptr;
 }
 
 void UMonsterWidgetComponent::BeginPlay()
 {
 	Super::BeginPlay();
 
-	if (!OwnerMonster)
+	if (!OwnerMonster) {
 		OwnerMonster = Cast<AMonster>(GetOwner());
+	}
 }

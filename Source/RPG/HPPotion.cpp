@@ -33,8 +33,8 @@ void AHPPotion::Use()
 	UE_LOG(LogTemp, Log, TEXT("AHPPotion::Use()"));
 
 	if (auto* PlayerCharacter = Cast<AMyCharacter>(GetWorld()->GetFirstPlayerController()->GetPawn())) {
-		if (PlayerCharacter->CurrentHP + HPRecoveryAmount >= PlayerCharacter->MaxHP) {
-			PlayerCharacter->ConsumeHPForAction(-PlayerCharacter->MaxHP);
+		if (PlayerCharacter->GetCurrentPlayerHP() + HPRecoveryAmount >= PlayerCharacter->GetMaxPlayerHP()) {
+			PlayerCharacter->ConsumeHPForAction(-PlayerCharacter->GetMaxPlayerHP());
 		}
 		else {
 			PlayerCharacter->ConsumeHPForAction(-HPRecoveryAmount);

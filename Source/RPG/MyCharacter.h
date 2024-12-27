@@ -48,6 +48,8 @@ public:
 	void UpdateLockonEffect();
 	void UpdateLockOnCameraRotation();
 	void UpdateLockOnCameraPosition();
+
+	//인벤토리
 	void RootItem();
 	void OpenInventory();
 	UInventoryComponent* GetInventory();
@@ -56,26 +58,22 @@ public:
 	UFUNCTION()
 	void OnRootItemBoxOverlapEnd(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComponent, int32 OtherBodyIndex);
 	void QuickSlot();
+
+	void Interact();
 	void TalkNPC();
+	void CommuneAnimal();
+	void RideVehicle();
 	void ShowControlKeysWidget();
 	void Close();
 
 	//무기
-	UFUNCTION(BlueprintCallable, Category = "Weapon")
+	UFUNCTION()
 	void EquipWeapon(TSubclassOf<class UWeaponBaseComponent> WeaponBaseComponentClass);
-	class UWeaponBaseComponent* GetCurrentWeapon() const;
 
 	//위젯
 	void SetupWidget();
 
 	//데이터
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Data")
-	int32 PlayerCharacterType;
-	float MaxHP;
-	float CurrentHP;
-	float MaxStamina;
-	float CurrentStamina;
-	float Damage;
 	float UseStamina(float StaminaCost);
 	float UseHP(float HPCost);
 	void ConsumeStaminaForAction(float StaminaCost);
@@ -85,6 +83,7 @@ public:
 	void ChangeMoveSpeed(float DeltaTime);
 	void CheckStaminaRecovery(float DeltaTime);
 	void RecoveryStaminia(float DeltaTime);
+	void PlayerDie();
 
 	//AI
 	void SetupStimulusSource();
@@ -99,11 +98,12 @@ public:
 	bool bIsIdle;
 	bool bIsNoDamage;
 	bool bIsTalk;
+	bool bIsRide;
 
 	//소모되는 스테미나
 	float RunStaminaCost = 0.2f;
 	float JumpStaminaCost = 5.f;
-	float AttackStaminaCost = 0.0f;
+	float AttackStaminaCost = 10.0f;
 	float GuardStaminaCost = 10.f;
 	float RollStaminaCost = 5.f;
 
@@ -113,6 +113,10 @@ public:
 	class UBoxComponent* GetGuardComponent();
 	class UUserWidget* GetLockonWidgetInstance();
 	class UInventoryQuickSlotWidget* GetInventoryQuickSlotWidgetInstance();
+	float GetMaxPlayerHP();
+	float GetCurrentPlayerHP();
+	float GetMaxPlayerStamina();
+	float GetPlayerDamage();
 
 	//setter
 	void SetPlayerInfo();
@@ -120,13 +124,11 @@ public:
 	void SetQuickSlotItemAmount(int32 NewAmount);
 	void SetQuickSlotItemID(int32 NewID);
 	void SetCurrentTalkNPC(class ADialogueNPC* TalkNPC);
+	void SetTaimmedAnimal(class AAnimal* NewTaimAnimal);
 
 	//델리게이트
 	FOnPlayerUIUpdated OnPlayerUIUpdated;
 
-	//무기
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Weapon")
-	TSubclassOf<class UWeaponBaseComponent> WeaponComponent;
 		
 protected:
 	// Called when the game starts or when spawned
@@ -160,6 +162,8 @@ protected:
 	class UAnimMontage* HitMontage;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Montage")
 	class UAnimMontage* DieMontage;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Montage")
+	class UAnimMontage* TaimMontage;
 
 private:
 	//카메라
@@ -168,7 +172,19 @@ private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera", meta = (AllowPrivateAccess = "true"))
 	class USpringArmComponent* CameraBoom;
 
+	//데이터
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Data", meta = (AllowPrivateAccess = "true"))
+	int32 PlayerCharacterID;
+	struct FCharacterData* CharacterData;
+	float MaxPlayerHP;
+	float CurrentPlayerHP;
+	float MaxPlayerStamina;
+	float CurrentPlayerStamina;
+	float PlayerDamage;
+
 	//무기
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon", meta = (AllowPrivateAccess = "true"))
+	TSubclassOf<class UWeaponBaseComponent> WeaponComponent;
 	class UWeaponBaseComponent* CurrentWeaponComponent;
 
 	//핸들러
@@ -215,10 +231,11 @@ private:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat", meta = (AllowPrivateAccess = "true"))
 	class UBoxComponent* GuardComponent;
 
-	//대화
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "LockOn", meta = (AllowPrivateAccess = "true"))
-	float TalkRange = 300.f;
+	//상호작용
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Interact", meta = (AllowPrivateAccess = "true"))
+	float InteractRange = 300.f;
 	class ADialogueNPC* CurrentTalkNPC;
+	class AAnimal* CurrentAnimal; //상호작용중
+	class AAnimal* TaimmedAnimal; //길들이기 성공
 
-	class UDataTable* CharacterDataTable;
 };

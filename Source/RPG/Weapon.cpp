@@ -64,7 +64,7 @@ void AWeapon::ApplyDamageToActor(AActor* ActorToDamage)
 		return;
 	}
 
-	float Damage = OwnerCharacter->Damage;
+	float Damage = OwnerCharacter->GetPlayerDamage();
 	FDamageEvent DamageEvent;
 	if (GetInstigator() == nullptr) {
 		return;
@@ -91,12 +91,12 @@ void AWeapon::Use()
 
 USkeletalMeshComponent* AWeapon::GetWeaponMesh() const
 {
-	return WeaponMesh;
+	return WeaponMesh ? WeaponMesh : nullptr;
 }
 
 UBoxComponent* AWeapon::GetWeaponCollision() const
 {
-	return WeaponCollision;
+	return WeaponCollision ? WeaponCollision : nullptr;
 }
 
 TArray<AActor*>& AWeapon::GetOverlapActors()

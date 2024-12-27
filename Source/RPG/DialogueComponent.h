@@ -4,7 +4,6 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
-#include "DialogueTable.h"
 #include "DialogueComponent.generated.h"
 
 
@@ -27,8 +26,6 @@ public:
 
 	void CreateDialogueWidget();
 
-	//void LoadDialogues(UDataTable* InDialogueTable);
-
 	void NextDialogue();
 
 	void SetDialogueCache(UDataTable* InDialogueTable);
@@ -42,6 +39,6 @@ private:
 
 	UDataTable* NowDialogueTable;
 
-	TMap<int32, FDialogueTable*> DialogueCache;
+	TMap<int32, struct FDialogueTable*> DialogueCache;
 	int32 CurrentIndex = 0;
 };

@@ -16,6 +16,9 @@ struct RPG_API FMonsterData : public FTableRowBase
 
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Data")
+	int32 MonsterID;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Data")
 	FName MonsterName;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Data")

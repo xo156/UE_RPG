@@ -20,6 +20,8 @@
 #include "MyGameModeBase.h"
 #include "MonsterWidgetComponent.h"
 #include "MonsterAttackComponent.h"
+#include "MonsterData.h"
+#include "DropRate.h"
 
 // Sets default values
 AMonster::AMonster()
@@ -37,19 +39,17 @@ AMonster::AMonster()
 	GetCapsuleComponent()->SetCollisionProfileName(TEXT("Enemy"));
 	GetMesh()->SetCollisionProfileName(TEXT("NoCollision"));
 
-	//컴포넌트
 	//위젯
 	MonsterWidgetComponent = CreateDefaultSubobject<UMonsterWidgetComponent>(TEXT("MonsterWidgetComponent"));
-	MonsterWidgetComponent->SetupAttachment(GetMesh());
 	//공격
 	MonsterAttackComponent = CreateDefaultSubobject<UMonsterAttackComponent>(TEXT("MonsterAttackComponent"));
 
 	//공격 콜리전
-	MonsterAttackCollision0 = CreateDefaultSubobject<UCapsuleComponent>(TEXT("AttackCollisionComponent0"));
-	MonsterAttackCollision0->SetupAttachment(GetMesh(), FName("AttackCollision_LeftHand"));
-	MonsterAttackCollision0->SetCollisionProfileName(TEXT("NoCollision"));
-	MonsterAttackCollision0->OnComponentBeginOverlap.AddDynamic(this, &AMonster::OnOverlapBegin);
-	SetMonsterAttackCollision(MonsterAttackCollision0);
+	MonsterAttackCollisionComponent0 = CreateDefaultSubobject<UCapsuleComponent>(TEXT("AttackCollisionComponent0"));
+	MonsterAttackCollisionComponent0->SetupAttachment(GetMesh(), FName("AttackCollision_LeftHand"));
+	MonsterAttackCollisionComponent0->SetCollisionProfileName(TEXT("NoCollision"));
+	MonsterAttackCollisionComponent0->OnComponentBeginOverlap.AddDynamic(this, &AMonster::OnOverlapBegin);
+	SetMonsterAttackCollision(MonsterAttackCollisionComponent0);
 
 }
 
@@ -78,12 +78,9 @@ void AMonster::BeginPlay()
 
 	if (auto* GameInstance = Cast<UDataTableGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()))) {
 		CameraShake = GameInstance->GetCameraShake();
-		MonsterDataTable = GameInstance->GetMonsterDataTable();
+		MonsterData = GameInstance->GetMonsterInfo(MonsterID);
+		ItemCache = GameInstance->GetItemDropCache();
 		SetMonsterInfo();
-	}
-
-	if (auto* GameMode = Cast<AMyGameModeBase>(UGameplayStatics::GetGameMode(GetWorld()))) {
-		ItemCache = GameMode->GetItemDropCache();
 	}
 }
 
@@ -103,14 +100,11 @@ void AMonster::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 
 void AMonster::SetMonsterInfo()
 {
-	if (MonsterDataTable) {
-		FMonsterData* MonsterData = MonsterDataTable->FindRow<FMonsterData>(FName(*FString::Printf(TEXT("%d"), MonsterID)), TEXT("SetMonsterInfo"));
-		if (MonsterData) {
-			MaxMonsterHP = MonsterData->MaxMonsterHP;
-			CurrentMonsterHP = MaxMonsterHP;
-			MonsterDamage = MonsterData->Damage;
-			MonsterDropItemIDS = MonsterData->DropItemIDS;
-		}
+	if (MonsterData) {
+		MaxMonsterHP = MonsterData->MaxMonsterHP;
+		CurrentMonsterHP = MaxMonsterHP;
+		MonsterDamage = MonsterData->Damage;
+		MonsterDropItemIDS = MonsterData->DropItemIDS;
 	}
 }
 
@@ -171,7 +165,7 @@ float AMonster::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, 
 
 	ConsumeHPForAction(DamageAmount);
 	if (!bIsMonsterDead) {
-		UE_LOG(LogTemp, Log, TEXT("Monster Damaged, CurrentHP: %f"), CurrentMonsterHP);
+		UE_LOG(LogTemp, Log, TEXT("Monster Damaged, CurrentPlayerHP: %f"), CurrentMonsterHP);
 	}
 	else {
 		//체력이 없어서 죽을때
@@ -277,7 +271,7 @@ TArray<AActor*>& AMonster::GetOverlapActors()
 	return OverlapActors;
 }
 
-UWidgetComponent* AMonster::GetMonsterWidgetComponent() const
+UMonsterWidgetComponent* AMonster::GetMonsterWidgetComponent() const
 {
 	return MonsterWidgetComponent ? MonsterWidgetComponent : nullptr;
 }

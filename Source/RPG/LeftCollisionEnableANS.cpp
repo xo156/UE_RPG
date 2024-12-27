@@ -11,7 +11,7 @@ void ULeftCollisionEnableANS::NotifyBegin(USkeletalMeshComponent* MeshComp, UAni
 {
     if (MeshComp && MeshComp->GetOwner()) {
         if (auto* PlayerCharacter = Cast<AMyCharacter>(MeshComp->GetOwner())) {
-            if (auto* WeaponInstance = PlayerCharacter->GetCurrentWeapon()->GetLeftHandWeaponInstance()) {
+            if (auto* WeaponInstance = PlayerCharacter->GetCurrentWeaponComponent()->GetLeftHandWeaponInstance()) {
                 if (WeaponInstance->GetWeaponCollision()) {
                     WeaponInstance->GetWeaponCollision()->SetCollisionProfileName("Weapon");
                     WeaponInstance->GetWeaponCollision()->SetNotifyRigidBodyCollision(true);
@@ -25,7 +25,7 @@ void ULeftCollisionEnableANS::NotifyEnd(USkeletalMeshComponent* MeshComp, UAnimS
 {
     if (MeshComp && MeshComp->GetOwner()) {
         if (auto* PlayerCharacter = Cast<AMyCharacter>(MeshComp->GetOwner())) {
-            if (auto* WeaponInstance = PlayerCharacter->GetCurrentWeapon()->GetLeftHandWeaponInstance()) {
+            if (auto* WeaponInstance = PlayerCharacter->GetCurrentWeaponComponent()->GetLeftHandWeaponInstance()) {
                 if (WeaponInstance->GetWeaponCollision()) {
                     WeaponInstance->GetWeaponCollision()->SetCollisionProfileName("NoCollision");
                     WeaponInstance->GetWeaponCollision()->SetNotifyRigidBodyCollision(false);

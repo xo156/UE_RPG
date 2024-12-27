@@ -38,7 +38,7 @@ protected:
 //변수들
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Montage")
-	class UAnimMontage* AttackMontage;
+	class UAnimMontage* LightAttackMontage;
 
 	//공격
 	int32 CurrentComboCount = 0;

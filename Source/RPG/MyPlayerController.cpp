@@ -3,8 +3,10 @@
 
 #include "MyPlayerController.h"
 #include "MyCharacter.h"
+#include "Animal.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
+#include "InputMappingContext.h"
 #include "GameFramework/Pawn.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "WeaponBaseComponent.h"
@@ -23,6 +25,14 @@ AMyCharacter* AMyPlayerController::GetCharacter() {
 	}
 
 	return MyCharacter;
+}
+
+AAnimal* AMyPlayerController::GetVehicleAnimal()
+{
+	if (MyVehicleAnimal == nullptr) {
+		MyVehicleAnimal = Cast<AAnimal>(GetPawn());
+	}
+	return MyVehicleAnimal;
 }
 
 void AMyPlayerController::ShowTooltipAtMousePosition(UInventoryTooltip* TooltipWidget)
@@ -112,8 +122,8 @@ void AMyPlayerController::SetupInputComponent() {
 		
 		EnHancedInputComponent->BindAction(JumpAction, ETriggerEvent::Started, this, &AMyPlayerController::Jump);
 		
-		EnHancedInputComponent->BindAction(AttackAction, ETriggerEvent::Started, this, &AMyPlayerController::AttackStart);
-		
+		EnHancedInputComponent->BindAction(LightAttackAction, ETriggerEvent::Started, this, &AMyPlayerController::AttackStart);
+				
 		EnHancedInputComponent->BindAction(GuardAction, ETriggerEvent::Triggered, this, &AMyPlayerController::GuardUp);
 		EnHancedInputComponent->BindAction(GuardAction, ETriggerEvent::Completed, this, &AMyPlayerController::GuardDown);
 		
@@ -127,7 +137,9 @@ void AMyPlayerController::SetupInputComponent() {
 
 		EnHancedInputComponent->BindAction(QuickSlotAction, ETriggerEvent::Started, this, &AMyPlayerController::QuickSlot);
 		
-		EnHancedInputComponent->BindAction(TalkNPCAction, ETriggerEvent::Started, this, &AMyPlayerController::TalkNPC);
+		EnHancedInputComponent->BindAction(InteractAction, ETriggerEvent::Started, this, &AMyPlayerController::Interact);
+		
+		EnHancedInputComponent->BindAction(RideVehicleAction, ETriggerEvent::Started, this, &AMyPlayerController::RideVehicle);
 
 		EnHancedInputComponent->BindAction(ShowControlKeysWidgetAction, ETriggerEvent::Started, this, &AMyPlayerController::ShowControlKeysWidget);
 	}
@@ -137,7 +149,10 @@ void AMyPlayerController::SetupInputComponent() {
 void AMyPlayerController::Move(const FInputActionValue& Value)
 {
 	const FVector2D InputValue = Value.Get<FVector2D>();
-	if (GetCharacter() != nullptr) {
+	if (auto* Vehicle = GetVehicleAnimal()) {
+		Vehicle->Move(InputValue);
+	}
+	else if (GetCharacter() != nullptr) {
 		if (!GetCharacter()->bIsAttack) {
 			GetCharacter()->Move(InputValue);
 		}
@@ -146,7 +161,10 @@ void AMyPlayerController::Move(const FInputActionValue& Value)
 
 void AMyPlayerController::RunStart()
 {
-	if (GetCharacter() != nullptr) {
+	if (auto* Vehicle = GetVehicleAnimal()) {
+		Vehicle->RunStart();
+	}
+	else if (GetCharacter() != nullptr) {
 		if (!GetCharacter()->bIsRun) {
 			GetCharacter()->RunStart();
 		}
@@ -155,6 +173,9 @@ void AMyPlayerController::RunStart()
 
 void AMyPlayerController::RunEnd()
 {
+	if (auto* Vehicle = GetVehicleAnimal()) {
+		Vehicle->RunEnd();
+	}
 	if (GetCharacter() != nullptr) {
 		if (GetCharacter()->bIsRun) {
 			GetCharacter()->RunEnd();
@@ -163,6 +184,11 @@ void AMyPlayerController::RunEnd()
 }
 
 void AMyPlayerController::Jump() {
+	if (auto* Vehicle = GetVehicleAnimal()) {
+		if (Vehicle->CanJump()) {
+			Vehicle->Jump();
+		}
+	}
 	if (GetCharacter() != nullptr) {
 		if (GetCharacter()->CanJump() && GetCharacter()->bHasEnoughStamina(GetCharacter()->JumpStaminaCost)) {
 			GetCharacter()->ConsumeStaminaForAction(GetCharacter()->JumpStaminaCost);
@@ -173,7 +199,10 @@ void AMyPlayerController::Jump() {
 
 void AMyPlayerController::Look(const FInputActionValue& Value) {
 	const FVector2D InputValue = Value.Get<FVector2D>();
-	if (GetCharacter() != nullptr) {
+	if (auto* Vehicle = GetVehicleAnimal()) {
+		Vehicle->Look(InputValue);
+	}
+	else if (GetCharacter() != nullptr) {
 		GetCharacter()->Look(InputValue);
 	}
 }
@@ -233,10 +262,17 @@ void AMyPlayerController::QuickSlot()
 	}
 }
 
-void AMyPlayerController::TalkNPC()
+void AMyPlayerController::Interact()
 {
 	if (GetCharacter() != nullptr) {
-		GetCharacter()->TalkNPC();
+		GetCharacter()->Interact();
+	}
+}
+
+void AMyPlayerController::RideVehicle()
+{
+	if (GetCharacter() != nullptr) {
+		GetCharacter()->RideVehicle();
 	}
 }
 

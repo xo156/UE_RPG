@@ -14,12 +14,15 @@ struct RPG_API FCharacterData : public FTableRowBase
 {
 	GENERATED_USTRUCT_BODY()
 public:
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Status")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Data")
+	int32 PlayerCharacterID;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Data")
 	float MaxCharacterHP;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Status")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Data")
 	float MaxCharacterStamina;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Status")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Data")
 	float CharacterDamage;
 };

@@ -16,26 +16,29 @@ class RPG_API UDataTableGameInstance : public UGameInstance
 
 public:
 	//캐시
-	void LoadAllTables();
+	void LoadAllTableAndCache();
 
 	//getter
 	struct FDropRate* GetDropRate(int32 ItemID);
+	struct FMonsterData* GetMonsterInfo(int32 MonsterID);
+	struct FCharacterData* GetCharacterInfo(int32 CharacterID);
 	class UDataTable* GetItemTable();
 	class UDataTable* GetDropItemTable();
 	class UDataTable* GetMonsterDataTable();
 	class UDataTable* GetCharacterDataTable();
-	class UDataTable* GetInventoryItemTable();
 	TSubclassOf<class UCameraShakeBase> GetCameraShake();
 	TSubclassOf<class UCameraShakeBase> GetBossCameraShake();
 
 	const TMap<int32, struct FDropRate*>& GetItemDropCache() const { return ItemDropCache; }
 	const TMap<int32, struct FItemData*>& GetItemCache() const { return ItemCache; }
-	const TMap<int32, struct FInventoryItemData*>& GetInventoryItemDataCache() const { return InventoryItemDataCache; }
+	const TMap<int32, struct FMonsterData*>& GetMonsterDataCache() const { return MonsterDataCache; }
+	const TMap<int32, struct FCharacterData*>& GetCharacterDataCache() const { return CharacterDataCache; }
 
 private:
 	void LoadItemCache();
 	void LoadItemDropCache();
-	void LoadInventoryItemCache();
+	void LoadMonsterDataCache();
+	void LoadCharacterDataCache();
 
 	//테이블
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Data", meta = (AllowPrivateAccess = "true"))
@@ -43,9 +46,6 @@ private:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Data", meta = (AllowPrivateAccess = "true"))
 	class UDataTable* DropItemTable;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Data", meta = (AllowPrivateAccess = "true"))
-	class UDataTable* InventoryItemTable;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Data", meta = (AllowPrivateAccess = "true"))
 	class UDataTable* MonsterDataTable;
@@ -56,7 +56,8 @@ private:
 	//캐시
 	TMap<int32, struct FDropRate*> ItemDropCache;
 	TMap<int32, struct FItemData*> ItemCache;
-	TMap<int32, struct FInventoryItemData*> InventoryItemDataCache;
+	TMap<int32, struct FMonsterData*> MonsterDataCache;
+	TMap<int32, struct FCharacterData*> CharacterDataCache;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "CameraShake", meta = (AllowPrivateAccess = "true"))
 	TSubclassOf<class UCameraShakeBase> CameraShake;

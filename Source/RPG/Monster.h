@@ -4,8 +4,6 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
-#include "DropRate.h"
-#include "MonsterData.h"
 #include "Monster.generated.h"
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnMonsterUIUpdated, float, NewHP);
@@ -46,7 +44,7 @@ public:
 	class APatrolPath* GetPatrolPath() const;
 	class UAnimMontage* GetMonsterAttackMontage() const;
 	TArray<AActor*>& GetOverlapActors();
-	class UWidgetComponent* GetMonsterWidgetComponent() const;
+	class UMonsterWidgetComponent* GetMonsterWidgetComponent() const;
 	UCapsuleComponent* GetAttackCollisionComponent(FName AttackCollisionFName) const;
 	float GetMaxMonsterHP();
 
@@ -82,7 +80,7 @@ private:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Component", meta = (AllowPrivateAccess = "true"))
 	class UMonsterAttackComponent* MonsterAttackComponent;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attack", meta = (AllowPrivateAccess = "true"))
-	class UCapsuleComponent* MonsterAttackCollision0;
+	class UCapsuleComponent* MonsterAttackCollisionComponent0;
 	TArray<class UCapsuleComponent*> MonsterAttackCollisions;
 	TArray<AActor*> OverlapActors; //몬스터가 때릴 때 콜리전 검출하기
 
@@ -100,12 +98,12 @@ private:
 	//아이템 드랍
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item", meta = (AllowPrivateAccess="true"))
 	TSubclassOf<class ADropItem> DropItemClass;
-	TMap<int32, FDropRate*> ItemCache;
+	TMap<int32, struct FDropRate*> ItemCache;
 
 	//흔들림
 	TSubclassOf<class UCameraShakeBase> CameraShake;
 
-	class UDataTable* MonsterDataTable;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Data", meta = (AllowPrivateAccess="true"))
 	int32 MonsterID;
+	struct FMonsterData* MonsterData;
 };

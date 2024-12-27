@@ -67,14 +67,10 @@ void UWeaponBaseComponent::AttachToCharacter()
 
 AWeapon* UWeaponBaseComponent::GetRightHandWeaponInstance() const
 {
-    if (RightHandWeaponInstance)
-        return RightHandWeaponInstance;
-    return nullptr;
+    return RightHandWeaponInstance ? RightHandWeaponInstance : nullptr;
 }
 
 AWeapon* UWeaponBaseComponent::GetLeftHandWeaponInstance() const
 {
-    if (LeftHandWeaponInstance)
-        return LeftHandWeaponInstance;
-    return nullptr;
+    return LeftHandWeaponInstance ? LeftHandWeaponInstance : nullptr;
 }
