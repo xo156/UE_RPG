@@ -133,6 +133,7 @@ void AMyPlayerController::SetupInputComponent() {
 		EnHancedInputComponent->BindAction(InteractAction, ETriggerEvent::Started, this, &AMyPlayerController::Interact);
 		
 		EnHancedInputComponent->BindAction(MountAction, ETriggerEvent::Started, this, &AMyPlayerController::Mount);
+		EnHancedInputComponent->BindAction(DisMountAction, ETriggerEvent::Started, this, &AMyPlayerController::DisMount);
 
 		EnHancedInputComponent->BindAction(ShowControlKeysWidgetAction, ETriggerEvent::Started, this, &AMyPlayerController::ShowControlKeysWidget);
 	}
@@ -182,8 +183,7 @@ void AMyPlayerController::Jump()
 		if (GetCharacter()->bIsRide) {
 			GetCharacter()->GetTaimmedAnimal()->Jump();
 		}
-		else if (GetCharacter()->CanJump() && GetCharacter()->bHasEnoughStamina(GetCharacter()->JumpStaminaCost)) {
-			GetCharacter()->ConsumeStaminaForAction(GetCharacter()->JumpStaminaCost);
+		else if (GetCharacter()->CanJump()) {
 			GetCharacter()->Jump();
 		}
 	}
@@ -280,7 +280,7 @@ void AMyPlayerController::DisMount()
 {
 	if (GetCharacter() != nullptr) {
 		if (GetCharacter()->bIsRide) {
-			GetCharacter()->DisMount();
+			GetCharacter()->GetTaimmedAnimal()->DisMountAnimal();
 		}
 	}
 }

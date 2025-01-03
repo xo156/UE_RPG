@@ -33,16 +33,14 @@ public:
 	void MountAnimal();
 	void DisMountAnimal();
 
+	FVector GetDisMountLocation(class AMyCharacter* DisMountCharacter);
+
 	bool bIsMove = false;
 	bool bIsRun = false;
-	bool bIsMount = false;
 
 private:
-	//Å¾½Â ¹× ÇÏÂ÷
-	/*UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Ride", meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Mount", meta = (AllowPrivateAccess = "true"))
 	class USceneComponent* MountLocationComponent;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Ride", meta = (AllowPrivateAccess = "true"))
-	class USceneComponent* DisMoutLocationComponent;*/
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera", meta = (AllowPrivateAccess = "true"))
 	class UCameraComponent* CameraComponent;

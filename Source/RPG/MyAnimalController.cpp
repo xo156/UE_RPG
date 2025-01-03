@@ -106,10 +106,10 @@ void AMyAnimalController::Look(const FInputActionValue& Value)
 
 void AMyAnimalController::Disamount()
 {
-	if (GetAnimal() != nullptr) {
+	/*if (GetAnimal() != nullptr) {
 		if (GetAnimal()->bIsMount) {
 			UE_LOG(LogTemp, Log, TEXT("AMyAnimalController::Disamount"));
 			GetAnimal()->DisMountAnimal();
 		}
-	}
+	}*/
 }

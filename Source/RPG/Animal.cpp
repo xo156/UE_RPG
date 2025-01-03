@@ -26,13 +26,9 @@ AAnimal::AAnimal()
 	bUseControllerRotationYaw = false;
 	bUseControllerRotationRoll = false;
 
-	/*MountLocationComponent = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("RideLocation"));
+	MountLocationComponent = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("MountLocation"));
 	MountLocationComponent->SetVisibility(false);
-	MountLocationComponent->SetupAttachment(GetMesh());
-
-	DisMoutLocationComponent = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("DropOutLocation"));
-	DisMoutLocationComponent->SetVisibility(false);
-	DisMoutLocationComponent->SetupAttachment(GetMesh());*/
+	MountLocationComponent->SetupAttachment(RootComponent);
 
 	CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));
 	CameraBoom->SetupAttachment(RootComponent);
@@ -66,10 +62,6 @@ void AAnimal::Tick(float DeltaTime)
 
 	//이전 위치와 현재 위치가 다른 경우 움직임이 있음
 	bIsMove = (CurrentLocation != PreviousLocation);
-
-	FVector StartLocation = GetActorLocation();
-	FVector EndLocation = StartLocation + GetActorForwardVector() * 100.0f;
-	UKismetSystemLibrary::DrawDebugArrow(GetWorld(), StartLocation, EndLocation, 5.f, FLinearColor::Red);
 }
 
 void AAnimal::Move(FVector2D InputValue)
@@ -102,9 +94,7 @@ void AAnimal::RunEnd()
 
 void AAnimal::Jump()
 {
-	if (CanJump()) {
-		Jump();
-	}
+	ACharacter::Jump();
 }
 
 void AAnimal::Look(FVector2D InputValue)
@@ -125,21 +115,45 @@ void AAnimal::TaimAnimal(ACharacter* NewOwnerCharacter)
 
 void AAnimal::MountAnimal()
 {
-	if (auto* PlayerCharacter = Cast<AMyCharacter>(OwnerCharacter)) {
-		//PlayerCharacter->AttachToComponent(MountLocationComponent, FAttachmentTransformRules::SnapToTargetNotIncludingScale);	
-		//PlayerCharacter->SetActorLocation(MountLocationComponent->GetComponentLocation());
-		PlayerCharacter->AttachToActor(this, FAttachmentTransformRules::SnapToTargetNotIncludingScale, FName("MountPosition"));
+	/*if (auto* PlayerCharacter = Cast<AMyCharacter>(OwnerCharacter)) {
 		PlayerCharacter->bIsRide = true;
+		PlayerCharacter->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetNotIncludingScale, FName("MountPosition"));
 		GetController()->Possess(this);
-	}
+	}*/
 }
 
 void AAnimal::DisMountAnimal()
 {
 	if (auto* PlayerCharacter = Cast<AMyCharacter>(OwnerCharacter)) {
-		//PlayerCharacter->DetachFromActor(FDetachmentTransformRules::KeepRelativeTransform);
-		//PlayerCharacter->SetActorLocation(DisMoutLocationComponent->GetComponentLocation());
 		PlayerCharacter->bIsRide = false;
+		PlayerCharacter->DetachFromActor(FDetachmentTransformRules::KeepRelativeTransform);
+		PlayerCharacter->SetActorLocation(GetDisMountLocation(PlayerCharacter));
 		GetController()->Possess(PlayerCharacter);
 	}
 }
+
+FVector AAnimal::GetDisMountLocation(AMyCharacter* DisMountCharacter)
+{
+	if (DisMountCharacter) {
+		FVector DisMountLocation;
+		FHitResult HitResult;
+		FCollisionQueryParams QueryParams;
+		QueryParams.AddIgnoredActor(this);
+		QueryParams.AddIgnoredActor(DisMountCharacter);
+
+		bool bFindLocation = false;
+
+		while (!bFindLocation) {
+			FVector RandomOffset = FMath::VRand() * FMath::FRandRange(0.f, 200.f);
+			DisMountLocation = GetActorLocation() + RandomOffset;
+
+			if (!GetWorld()->LineTraceSingleByChannel(HitResult, GetActorLocation(), DisMountLocation, ECC_Visibility, QueryParams)) {
+				bFindLocation = true;
+				return DisMountLocation;
+			}
+		}
+	}
+
+	return FVector();
+}
+

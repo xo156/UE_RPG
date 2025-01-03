@@ -79,7 +79,6 @@ void AMyCharacter::BeginPlay() {
 	if (auto* GameInstance = Cast<UDataTableGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()))) {
 		CameraShake = GameInstance->GetCameraShake();
 		CharacterData = GameInstance->GetCharacterInfo(PlayerCharacterID);
-		//MyAnimalController = GameInstance->GetMyAnimalController();
 		SetPlayerInfo();
 	}
 
@@ -99,10 +98,6 @@ void AMyCharacter::BeginPlay() {
 // Called every frame
 void AMyCharacter::Tick(float DeltaTime) {
 	Super::Tick(DeltaTime);
-
-	FVector StartLocation = GetActorLocation();
-	FVector EndLocation = StartLocation + GetActorForwardVector() * 100.0f;
-	UKismetSystemLibrary::DrawDebugArrow(GetWorld(), StartLocation, EndLocation, 5.f, FLinearColor::Green);
 
 	//스테미나
 	CheckStaminaRecovery(DeltaTime);
@@ -221,8 +216,9 @@ void AMyCharacter::RunEnd()
 
 void AMyCharacter::Jump()
 {
-	if (CanJump()) {
-		Jump();
+	if (bHasEnoughStamina(JumpStaminaCost)) {
+		ConsumeStaminaForAction(JumpStaminaCost);
+		ACharacter::Jump();
 	}
 }
 
@@ -692,14 +688,13 @@ void AMyCharacter::CommuneAnimal()
 void AMyCharacter::Mount()
 {
 	if (TaimmedAnimal) {
-		TaimmedAnimal->MountAnimal();
-	}
-}
-
-void AMyCharacter::DisMount()
-{
-	if (TaimmedAnimal) {
-		TaimmedAnimal->DisMountAnimal();
+		if (!bIsRide) {
+			//TaimmedAnimal->MountAnimal(); //저 함수에서 하면 플레이어 캐릭터가 원하는 위치에 부착되지는 않지만 컨트롤은 됨
+			bIsRide = true;
+			AttachToComponent(TaimmedAnimal->GetMesh(), FAttachmentTransformRules::SnapToTargetNotIncludingScale, FName("MountPosition"));
+			GetController()->Possess(TaimmedAnimal); //이렇게 하면 플레이어 캐릭터가 원하는 위치에 부착되긴 하는데 컨트롤이 안됨
+			
+		}
 	}
 }
 

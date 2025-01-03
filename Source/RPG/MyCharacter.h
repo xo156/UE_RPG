@@ -64,7 +64,6 @@ public:
 	void TalkNPC();
 	void CommuneAnimal();
 	void Mount();
-	void DisMount();
 	void ShowControlKeysWidget();
 	void Close();
 
@@ -240,5 +239,4 @@ private:
 	class ADialogueNPC* CurrentTalkNPC;
 	class AAnimal* CurrentAnimal; //상호작용중
 	class AAnimal* TaimmedAnimal; //길들이기 성공
-	TSubclassOf<class APlayerController> MyAnimalController;
 };
