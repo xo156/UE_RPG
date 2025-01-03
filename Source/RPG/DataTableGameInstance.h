@@ -29,9 +29,6 @@ public:
 	TSubclassOf<class UCameraShakeBase> GetCameraShake();
 	TSubclassOf<class UCameraShakeBase> GetBossCameraShake();
 
-	class APlayerController* GetPlayerCharacterController();
-	class APlayerController* GetVehicleAnimalController();
-
 	const TMap<int32, struct FDropRate*>& GetItemDropCache() const { return ItemDropCache; }
 	const TMap<int32, struct FItemData*>& GetItemCache() const { return ItemCache; }
 	const TMap<int32, struct FMonsterData*>& GetMonsterDataCache() const { return MonsterDataCache; }
@@ -67,10 +64,4 @@ private:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "CameraShake", meta = (AllowPrivateAccess = "true"))
 	TSubclassOf<class UCameraShakeBase> BossCameraShake;
-
-	//컨트롤러
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Data", meta = (AllowPrivateAccess = "true"))
-	class APlayerController* PlayerCharacterController;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Data", meta = (AllowPrivateAccess = "true"))
-	class APlayerController* VehicleAnimalController;
 };

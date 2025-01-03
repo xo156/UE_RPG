@@ -30,6 +30,7 @@ public:
 	void Move(FVector2D InputValue);
 	void RunStart();
 	void RunEnd();
+	void Jump();
 	void Look(FVector2D InputValue);
 	void AttackStart();
 	void AttackExecute();
@@ -62,7 +63,8 @@ public:
 	void Interact();
 	void TalkNPC();
 	void CommuneAnimal();
-	void RideVehicle();
+	void Mount();
+	void DisMount();
 	void ShowControlKeysWidget();
 	void Close();
 
@@ -113,6 +115,7 @@ public:
 	class UBoxComponent* GetGuardComponent();
 	class UUserWidget* GetLockonWidgetInstance();
 	class UInventoryQuickSlotWidget* GetInventoryQuickSlotWidgetInstance();
+	class AAnimal* GetTaimmedAnimal();
 	float GetMaxPlayerHP();
 	float GetCurrentPlayerHP();
 	float GetMaxPlayerStamina();
@@ -237,5 +240,5 @@ private:
 	class ADialogueNPC* CurrentTalkNPC;
 	class AAnimal* CurrentAnimal; //상호작용중
 	class AAnimal* TaimmedAnimal; //길들이기 성공
-
+	TSubclassOf<class APlayerController> MyAnimalController;
 };

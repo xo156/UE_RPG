@@ -4,7 +4,6 @@
 #include "Animal.h"
 #include "MyCharacter.h"
 #include "MyPlayerController.h"
-#include "VehicleController.h"
 #include "Components/SceneComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetSystemLibrary.h"
@@ -20,21 +19,26 @@ AAnimal::AAnimal()
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
-	GetCharacterMovement()->MaxWalkSpeed = NormalMoveSpeed;
+	GetCharacterMovement()->bOrientRotationToMovement = true;
+	GetCharacterMovement()->MaxWalkSpeed = WalkMoveSpeed;
 
-	RideLocationComponent = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("RideLocation"));
-	RideLocationComponent->SetVisibility(false);
-	RideLocationComponent->SetupAttachment(GetMesh());
+	bUseControllerRotationPitch = false;
+	bUseControllerRotationYaw = false;
+	bUseControllerRotationRoll = false;
 
-	DropOutLocationComponent = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("DropOutLocation"));
-	DropOutLocationComponent->SetVisibility(false);
-	DropOutLocationComponent->SetupAttachment(GetMesh());
+	/*MountLocationComponent = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("RideLocation"));
+	MountLocationComponent->SetVisibility(false);
+	MountLocationComponent->SetupAttachment(GetMesh());
+
+	DisMoutLocationComponent = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("DropOutLocation"));
+	DisMoutLocationComponent->SetVisibility(false);
+	DisMoutLocationComponent->SetupAttachment(GetMesh());*/
 
 	CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));
 	CameraBoom->SetupAttachment(RootComponent);
 	CameraBoom->SetUsingAbsoluteRotation(true);
 	CameraBoom->TargetArmLength = 300.f;
-	CameraBoom->SocketOffset = FVector(0.f, 55.f, 65.f);
+	CameraBoom->SocketOffset = FVector(0.f, 0.f, 65.f);
 	CameraBoom->bDoCollisionTest = true;
 	CameraBoom->bUsePawnControlRotation = false;
 
@@ -49,10 +53,6 @@ void AAnimal::BeginPlay()
 {
 	Super::BeginPlay();
 
-	/*if (auto* GameInstance = Cast<UDataTableGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()))) {
-		PlayerCharacterController = Cast<AMyPlayerController>(GameInstance->GetPlayerCharacterController());
-		VehicleAnimalController = Cast<AVehicleController>(GameInstance->GetVehicleAnimalController());
-	}*/
 }
 
 // Called every frame
@@ -103,7 +103,7 @@ void AAnimal::RunEnd()
 void AAnimal::Jump()
 {
 	if (CanJump()) {
-		ACharacter::Jump();
+		Jump();
 	}
 }
 
@@ -123,26 +123,23 @@ void AAnimal::TaimAnimal(ACharacter* NewOwnerCharacter)
 	}
 }
 
-void AAnimal::RideAnimal()
+void AAnimal::MountAnimal()
 {
-	UE_LOG(LogTemp, Log, TEXT("!!!!"));
 	if (auto* PlayerCharacter = Cast<AMyCharacter>(OwnerCharacter)) {
-		PlayerCharacter->AttachToComponent(RideLocationComponent, FAttachmentTransformRules::SnapToTargetNotIncludingScale);
-		OwnerCharacter->GetController()->Possess(this);
-		//VehicleAnimalController->Possess(this);
-		//PlayerCharacter->GetController()->Possess(VehicleAnimalController->GetPawn());
-		GetCharacterMovement()->MaxWalkSpeed = WalkMoveSpeed;		
+		//PlayerCharacter->AttachToComponent(MountLocationComponent, FAttachmentTransformRules::SnapToTargetNotIncludingScale);	
+		//PlayerCharacter->SetActorLocation(MountLocationComponent->GetComponentLocation());
+		PlayerCharacter->AttachToActor(this, FAttachmentTransformRules::SnapToTargetNotIncludingScale, FName("MountPosition"));
+		PlayerCharacter->bIsRide = true;
+		GetController()->Possess(this);
 	}
 }
 
-void AAnimal::DropOutAnimal()
+void AAnimal::DisMountAnimal()
 {
-	UE_LOG(LogTemp, Log, TEXT("@@@@"));
-	//TODO: 여기에서 다시 플레이어한테 빙의
 	if (auto* PlayerCharacter = Cast<AMyCharacter>(OwnerCharacter)) {
+		//PlayerCharacter->DetachFromActor(FDetachmentTransformRules::KeepRelativeTransform);
+		//PlayerCharacter->SetActorLocation(DisMoutLocationComponent->GetComponentLocation());
 		PlayerCharacter->bIsRide = false;
-		PlayerCharacter->SetActorLocation(DropOutLocationComponent->GetComponentLocation());
-		PlayerCharacter->DetachFromActor(FDetachmentTransformRules::KeepRelativeTransform);
+		GetController()->Possess(PlayerCharacter);
 	}
-	GetCharacterMovement()->MaxWalkSpeed = NormalMoveSpeed;
 }

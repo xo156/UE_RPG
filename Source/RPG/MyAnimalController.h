@@ -5,20 +5,21 @@
 #include "CoreMinimal.h"
 #include "GameFramework/PlayerController.h"
 #include "InputActionValue.h"
-#include "VehicleController.generated.h"
+#include "MyAnimalController.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class RPG_API AVehicleController : public APlayerController
+class RPG_API AMyAnimalController : public APlayerController
 {
 	GENERATED_BODY()
 	
 public:
-	AVehicleController();
+	AMyAnimalController();
 
-	class AAnimal* GetVehicleAnimal();
+	//getter
+	class AAnimal* GetAnimal();
 
 protected:
 	// Called when the game starts or when spawned
@@ -36,7 +37,7 @@ protected:
 	void RunEnd();
 	void Jump();
 	void Look(const FInputActionValue& Value);
-	void DropOutAnimal();
+	void Disamount();
 
 private:
 	//ÀÎÇ² ¾×¼Ç
@@ -51,7 +52,7 @@ private:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input", meta = (AllowPrivateAccess = "true"))
 	class UInputAction* LookAction;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input", meta = (AllowPrivateAccess = "true"))
-	class UInputAction* DropOutAnimalAction;
+	class UInputAction* DisamountAction;
 
-	class AAnimal* MyVehicleAnimal;
+	class AAnimal* MyAnimal;
 };

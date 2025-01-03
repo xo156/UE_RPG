@@ -66,16 +66,6 @@ TSubclassOf<class UCameraShakeBase> UDataTableGameInstance::GetBossCameraShake()
 	return BossCameraShake ? BossCameraShake : nullptr;
 }
 
-APlayerController* UDataTableGameInstance::GetPlayerCharacterController()
-{
-	return PlayerCharacterController ? PlayerCharacterController : nullptr;
-}
-
-APlayerController* UDataTableGameInstance::GetVehicleAnimalController()
-{
-	return VehicleAnimalController ? VehicleAnimalController : nullptr;
-}
-
 void UDataTableGameInstance::LoadItemCache()
 {
 	if (ItemTable) {

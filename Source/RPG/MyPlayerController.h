@@ -10,7 +10,6 @@
 /**
  * 
  */
-class AMyCharacter;
 
 UCLASS()
 class RPG_API AMyPlayerController : public APlayerController
@@ -20,9 +19,8 @@ class RPG_API AMyPlayerController : public APlayerController
 public:
 	AMyPlayerController();
 
-
 	//getter
-	AMyCharacter* GetCharacter();
+	class AMyCharacter* GetCharacter();
 
 	//UI
 	void ShowTooltipAtMousePosition(class UInventoryTooltip* TooltipWidget);
@@ -55,7 +53,8 @@ protected:
 	void OpenInventory();
 	void QuickSlot();
 	void Interact();
-	void RideVehicle();
+	void Mount();
+	void DisMount();
 	void Close();
 	void ShowControlKeysWidget();
 
@@ -90,7 +89,9 @@ private:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input", meta = (AllowPrivateAccess = "true"))
 	class UInputAction* InteractAction;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input", meta = (AllowPrivateAccess = "true"))
-	class UInputAction* RideVehicleAction;
+	class UInputAction* MountAction;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input", meta = (AllowPrivateAccess = "true"))
+	class UInputAction* DisMountAction;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input", meta = (AllowPrivateAccess = "true"))
 	class UInputAction* ShowControlKeysWidgetAction;
 

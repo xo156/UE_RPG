@@ -30,22 +30,19 @@ public:
 	void Look(FVector2D InputValue);
 
 	void TaimAnimal(ACharacter* NewOwnerCharacter);
-	void RideAnimal();
-	void DropOutAnimal();
+	void MountAnimal();
+	void DisMountAnimal();
 
 	bool bIsMove = false;
 	bool bIsRun = false;
+	bool bIsMount = false;
 
 private:
-	////컨트롤러
-	//class AMyPlayerController* PlayerCharacterController;
-	//class AVehicleController* VehicleAnimalController;
-
 	//탑승 및 하차
+	/*UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Ride", meta = (AllowPrivateAccess = "true"))
+	class USceneComponent* MountLocationComponent;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Ride", meta = (AllowPrivateAccess = "true"))
-	class USceneComponent* RideLocationComponent;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Ride", meta = (AllowPrivateAccess = "true"))
-	class USceneComponent* DropOutLocationComponent;
+	class USceneComponent* DisMoutLocationComponent;*/
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera", meta = (AllowPrivateAccess = "true"))
 	class UCameraComponent* CameraComponent;
@@ -55,7 +52,6 @@ private:
 	FVector PreviousLocation;
 	FVector CurrentLocation;
 
-	float NormalMoveSpeed = 300.f;
 	float WalkMoveSpeed = 600.f;
 	float RunMoveSpeed = 1000.f;
 	ACharacter* OwnerCharacter;

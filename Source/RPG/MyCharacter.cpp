@@ -24,6 +24,7 @@
 #include "InventoryQuickSlotWidget.h"
 #include "DialogueNPC.h"
 #include "Animal.h"
+#include "MyAnimalController.h"
 #include "ShowControlKeysWidget.h"
 
 // Sets default values
@@ -78,6 +79,7 @@ void AMyCharacter::BeginPlay() {
 	if (auto* GameInstance = Cast<UDataTableGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()))) {
 		CameraShake = GameInstance->GetCameraShake();
 		CharacterData = GameInstance->GetCharacterInfo(PlayerCharacterID);
+		//MyAnimalController = GameInstance->GetMyAnimalController();
 		SetPlayerInfo();
 	}
 
@@ -215,6 +217,13 @@ void AMyCharacter::RunEnd()
 {
 	bIsRun = false;
 	TargetSpeed = WalkSpeed;
+}
+
+void AMyCharacter::Jump()
+{
+	if (CanJump()) {
+		Jump();
+	}
 }
 
 void AMyCharacter::Look(FVector2D InputValue)
@@ -680,16 +689,17 @@ void AMyCharacter::CommuneAnimal()
 	}
 }
 
-void AMyCharacter::RideVehicle()
+void AMyCharacter::Mount()
 {
 	if (TaimmedAnimal) {
-		if (!bIsRide) {
-			//TODO:동물에서 하지말고 여기에서
+		TaimmedAnimal->MountAnimal();
+	}
+}
 
-
-			TaimmedAnimal->RideAnimal();
-			bIsRide = true;
-		}
+void AMyCharacter::DisMount()
+{
+	if (TaimmedAnimal) {
+		TaimmedAnimal->DisMountAnimal();
 	}
 }
 
@@ -915,6 +925,11 @@ UUserWidget* AMyCharacter::GetLockonWidgetInstance()
 UInventoryQuickSlotWidget* AMyCharacter::GetInventoryQuickSlotWidgetInstance()
 {
 	return InventoryQuickSlotWidgetInstance ? InventoryQuickSlotWidgetInstance : nullptr;
+}
+
+AAnimal* AMyCharacter::GetTaimmedAnimal()
+{
+	return TaimmedAnimal ? TaimmedAnimal : nullptr;
 }
 
 float AMyCharacter::GetMaxPlayerHP()
