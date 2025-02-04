@@ -53,10 +53,7 @@ protected:
 	void OpenInventory();
 	void QuickSlot();
 	void Interact();
-	void Mount();
-	void DisMount();
 	void Close();
-	void ShowControlKeysWidget();
 
 private:
 	//ÀÎÇ² ¾×¼Ç
@@ -88,12 +85,6 @@ private:
 	class UInputAction* CloseAction;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input", meta = (AllowPrivateAccess = "true"))
 	class UInputAction* InteractAction;
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input", meta = (AllowPrivateAccess = "true"))
-	class UInputAction* MountAction;
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input", meta = (AllowPrivateAccess = "true"))
-	class UInputAction* DisMountAction;
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input", meta = (AllowPrivateAccess = "true"))
-	class UInputAction* ShowControlKeysWidgetAction;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UI", meta = (AllowPrivateAccess = "true"))
 	class UInventoryTooltip* CurrentTooltip;

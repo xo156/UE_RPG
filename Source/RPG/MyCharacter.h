@@ -62,9 +62,6 @@ public:
 
 	void Interact();
 	void TalkNPC();
-	void CommuneAnimal();
-	void Mount();
-	void ShowControlKeysWidget();
 	void Close();
 
 	//무기
@@ -99,7 +96,6 @@ public:
 	bool bIsIdle;
 	bool bIsNoDamage;
 	bool bIsTalk;
-	bool bIsRide;
 
 	//소모되는 스테미나
 	float RunStaminaCost = 0.2f;
@@ -114,7 +110,6 @@ public:
 	class UBoxComponent* GetGuardComponent();
 	class UUserWidget* GetLockonWidgetInstance();
 	class UInventoryQuickSlotWidget* GetInventoryQuickSlotWidgetInstance();
-	class AAnimal* GetTaimmedAnimal();
 	float GetMaxPlayerHP();
 	float GetCurrentPlayerHP();
 	float GetMaxPlayerStamina();
@@ -126,7 +121,6 @@ public:
 	void SetQuickSlotItemAmount(int32 NewAmount);
 	void SetQuickSlotItemID(int32 NewID);
 	void SetCurrentTalkNPC(class ADialogueNPC* TalkNPC);
-	void SetTaimmedAnimal(class AAnimal* NewTaimAnimal);
 
 	//델리게이트
 	FOnPlayerUIUpdated OnPlayerUIUpdated;
@@ -237,6 +231,4 @@ private:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Interact", meta = (AllowPrivateAccess = "true"))
 	float InteractRange = 300.f;
 	class ADialogueNPC* CurrentTalkNPC;
-	class AAnimal* CurrentAnimal; //상호작용중
-	class AAnimal* TaimmedAnimal; //길들이기 성공
 };

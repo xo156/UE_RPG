@@ -23,9 +23,6 @@
 #include "DataTableGameInstance.h"
 #include "InventoryQuickSlotWidget.h"
 #include "DialogueNPC.h"
-#include "Animal.h"
-#include "MyAnimalController.h"
-#include "ShowControlKeysWidget.h"
 
 // Sets default values
 AMyCharacter::AMyCharacter() {
@@ -643,14 +640,6 @@ void AMyCharacter::Interact()
 						return; //NPC가 발견되면 함수 종료
 					}
 				}
-				// 동물 체크
-				else if (HitActor->ActorHasTag(FName("Animal"))) {
-					if (auto* WildAnimal = Cast<AAnimal>(HitActor)) {
-						CurrentAnimal = WildAnimal;
-						CommuneAnimal();
-						return; //동물이 발견되면 함수 종료
-					}
-				}
 			}
 		}
 	}
@@ -669,54 +658,10 @@ void AMyCharacter::TalkNPC()
 	}
 }
 
-void AMyCharacter::CommuneAnimal()
-{
-	if (CurrentAnimal) {
-		if (TaimmedAnimal) { //새로운 동물이랑 상호작용 시도시
-			TaimmedAnimal = nullptr;
-		}
-		if (auto* AnimInstance = GetMesh()->GetAnimInstance()) {
-			if (TaimMontage) {
-				AnimInstance->Montage_Play(TaimMontage);
-				CurrentAnimal->TaimAnimal(this);
-				CurrentAnimal = nullptr;
-			}
-		}
-	}
-}
-
-void AMyCharacter::Mount()
-{
-	if (TaimmedAnimal) {
-		if (!bIsRide) {
-			//TaimmedAnimal->MountAnimal(); //저 함수에서 하면 플레이어 캐릭터가 원하는 위치에 부착되지는 않지만 컨트롤은 됨
-			bIsRide = true;
-			AttachToComponent(TaimmedAnimal->GetMesh(), FAttachmentTransformRules::SnapToTargetNotIncludingScale, FName("MountPosition"));
-			GetController()->Possess(TaimmedAnimal); //이렇게 하면 플레이어 캐릭터가 원하는 위치에 부착되긴 하는데 컨트롤이 안됨
-			
-		}
-	}
-}
-
-void AMyCharacter::ShowControlKeysWidget()
-{
-	if (ShowControlKeysWidgetInstance) {
-		if (ShowControlKeysWidgetInstance->IsVisible()) {
-			ShowControlKeysWidgetInstance->SetVisibility(ESlateVisibility::Hidden);
-		}
-		else {
-			ShowControlKeysWidgetInstance->SetVisibility(ESlateVisibility::Visible);
-		}
-	}
-}
-
 void AMyCharacter::Close()
 {
 	if (InventoryComponent->InventoryWidget) {
 		InventoryComponent->InventoryWidget->SetVisibility(ESlateVisibility::Hidden);
-	}
-	if (ShowControlKeysWidgetInstance) {
-		ShowControlKeysWidgetInstance->SetVisibility(ESlateVisibility::Hidden);
 	}
 }
 
@@ -774,14 +719,6 @@ void AMyCharacter::SetupWidget()
 		if (InventoryQuickSlotWidgetInstance) {
 			InventoryQuickSlotWidgetInstance->AddToViewport();
 			InventoryQuickSlotWidgetInstance->SetVisibility(ESlateVisibility::Hidden);
-		}
-	}
-
-	if (ShowControlKeysWidgetClass) {
-		ShowControlKeysWidgetInstance = CreateWidget<UShowControlKeysWidget>(GetWorld(), ShowControlKeysWidgetClass);
-		if (ShowControlKeysWidgetInstance) {
-			ShowControlKeysWidgetInstance->AddToViewport();
-			ShowControlKeysWidgetInstance->SetVisibility(ESlateVisibility::Visible);
 		}
 	}
 }
@@ -922,11 +859,6 @@ UInventoryQuickSlotWidget* AMyCharacter::GetInventoryQuickSlotWidgetInstance()
 	return InventoryQuickSlotWidgetInstance ? InventoryQuickSlotWidgetInstance : nullptr;
 }
 
-AAnimal* AMyCharacter::GetTaimmedAnimal()
-{
-	return TaimmedAnimal ? TaimmedAnimal : nullptr;
-}
-
 float AMyCharacter::GetMaxPlayerHP()
 {
 	return MaxPlayerHP;
@@ -978,10 +910,4 @@ void AMyCharacter::SetQuickSlotItemID(int32 NewID)
 void AMyCharacter::SetCurrentTalkNPC(ADialogueNPC* TalkNPC)
 {
 	CurrentTalkNPC = TalkNPC;
-}
-
-void AMyCharacter::SetTaimmedAnimal(AAnimal* NewTaimAnimal)
-{
-	TaimmedAnimal = NewTaimAnimal;
-	UE_LOG(LogTemp, Log, TEXT("TaimmedAnimal is : %s"), *TaimmedAnimal->GetName());
 }

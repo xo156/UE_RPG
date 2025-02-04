@@ -3,7 +3,6 @@
 
 #include "MyPlayerController.h"
 #include "MyCharacter.h"
-#include "Animal.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "InputMappingContext.h"
@@ -131,23 +130,14 @@ void AMyPlayerController::SetupInputComponent() {
 		EnHancedInputComponent->BindAction(QuickSlotAction, ETriggerEvent::Started, this, &AMyPlayerController::QuickSlot);
 		
 		EnHancedInputComponent->BindAction(InteractAction, ETriggerEvent::Started, this, &AMyPlayerController::Interact);
-		
-		EnHancedInputComponent->BindAction(MountAction, ETriggerEvent::Started, this, &AMyPlayerController::Mount);
-		EnHancedInputComponent->BindAction(DisMountAction, ETriggerEvent::Started, this, &AMyPlayerController::DisMount);
-
-		EnHancedInputComponent->BindAction(ShowControlKeysWidgetAction, ETriggerEvent::Started, this, &AMyPlayerController::ShowControlKeysWidget);
 	}
-
 }
 
 void AMyPlayerController::Move(const FInputActionValue& Value)
 {
 	const FVector2D InputValue = Value.Get<FVector2D>();
 	if (GetCharacter() != nullptr) {
-		if (GetCharacter()->bIsRide) {
-			GetCharacter()->GetTaimmedAnimal()->Move(InputValue);
-		}
-		else if (!GetCharacter()->bIsAttack) {
+		if (!GetCharacter()->bIsAttack) {
 			GetCharacter()->Move(InputValue);
 		}
 	}
@@ -156,10 +146,7 @@ void AMyPlayerController::Move(const FInputActionValue& Value)
 void AMyPlayerController::RunStart()
 {
 	if (GetCharacter() != nullptr) {
-		if (GetCharacter()->bIsRide) {
-			GetCharacter()->GetTaimmedAnimal()->RunStart();
-		}
-		else if (!GetCharacter()->bIsRun) {
+		if (!GetCharacter()->bIsRun) {
 			GetCharacter()->RunStart();
 		}
 	}
@@ -168,10 +155,7 @@ void AMyPlayerController::RunStart()
 void AMyPlayerController::RunEnd()
 {
 	if (GetCharacter() != nullptr) {
-		if (GetCharacter()->bIsRide) {
-			GetCharacter()->GetTaimmedAnimal()->RunEnd();
-		}
-		else if (GetCharacter()->bIsRun) {
+		if (GetCharacter()->bIsRun) {
 			GetCharacter()->RunEnd();
 		}
 	}
@@ -180,10 +164,7 @@ void AMyPlayerController::RunEnd()
 void AMyPlayerController::Jump() 
 {
 	if (GetCharacter() != nullptr) {
-		if (GetCharacter()->bIsRide) {
-			GetCharacter()->GetTaimmedAnimal()->Jump();
-		}
-		else if (GetCharacter()->CanJump()) {
+		if (GetCharacter()->CanJump()) {
 			GetCharacter()->Jump();
 		}
 	}
@@ -193,12 +174,7 @@ void AMyPlayerController::Look(const FInputActionValue& Value)
 {
 	const FVector2D InputValue = Value.Get<FVector2D>();
 	if (GetCharacter() != nullptr) {
-		if (GetCharacter()->bIsRide) {
-			GetCharacter()->GetTaimmedAnimal()->Look(InputValue);
-		}
-		else {
-			GetCharacter()->Look(InputValue);
-		}
+		GetCharacter()->Look(InputValue);
 	}
 }
 
@@ -226,9 +202,7 @@ void AMyPlayerController::GuardDown()
 void AMyPlayerController::Roll()
 {
 	if (GetCharacter() != nullptr) {
-		if (!GetCharacter()->bIsRide) {
-			GetCharacter()->Roll();
-		}
+		GetCharacter()->Roll();
 	}
 }
 
@@ -267,34 +241,9 @@ void AMyPlayerController::Interact()
 	}
 }
 
-void AMyPlayerController::Mount()
-{
-	if (GetCharacter() != nullptr) {
-		if (!GetCharacter()->bIsRide) {
-			GetCharacter()->Mount();
-		}
-	}
-}
-
-void AMyPlayerController::DisMount()
-{
-	if (GetCharacter() != nullptr) {
-		if (GetCharacter()->bIsRide) {
-			GetCharacter()->GetTaimmedAnimal()->DisMountAnimal();
-		}
-	}
-}
-
 void AMyPlayerController::Close()
 {
 	if (GetCharacter() != nullptr){
 		GetCharacter()->Close();
-	}
-}
-
-void AMyPlayerController::ShowControlKeysWidget()
-{
-	if (GetCharacter() != nullptr) {
-		GetCharacter()->ShowControlKeysWidget();
 	}
 }
