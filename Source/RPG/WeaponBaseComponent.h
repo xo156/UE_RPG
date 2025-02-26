@@ -20,10 +20,7 @@ public:
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
-	//몽타주
-	int GetSectionCount(UAnimMontage* Montage);
-
-	//캐릭터가 사용하기 위행
+	//캐릭터가 사용하기 위해
 	void SetOwnerCharacter(class AMyCharacter* NewOwner);
 	void AttachToCharacter();
 
@@ -39,10 +36,6 @@ protected:
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Montage")
 	class UAnimMontage* LightAttackMontage;
-
-	//공격
-	int32 CurrentComboCount = 0;
-	float WaitComboTime = 1.f;
 
 	class AMyCharacter* OwnerCharacter;
 

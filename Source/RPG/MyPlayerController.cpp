@@ -2,17 +2,19 @@
 
 
 #include "MyPlayerController.h"
-#include "MyCharacter.h"
+#include "Camera/CameraShakeBase.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
-#include "InputMappingContext.h"
-#include "GameFramework/Pawn.h"
 #include "GameFramework/CharacterMovementComponent.h"
-#include "WeaponBaseComponent.h"
-#include "ItemBase.h"
-#include "InventoryTooltip.h"
+#include "GameFramework/Pawn.h"
+#include "InputMappingContext.h"
 #include "InventoryItemAction.h"
-#include "Camera/CameraShakeBase.h"
+#include "InventoryTooltip.h"
+#include "ItemBase.h"
+#include "MyCharacter.h"
+#include "WeaponBaseComponent.h"
+#include "ResourceComponent.h"
+#include "StateMachineComponent.h"
 
 AMyPlayerController::AMyPlayerController()
 {
@@ -25,6 +27,16 @@ AMyCharacter* AMyPlayerController::GetCharacter()
 		MyCharacter = Cast<AMyCharacter>(GetPawn());
 	}
 	return MyCharacter;
+}
+
+UResourceComponent* AMyPlayerController::GetResourceComponent()
+{
+	return GetCharacter() != nullptr ? GetCharacter()->GetResourceComponent() : nullptr;
+}
+
+UStateMachineComponent* AMyPlayerController::GetStateMachineComponent()
+{
+	return GetCharacter() != nullptr ? GetCharacter()->GetStateMachineComponent() : nullptr;
 }
 
 void AMyPlayerController::ShowTooltipAtMousePosition(UInventoryTooltip* TooltipWidget)
@@ -91,7 +103,7 @@ void AMyPlayerController::BeginPlay() {
 	Super::BeginPlay();
 
 	MyCharacter = Cast<AMyCharacter>(GetPawn());
-	if (UEnhancedInputLocalPlayerSubsystem* SubSystem = ULocalPlayer::GetSubsystem< UEnhancedInputLocalPlayerSubsystem>(GetLocalPlayer())) {
+	if (UEnhancedInputLocalPlayerSubsystem* SubSystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(GetLocalPlayer())) {
 		SubSystem->AddMappingContext(DefaultMappingContext, 0);
 	}
 }
@@ -106,71 +118,75 @@ void AMyPlayerController::SetupInputComponent() {
 	Super::SetupInputComponent();
 
 	if (UEnhancedInputComponent* EnHancedInputComponent = Cast<UEnhancedInputComponent>(InputComponent)) {
-		EnHancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &AMyPlayerController::Move);
-		EnHancedInputComponent->BindAction(RunAction, ETriggerEvent::Triggered, this, &AMyPlayerController::RunStart);
-		EnHancedInputComponent->BindAction(RunAction, ETriggerEvent::Completed, this, &AMyPlayerController::RunEnd);
+		EnHancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &AMyPlayerController::TryMove);
+		EnHancedInputComponent->BindAction(RunAction, ETriggerEvent::Triggered, this, &AMyPlayerController::TryRunStart);
+		EnHancedInputComponent->BindAction(RunAction, ETriggerEvent::Completed, this, &AMyPlayerController::TryRunEnd);
 
-		EnHancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &AMyPlayerController::Look);
+		EnHancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &AMyPlayerController::TryLook);
 		
-		EnHancedInputComponent->BindAction(JumpAction, ETriggerEvent::Started, this, &AMyPlayerController::Jump);
+		EnHancedInputComponent->BindAction(JumpAction, ETriggerEvent::Started, this, &AMyPlayerController::TryJump);
 		
-		EnHancedInputComponent->BindAction(LightAttackAction, ETriggerEvent::Started, this, &AMyPlayerController::AttackStart);
+		EnHancedInputComponent->BindAction(LightAttackAction, ETriggerEvent::Started, this, &AMyPlayerController::TryAttackStart);
 				
-		EnHancedInputComponent->BindAction(GuardAction, ETriggerEvent::Triggered, this, &AMyPlayerController::GuardUp);
-		EnHancedInputComponent->BindAction(GuardAction, ETriggerEvent::Completed, this, &AMyPlayerController::GuardDown);
+		EnHancedInputComponent->BindAction(GuardAction, ETriggerEvent::Triggered, this, &AMyPlayerController::TryGuardUp);
+		EnHancedInputComponent->BindAction(GuardAction, ETriggerEvent::Completed, this, &AMyPlayerController::TryGuardDown);
 		
-		EnHancedInputComponent->BindAction(RollAction, ETriggerEvent::Started, this, &AMyPlayerController::Roll);
+		EnHancedInputComponent->BindAction(RollAction, ETriggerEvent::Started, this, &AMyPlayerController::TryRoll);
 
-		EnHancedInputComponent->BindAction(LockOnAction, ETriggerEvent::Started, this, &AMyPlayerController::LockOnTarget);
+		EnHancedInputComponent->BindAction(LockOnAction, ETriggerEvent::Started, this, &AMyPlayerController::TryLockOnTarget);
 
-		EnHancedInputComponent->BindAction(RootItemAction, ETriggerEvent::Started, this, &AMyPlayerController::RootItem);
+		EnHancedInputComponent->BindAction(RootItemAction, ETriggerEvent::Started, this, &AMyPlayerController::TryRootItem);
 
-		EnHancedInputComponent->BindAction(InventoryAction, ETriggerEvent::Started, this, &AMyPlayerController::OpenInventory);
+		EnHancedInputComponent->BindAction(InventoryAction, ETriggerEvent::Started, this, &AMyPlayerController::TryOpenInventory);
 
-		EnHancedInputComponent->BindAction(QuickSlotAction, ETriggerEvent::Started, this, &AMyPlayerController::QuickSlot);
+		EnHancedInputComponent->BindAction(QuickSlotAction, ETriggerEvent::Started, this, &AMyPlayerController::TryQuickSlot);
 		
-		EnHancedInputComponent->BindAction(InteractAction, ETriggerEvent::Started, this, &AMyPlayerController::Interact);
+		EnHancedInputComponent->BindAction(InteractAction, ETriggerEvent::Started, this, &AMyPlayerController::TryInteract);
 	}
 }
 
-void AMyPlayerController::Move(const FInputActionValue& Value)
+void AMyPlayerController::TryMove(const FInputActionValue& Value)
 {
 	const FVector2D InputValue = Value.Get<FVector2D>();
 	if (GetCharacter() != nullptr) {
-		if (!GetCharacter()->bIsAttack) {
+		if (!GetCharacter()->bIsRoll && GetStateMachineComponent()->GetCurrentState() != EPlayerState::PlayerAttack) {
 			GetCharacter()->Move(InputValue);
 		}
 	}
 }
 
-void AMyPlayerController::RunStart()
+void AMyPlayerController::TryRunStart()
 {
 	if (GetCharacter() != nullptr) {
-		if (!GetCharacter()->bIsRun) {
-			GetCharacter()->RunStart();
+		if (!GetCharacter()->bIsRoll && GetStateMachineComponent()->GetCurrentState() == EPlayerState::PlayerWalk) {
+			if (GetResourceComponent()->bCanConsumeStamina(GetCharacter()->RunStaminaCost)) {
+				GetCharacter()->RunStart();
+			}
 		}
 	}
 }
 
-void AMyPlayerController::RunEnd()
+void AMyPlayerController::TryRunEnd()
 {
 	if (GetCharacter() != nullptr) {
-		if (GetCharacter()->bIsRun) {
+		if (GetStateMachineComponent()->GetCurrentState() == EPlayerState::PlayerRun) {
 			GetCharacter()->RunEnd();
 		}
 	}
 }
 
-void AMyPlayerController::Jump() 
+void AMyPlayerController::TryJump()
 {
 	if (GetCharacter() != nullptr) {
 		if (GetCharacter()->CanJump()) {
-			GetCharacter()->Jump();
+			if (GetResourceComponent()->bCanConsumeStamina(GetCharacter()->JumpStaminaCost)) {
+				GetCharacter()->Jump();
+			}
 		}
 	}
 }
 
-void AMyPlayerController::Look(const FInputActionValue& Value) 
+void AMyPlayerController::TryLook(const FInputActionValue& Value)
 {
 	const FVector2D InputValue = Value.Get<FVector2D>();
 	if (GetCharacter() != nullptr) {
@@ -178,70 +194,87 @@ void AMyPlayerController::Look(const FInputActionValue& Value)
 	}
 }
 
-void AMyPlayerController::AttackStart(const FInputActionValue& Value) 
+void AMyPlayerController::TryAttackStart(const FInputActionValue& Value)
 {
 	if (GetCharacter() != nullptr) {
-		GetCharacter()->AttackStart();
+		if (!GetCharacter()->bIsRoll) {
+			if (GetResourceComponent()->bCanConsumeStamina(GetCharacter()->AttackStaminaCost)) {
+				UE_LOG(LogTemp, Log, TEXT("void AMyPlayerController::TryAttackStart(const FInputActionValue& Value)"));
+				GetCharacter()->AttackStart();
+			}
+		}
 	}
 }
 
-void AMyPlayerController::GuardUp()
+void AMyPlayerController::TryGuardUp()
 {
 	if (GetCharacter() != nullptr) {
-		GetCharacter()->GuardUp();
+		if (!GetCharacter()->bIsRoll && GetStateMachineComponent()->GetCurrentState() != EPlayerState::PlayerAttack) {
+			if (GetResourceComponent()->bCanConsumeStamina(GetCharacter()->GuardStaminaCost)) {
+				GetCharacter()->GuardUp();
+			}
+		}
 	}
 }
 
-void AMyPlayerController::GuardDown()
+void AMyPlayerController::TryGuardDown()
 {
 	if (GetCharacter() != nullptr) {
-		GetCharacter()->GuardDown();
+		if (GetCharacter()->bIsGuard) {
+			GetCharacter()->GuardDown();
+		}
 	}
 }
 
-void AMyPlayerController::Roll()
+void AMyPlayerController::TryRoll()
 {
 	if (GetCharacter() != nullptr) {
-		GetCharacter()->Roll();
+		if (GetCharacter()->CanJump() && !GetCharacter()->bIsRoll && GetStateMachineComponent()->GetCurrentState() != EPlayerState::PlayerAttack) {
+			if (GetResourceComponent()->bCanConsumeStamina(GetCharacter()->RollStaminaCost)) {
+				GetCharacter()->Roll();
+			}
+		}
 	}
 }
 
-void AMyPlayerController::LockOnTarget()
+void AMyPlayerController::TryLockOnTarget()
 {
 	if (GetCharacter() != nullptr) {
 		GetCharacter()->LockOnTarget();
 	}
 }
 
-void AMyPlayerController::RootItem()
+void AMyPlayerController::TryRootItem()
 {
 	if (GetCharacter() != nullptr) {
-		GetCharacter()->RootItem();
+		if ((GetStateMachineComponent()->GetCurrentState() != EPlayerState::PlayerAttack) && !GetCharacter()->bIsRoll) {
+			GetCharacter()->RootItem();
+		}
 	}
 }
 
-void AMyPlayerController::OpenInventory()
+void AMyPlayerController::TryOpenInventory()
 {
 	if (GetCharacter() != nullptr) {
 		GetCharacter()->OpenInventory();
 	}
 }
 
-void AMyPlayerController::QuickSlot()
+void AMyPlayerController::TryQuickSlot()
 {
 	if (GetCharacter() != nullptr) {
 		GetCharacter()->QuickSlot();
 	}
 }
 
-void AMyPlayerController::Interact()
+void AMyPlayerController::TryInteract()
 {
 	if (GetCharacter() != nullptr) {
 		GetCharacter()->Interact();
 	}
 }
 
-void AMyPlayerController::Close()
+void AMyPlayerController::TryClose()
 {
 	if (GetCharacter() != nullptr){
 		GetCharacter()->Close();

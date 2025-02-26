@@ -136,7 +136,7 @@ void AMonster::MonsterAttackEnd()
 
 void AMonster::OnAttackMontageEnded(UAnimMontage* NowPlayMontage, bool bInterrupted)
 {
-	UE_LOG(LogTemp, Log, TEXT("AMonster::OnAttackMontageEnded"));
+	UE_LOG(LogTemp, Log, TEXT("AMonster::OnAttackMontageEndNotify"));
 	if(MonsterAttackComponent)
 		MonsterAttackComponent->OnAttackMontageEnded(NowPlayMontage, bInterrupted);
 }

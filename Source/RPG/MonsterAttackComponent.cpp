@@ -43,7 +43,7 @@ void UMonsterAttackComponent::MonsterEndAttack()
 
 void UMonsterAttackComponent::OnAttackMontageEnded(UAnimMontage* Montage, bool bInterrupted)
 {
-	UE_LOG(LogTemp, Log, TEXT("UMonsterAttackComponent::OnAttackMontageEnded"));
+	UE_LOG(LogTemp, Log, TEXT("UMonsterAttackComponent::OnAttackMontageEndNotify"));
 	OwnerMonster->MonsterAttackEnd();
 }
 

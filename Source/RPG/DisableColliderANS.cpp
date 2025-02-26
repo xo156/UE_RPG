@@ -16,7 +16,6 @@ void UDisableColliderANS::NotifyBegin(USkeletalMeshComponent* MeshComp, UAnimSeq
 void UDisableColliderANS::NotifyEnd(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation)
 {
 	if (auto* PlayerCharacter = Cast<AMyCharacter>(MeshComp->GetOwner())) {
-		PlayerCharacter->bIsRoll = false;
 		PlayerCharacter->bIsNoDamage = false;
 	}
 }

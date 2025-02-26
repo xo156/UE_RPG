@@ -29,6 +29,7 @@ void ULeftCollisionEnableANS::NotifyEnd(USkeletalMeshComponent* MeshComp, UAnimS
                 if (WeaponInstance->GetWeaponCollision()) {
                     WeaponInstance->GetWeaponCollision()->SetCollisionProfileName("NoCollision");
                     WeaponInstance->GetWeaponCollision()->SetNotifyRigidBodyCollision(false);
+                    WeaponInstance->GetOverlapActors().Empty();
                 }
             }
         }

@@ -8,7 +8,6 @@
 #include "CharacterData.h"
 #include "MyCharacter.generated.h"
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnPlayerUIUpdated, float, NewHP, float, NewStamina);
 UCLASS()
 class RPG_API AMyCharacter : public ACharacter
 {
@@ -22,7 +21,6 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 	//특정 상황 재생 몽타주
-	void PlayAirboneMontage();
 
 	virtual float TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
 
@@ -32,14 +30,20 @@ public:
 	void RunEnd();
 	void Jump();
 	void Look(FVector2D InputValue);
+	void PlayAirboneMontage();
 	void AttackStart();
+	void SetAttackMontageSection();
 	void AttackExecute();
-	void SetComboAttackTimer();
-	void StopComboAttackTimer();
+	UFUNCTION()
+	void OnAttackEnded(class UAnimMontage* Montage, bool bInterrupted);
 	void AttackEnd();
 	void GuardUp();
 	void GuardDown();
 	void Roll();
+	UFUNCTION()
+	void OnRollEnded(class UAnimMontage* Montage, bool bInterrupted);
+
+	//락 온
 	void LockOnTarget();
 	AActor* FindLockOnTarget();
 	void UpdateTargetVisibility();
@@ -71,38 +75,36 @@ public:
 	//위젯
 	void SetupWidget();
 
-	//데이터
-	float UseStamina(float StaminaCost);
-	float UseHP(float HPCost);
-	void ConsumeStaminaForAction(float StaminaCost);
-	bool bHasEnoughStamina(float StaminaCost) const;
-	void ConsumeHPForAction(float HPCost);
-	bool bHasEnoughHP(float HPCost) const;
+	//Resource
 	void ChangeMoveSpeed(float DeltaTime);
 	void CheckStaminaRecovery(float DeltaTime);
-	void RecoveryStaminia(float DeltaTime);
+
 	void PlayerDie();
 
 	//AI
 	void SetupStimulusSource();
 
-	//캐릭터 상태들
-	bool bIsAttack;
-	bool bIsMove;
-	bool bIsRun;
-	bool bIsGuard;
-	bool bIsRoll;
-	bool bIsLockon;
-	bool bIsIdle;
-	bool bIsNoDamage;
-	bool bIsTalk;
+	//캐릭터 특수 상태
+	bool bIsEnableCombo = false;
+	bool bIsRoll = false;
+	bool bIsGuard = false;
+	bool bIsLockon = false;
+	bool bIsNoDamage = false;
+	bool bIsTalk = false;
 
-	//소모되는 스테미나
-	float RunStaminaCost = 0.2f;
-	float JumpStaminaCost = 5.f;
-	float AttackStaminaCost = 10.0f;
-	float GuardStaminaCost = 10.f;
-	float RollStaminaCost = 5.f;
+	//캐릭터 스테미나 소모량
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Player/Stamina")
+	float WalkStaminaCost;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Player/Stamina")
+	float RunStaminaCost;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Player/Stamina")
+	float JumpStaminaCost;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Player/Stamina")
+	float AttackStaminaCost;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Player/Stamina")
+	float GuardStaminaCost;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Player/Stamina")
+	float RollStaminaCost;
 
 	//getter
 	class AItemBase* GetQuickSlotItem();
@@ -110,22 +112,17 @@ public:
 	class UBoxComponent* GetGuardComponent();
 	class UUserWidget* GetLockonWidgetInstance();
 	class UInventoryQuickSlotWidget* GetInventoryQuickSlotWidgetInstance();
-	float GetMaxPlayerHP();
-	float GetCurrentPlayerHP();
-	float GetMaxPlayerStamina();
-	float GetPlayerDamage();
+	class UResourceComponent* GetResourceComponent();
+	class UStateMachineComponent* GetStateMachineComponent();
 
 	//setter
 	void SetPlayerInfo();
+	void SetNextSectionName(FName ChangeSectionName);
 	void SetQuickSlotItem(class AItemBase* NewQuickSlotItem);
 	void SetQuickSlotItemAmount(int32 NewAmount);
 	void SetQuickSlotItemID(int32 NewID);
 	void SetCurrentTalkNPC(class ADialogueNPC* TalkNPC);
 
-	//델리게이트
-	FOnPlayerUIUpdated OnPlayerUIUpdated;
-
-		
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -168,32 +165,29 @@ private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera", meta = (AllowPrivateAccess = "true"))
 	class USpringArmComponent* CameraBoom;
 
-	//데이터
+	//자원
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Data", meta = (AllowPrivateAccess = "true"))
 	int32 PlayerCharacterID;
 	struct FCharacterData* CharacterData;
-	float MaxPlayerHP;
-	float CurrentPlayerHP;
-	float MaxPlayerStamina;
-	float CurrentPlayerStamina;
-	float PlayerDamage;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Resource", meta = (AllowPrivateAccess))
+	class UResourceComponent* ResourceComponent;
+	float StaminaRecoveryRate = 10.f;
 
-	//무기
+	//상태
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "StateMachine", meta = (AllowPrivateAccess="true"))
+	class UStateMachineComponent* StateMachineComponent;
+
+	//공격
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon", meta = (AllowPrivateAccess = "true"))
 	TSubclassOf<class UWeaponBaseComponent> WeaponComponent;
 	class UWeaponBaseComponent* CurrentWeaponComponent;
-
-	//핸들러
-	FTimerHandle ComboCheckTimerHandle;
+	FName NextSectionName;
 
 	//AI
 	class UAIPerceptionStimuliSourceComponent* StimulusSource; //Monster가 탐지할 수 있도록
 
 	//이동
 	float TargetSpeed;
-	float TimeWithoutAction = 0.f; //스테미나 회복 시작까지 걸리는 시간 체크용도
-	FVector PreviousLocation;
-	FVector CurrentLocation;
 	FVector LastInputDirection;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Status", meta = (AllowPrivateAccess = "true"))
 	float WalkSpeed = 600.f;
@@ -209,6 +203,9 @@ private:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "LockOn", meta = (AllowPrivateAccess = "true"))
 	TSubclassOf<class UUserWidget> LockonWidgetClass;
 	class UUserWidget* LockonWidgetInstance;
+
+	//구르기
+	//bool bPrevUseControllerRotationYaw; //구르기 하기 이전에 값 저장용
 
 	//아이템
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Inventory", meta = (AllowPrivateAccess = "true"))

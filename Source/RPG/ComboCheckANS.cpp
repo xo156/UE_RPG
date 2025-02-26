@@ -4,20 +4,27 @@
 #include "ComboCheckANS.h"
 #include "MyCharacter.h"
 #include "WeaponBaseComponent.h"
+#include "StateMachineComponent.h"
 
 void UComboCheckANS::NotifyBegin(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, float TotalDuration)
 {
-	if (AMyCharacter* Character = Cast<AMyCharacter>(MeshComp->GetOwner())) {
-		Character->bIsAttack = true;
+	if (!MeshComp || !MeshComp->GetOwner())
+		return;
 
-		Character->SetComboAttackTimer();
+	if (auto* PlayerCharacter = Cast<AMyCharacter>(MeshComp->GetOwner())) {
+		UE_LOG(LogTemp, Log, TEXT("ComboCheckANS::NotifyBegin"));
+		PlayerCharacter->bIsEnableCombo = true;
+		PlayerCharacter->SetNextSectionName(NextSection);
 	}
 }
 
 void UComboCheckANS::NotifyEnd(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation)
 {
-	if (AMyCharacter* Character = Cast<AMyCharacter>(MeshComp->GetOwner())) {
-		Character->bIsAttack = false;
-		Character->StopComboAttackTimer();
+	if (!MeshComp || !MeshComp->GetOwner())
+		return;
+
+	if (auto* PlayerCharacter = Cast<AMyCharacter>(MeshComp->GetOwner())) {
+		UE_LOG(LogTemp, Log, TEXT("ComboCheckANS::NotifyEnd"));
+		PlayerCharacter->bIsEnableCombo = false;
 	}
 }

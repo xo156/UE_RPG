@@ -23,6 +23,8 @@
 #include "DataTableGameInstance.h"
 #include "InventoryQuickSlotWidget.h"
 #include "DialogueNPC.h"
+#include "ResourceComponent.h"
+#include "StateMachineComponent.h"
 
 // Sets default values
 AMyCharacter::AMyCharacter() {
@@ -67,6 +69,18 @@ AMyCharacter::AMyCharacter() {
 	GuardComponent = CreateDefaultSubobject<UBoxComponent>(TEXT("GuardBox"));
 	GuardComponent->SetupAttachment(RootComponent);
 	GuardComponent->SetCollisionProfileName(TEXT("NoCollision"));
+
+	//자원
+	ResourceComponent = CreateDefaultSubobject<UResourceComponent>(TEXT("Resource"));
+	WalkStaminaCost = 0.f;
+	RunStaminaCost = 0.05f;
+	JumpStaminaCost = 5.f;
+	AttackStaminaCost = 10.f;
+	GuardStaminaCost = 5.f;
+	RollStaminaCost = 5.f;
+	
+	//상태
+	StateMachineComponent = CreateDefaultSubobject<UStateMachineComponent>(TEXT("StateMachine"));
 }
 
 // Called when the game starts or when spawned
@@ -89,7 +103,9 @@ void AMyCharacter::BeginPlay() {
 		InventoryComponent->CreateInventoryWidget();
 	}
 
-	bIsIdle = true;
+	if (StateMachineComponent) {
+		StateMachineComponent->SetCurrentState(EPlayerState::PlayerIdle);
+	}
 }
 
 // Called every frame
@@ -100,51 +116,50 @@ void AMyCharacter::Tick(float DeltaTime) {
 	CheckStaminaRecovery(DeltaTime);
 	ChangeMoveSpeed(DeltaTime);
 
-	if (GetVelocity().Y == 0.f && !bIsRoll)
-		bIsIdle = true;
+	if (!StateMachineComponent)
+		return;
 
-	//플레이어가 움직이는지 확인하기 위함
-	PreviousLocation = CurrentLocation;
-	CurrentLocation = GetActorLocation();
+	if (bIsRoll && GetVelocity().SizeSquared() < KINDA_SMALL_NUMBER) {
+		//구르기가 해제될 때 Idle로
+		StateMachineComponent->SetCurrentState(EPlayerState::PlayerIdle);
+	}
 
 	//이전 위치와 현재 위치가 다른 경우 움직임이 있음
-	bIsMove = (CurrentLocation != PreviousLocation);
+	float SpeedSq = GetVelocity().SizeSquared();
+	if (SpeedSq > KINDA_SMALL_NUMBER) {
+		if (StateMachineComponent->GetCurrentState() != EPlayerState::PlayerRun) {
+			StateMachineComponent->SetCurrentState(EPlayerState::PlayerWalk);
+		}
+	}
 
 	//락 온 중이면
 	if (bIsLockon && CurrentTarget) {
 		UpdateTargetVisibility();
+		//대상이 유효하지 않거나 멀어지면
 		if (!IsTargetValid(CurrentTarget) || GetDistanceTo(CurrentTarget) > TargetRange) {
 			ChangeTarget(nullptr);
-			UpdateLockonEffect();
+			UpdateLockonEffect(); //락 온 해제
 			return;
 		}
-		if (!bIsRoll) {
+		if (!bIsRoll) { 
+			//락 온 중에 구르기 하는중이 아닐때만 대상을 따라 회전
 			bUseControllerRotationYaw = true;
 			GetCharacterMovement()->bOrientRotationToMovement = false;
-			//타겟 방향으로 바라보게 함
-			if (bIsMove || bIsGuard) {
+			//이동 중이거나 가드 중일 때 카메라가 대상을 향하도록 회전
+			if (SpeedSq > KINDA_SMALL_NUMBER || bIsGuard) {
 				UpdateLockOnCameraRotation();
 				UpdateLockOnCameraPosition();
 			}
 		}
-		else {
-			FRotator CurrentRotation = GetActorRotation();
-			SetActorRotation(CurrentRotation); // 현재 회전을 유지
-		}
-		if (LockonWidgetInstance)
+		if (LockonWidgetInstance) {
 			UpdateLockonEffect();
+		}
 	}
 	else {
+		//락 온 해제
 		UpdateLockonEffect();
 		bUseControllerRotationYaw = false;
 		GetCharacterMovement()->bOrientRotationToMovement = true;
-	}
-}
-
-void AMyCharacter::PlayAirboneMontage()
-{
-	if (GetCharacterMovement()->IsFalling()) {
-		PlayAnimMontage(AirboneMontage);
 	}
 }
 
@@ -164,16 +179,14 @@ float AMyCharacter::TakeDamage(float DamageAmount, FDamageEvent const& DamageEve
 		PlayerController->ClientPlayCameraShake(CameraShake);
 	}
 
-	if (bHasEnoughHP(DamageAmount)) {
-		//체력이 충분해서 데미지를 입을때
-		ConsumeHPForAction(DamageAmount);
-		UE_LOG(LogTemp, Log, TEXT("Player Damaged, CurrentPlayerHP: %f"), CurrentPlayerHP);
+	if (GetResourceComponent()->bCanConsumeHealth(DamageAmount)) {
+		//아직 살아있음
+		GetResourceComponent()->ConsumeHP(DamageAmount);
 	}
 	else {
-		//체력이 없어서 죽을때
-		ConsumeHPForAction(DamageAmount);
+		//으악 죽음
+		GetResourceComponent()->ConsumeHP(DamageAmount);
 		PlayerDie();
-		UE_LOG(LogTemp, Log, TEXT("Player Die"));
 	}
 
 	return DamageAmount;
@@ -181,42 +194,46 @@ float AMyCharacter::TakeDamage(float DamageAmount, FDamageEvent const& DamageEve
 
 void AMyCharacter::Move(FVector2D InputValue)
 {
-	if (!bIsRoll) {
-		const FRotator YawRotation(0.f, GetControlRotation().Yaw, 0.f);
-		const FVector ForwardDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);
-		const FVector RightDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
+	GetStateMachineComponent()->SetCurrentState(EPlayerState::PlayerWalk);
 
-		LastInputDirection = (ForwardDirection * InputValue.Y + RightDirection * InputValue.X).GetSafeNormal();
+	const FRotator YawRotation(0.f, GetControlRotation().Yaw, 0.f);
+	const FVector ForwardDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);
+	const FVector RightDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
 
-		AddMovementInput(ForwardDirection, InputValue.Y);
-		AddMovementInput(RightDirection, InputValue.X);
-	}
+	LastInputDirection = (ForwardDirection * InputValue.Y + RightDirection * InputValue.X).GetSafeNormal();
+
+	AddMovementInput(ForwardDirection, InputValue.Y);
+	AddMovementInput(RightDirection, InputValue.X);
 }
 
 void AMyCharacter::RunStart()
 {
-	if (!bIsMove)
-		return;
+	if (GetStateMachineComponent()->GetCurrentState() != EPlayerState::PlayerRun) {
+		GetStateMachineComponent()->SetCurrentState(EPlayerState::PlayerRun);
+	}
 
-	if (bHasEnoughStamina(RunStaminaCost)) {
-		bIsRun = true;
-		TargetSpeed = RunSpeed;
+	TargetSpeed = RunSpeed;
+	//같은 위치에서 이미 호출되었다면 넘어가도록
+	FVector LastNoiseLocation = FVector::ZeroVector;
+	if (!LastNoiseLocation.Equals(GetActorLocation(), 10.0f)) {
 		UAISense_Hearing::ReportNoiseEvent(GetWorld(), GetActorLocation(), RunLoudness, this);
+		LastNoiseLocation = GetActorLocation();
 	}
 }
 
 void AMyCharacter::RunEnd()
 {
-	bIsRun = false;
+	GetStateMachineComponent()->SetCurrentState(EPlayerState::PlayerWalk);
+
 	TargetSpeed = WalkSpeed;
 }
 
 void AMyCharacter::Jump()
 {
-	if (bHasEnoughStamina(JumpStaminaCost)) {
-		ConsumeStaminaForAction(JumpStaminaCost);
-		ACharacter::Jump();
-	}
+	GetStateMachineComponent()->SetCurrentState(EPlayerState::PlayerJump);
+
+	GetResourceComponent()->ConsumeStamina(JumpStaminaCost);
+	ACharacter::Jump();
 }
 
 void AMyCharacter::Look(FVector2D InputValue)
@@ -227,88 +244,100 @@ void AMyCharacter::Look(FVector2D InputValue)
 	}
 }
 
+void AMyCharacter::PlayAirboneMontage()
+{
+	if (GetCharacterMovement()->IsFalling()) {
+		PlayAnimMontage(AirboneMontage);
+	}
+}
+
 void AMyCharacter::AttackStart()
 {
-	if (!bIsRoll && !bIsAttack && bHasEnoughStamina(AttackStaminaCost)) {
-		bIsAttack = true;
-		AttackExecute();
+	if (!StateMachineComponent)
+		return;
+
+	UE_LOG(LogTemp, Log, TEXT("void AMyCharacter::AttackStart"));
+
+	if (StateMachineComponent->GetCurrentState() == EPlayerState::PlayerAttack) {
+		if (bIsEnableCombo)
+			SetAttackMontageSection();
+		return;
+	}
+	AttackExecute();
+}
+
+void AMyCharacter::SetAttackMontageSection()
+{
+	if (!CurrentWeaponComponent || !ResourceComponent || !GetMesh() || !GetMesh()->GetAnimInstance())
+		return;
+
+	UE_LOG(LogTemp, Log, TEXT("void AMyCharacter::SetAttackMontageSection"));
+	if (auto* AnimInstance = GetMesh()->GetAnimInstance()) {
+		if (auto* CurrentActiveMontage = AnimInstance->GetCurrentActiveMontage()) {
+			UE_LOG(LogTemp, Log, TEXT("CurrentActiveMontage: %s"), *CurrentActiveMontage->GetName());
+			auto CurrentSection = AnimInstance->Montage_GetCurrentSection(AnimInstance->GetCurrentActiveMontage());
+			if (!CurrentSection.IsNone()) {
+				AnimInstance->Montage_SetNextSection(CurrentSection, NextSectionName, CurrentWeaponComponent->LightAttackMontage);
+				UE_LOG(LogTemp, Log, TEXT("Montage Next Section: %s"), *NextSectionName.ToString());
+			}
+		}
 	}
 }
 
 void AMyCharacter::AttackExecute()
 {
-	if (UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance()) {
-		if (CurrentWeaponComponent == nullptr) {
-			bIsAttack = false;
-			return;
-		}
-		//오버랩 액터 리스트 비우기
-		CurrentWeaponComponent->GetRightHandWeaponInstance()->GetOverlapActors().Empty();
-		CurrentWeaponComponent->GetLeftHandWeaponInstance()->GetOverlapActors().Empty();
+	if (!CurrentWeaponComponent || !GetMesh() || !ResourceComponent) 
+		return;
 
-		int32 SectionCount = CurrentWeaponComponent->GetSectionCount(CurrentWeaponComponent->LightAttackMontage);
-		ConsumeStaminaForAction(AttackStaminaCost);
-		UAISense_Hearing::ReportNoiseEvent(GetWorld(), GetActorLocation(), AttackLoudness, this);
-		if (CurrentWeaponComponent->CurrentComboCount < SectionCount) {
-			FString SectionName = "Combo" + FString::FromInt(CurrentWeaponComponent->CurrentComboCount);
-			if (AnimInstance->Montage_IsPlaying(CurrentWeaponComponent->LightAttackMontage)) {
-				AnimInstance->Montage_JumpToSection(FName(*SectionName), CurrentWeaponComponent->LightAttackMontage);
-			}
-			else {
-				AnimInstance->Montage_Play(CurrentWeaponComponent->LightAttackMontage);
-				AnimInstance->Montage_JumpToSection(FName(*SectionName), CurrentWeaponComponent->LightAttackMontage);
-			}
-			CurrentWeaponComponent->CurrentComboCount++;
-		}
-		else {
-			CurrentWeaponComponent->CurrentComboCount = 0;
-			FString SectionName = "Combo0";
-			AnimInstance->Montage_Play(CurrentWeaponComponent->LightAttackMontage);
-			AnimInstance->Montage_JumpToSection(FName(*SectionName), CurrentWeaponComponent->LightAttackMontage);
-		}
+	if (StateMachineComponent->GetCurrentState() == EPlayerState::PlayerAttack)
+		return;
+
+	UE_LOG(LogTemp, Log, TEXT("void AMyCharacter::AttackExecute"));
+	StateMachineComponent->SetCurrentState(EPlayerState::PlayerAttack);
+
+	auto* AnimInstance = GetMesh()->GetAnimInstance();
+	if (!AnimInstance)
+		return;
+
+	//기존 바인딩이 있다면 제거 (이전 공격 애니메이션이 끝나기 전에 공격을 다시 하면 중복 호출 방지)
+	if (AnimInstance->OnMontageEnded.IsAlreadyBound(this, &AMyCharacter::OnAttackEnded)) {
+		AnimInstance->OnMontageEnded.RemoveDynamic(this, &AMyCharacter::OnAttackEnded);
+	}
+	AnimInstance->OnMontageEnded.AddDynamic(this, &AMyCharacter::OnAttackEnded);
+	AnimInstance->Montage_Play(CurrentWeaponComponent->LightAttackMontage);
+	//같은 위치에서 이미 호출되었다면 넘어가도록
+	FVector LastNoiseLocation = FVector::ZeroVector;
+	if (!LastNoiseLocation.Equals(GetActorLocation(), 10.0f)) {
+		UAISense_Hearing::ReportNoiseEvent(GetWorld(), GetActorLocation(), RunLoudness, this);
+		LastNoiseLocation = GetActorLocation();
 	}
 }
 
-void AMyCharacter::SetComboAttackTimer()
+void AMyCharacter::OnAttackEnded(UAnimMontage* Montage, bool bInterrupted)
 {
-	if (auto* AnimInstance = GetMesh()->GetAnimInstance()) {
-		if (AnimInstance->Montage_IsPlaying(CurrentWeaponComponent->LightAttackMontage)) {
-			FName CurrentSectionName = AnimInstance->Montage_GetCurrentSection(CurrentWeaponComponent->LightAttackMontage);
-			if (!CurrentSectionName.IsNone()) {
-				float SectionLength = CurrentWeaponComponent->LightAttackMontage->GetSectionLength(CurrentWeaponComponent->LightAttackMontage->GetSectionIndex(CurrentSectionName));
-				GetWorld()->GetTimerManager().SetTimer(ComboCheckTimerHandle, this, &AMyCharacter::StopComboAttackTimer, SectionLength, false);
-				GetCurrentWeaponComponent()->WaitComboTime = SectionLength;
-			}
-		}
-	}
-}
+	UE_LOG(LogTemp, Warning, TEXT("AMyCharacter::OnAttackEnded - Montage: %s, Interrupted: %s"),
+		   *Montage->GetName(), bInterrupted ? TEXT("True") : TEXT("False"));
 
-void AMyCharacter::StopComboAttackTimer()
-{
-	GetWorld()->GetTimerManager().ClearTimer(ComboCheckTimerHandle);
-	GetCurrentWeaponComponent()->WaitComboTime = 0;
+	if(!bIsEnableCombo)
+		AttackEnd();
 }
 
 void AMyCharacter::AttackEnd()
 {
-	if (CurrentWeaponComponent) {
-		CurrentWeaponComponent->CurrentComboCount = 0;
-		CurrentWeaponComponent->GetRightHandWeaponInstance()->GetOverlapActors().Empty();
-		CurrentWeaponComponent->GetLeftHandWeaponInstance()->GetOverlapActors().Empty();
-	}
-	bIsAttack = false;
+	UE_LOG(LogTemp, Log, TEXT("void AMyCharacter::AttackEnd"));
+
+	GetStateMachineComponent()->SetCurrentState(EPlayerState::PlayerIdle);
+	bIsEnableCombo = false;
 }
 
 void AMyCharacter::GuardUp()
 {
 	if (!InventoryComponent->bIsOpen) {
-		if (bHasEnoughStamina(GuardStaminaCost)) {
-			bIsGuard = true;
-			if (UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance()) {
-				GuardComponent->SetCollisionProfileName(TEXT("Pawn"));
-				GuardComponent->SetVisibility(true);
-				AnimInstance->Montage_Play(GuardMontage);
-			}
+		bIsGuard = true;
+		if (auto* AnimInstance = GetMesh()->GetAnimInstance()) {
+			GuardComponent->SetCollisionProfileName(TEXT("Pawn"));
+			GuardComponent->SetVisibility(true);
+			AnimInstance->Montage_Play(GuardMontage);
 		}
 	}
 }
@@ -322,52 +351,56 @@ void AMyCharacter::GuardDown()
 
 void AMyCharacter::Roll()
 {
-	if (!InventoryComponent->bIsOpen) {
-		if (bHasEnoughStamina(RollStaminaCost)) {
-			if (!bIsAttack && CanJump() && !bIsRoll) {
-				if (UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance()) {
-					bIsRoll = true;
-					ConsumeStaminaForAction(RollStaminaCost);
+	auto* AnimInstance = GetMesh()->GetAnimInstance();
+	if (!AnimInstance || InventoryComponent->bIsOpen)
+		return;
 
-					if (!LastInputDirection.IsZero()) {
-						SetActorRotation(LastInputDirection.Rotation());
-					}
+	bIsRoll = true;
+	if (!LastInputDirection.IsZero()) {
+		SetActorRotation(LastInputDirection.Rotation());
+	}
+	bUseControllerRotationYaw = false;
+	GetCharacterMovement()->bOrientRotationToMovement = true;
+	//기존 바인딩이 있다면 제거 (이전 구르기 애니메이션이 끝나기 전에 구르기를 다시 하면 중복 호출 방지)
+	if (AnimInstance->OnMontageEnded.IsAlreadyBound(this, &AMyCharacter::OnRollEnded)) {
+		AnimInstance->OnMontageEnded.RemoveDynamic(this, &AMyCharacter::OnRollEnded);
+	}
+	AnimInstance->OnMontageEnded.AddDynamic(this, &AMyCharacter::OnRollEnded);
+	AnimInstance->Montage_Play(RollMontage);
+	GetResourceComponent()->ConsumeStamina(RollStaminaCost);
+}
 
-					bUseControllerRotationYaw = false;
-					GetCharacterMovement()->bOrientRotationToMovement = true;
-					AnimInstance->Montage_Play(RollMontage);
-				}
-			}
-		}
+void AMyCharacter::OnRollEnded(UAnimMontage* Montage, bool bInterrupted)
+{
+	if (!GetMesh() || !GetMesh()->GetAnimInstance())
+		return;
+	if (Montage == RollMontage) {
+		UE_LOG(LogTemp, Warning, TEXT("AMyCharacter::OnRollEnded - Montage: %s, Interrupted: %s"),
+			   *Montage->GetName(), bInterrupted ? TEXT("True") : TEXT("False"));
+
+		bIsRoll = false;
+		bUseControllerRotationYaw = true;
+		GetCharacterMovement()->bOrientRotationToMovement = false;
 	}
 }
 
 void AMyCharacter::LockOnTarget()
 {
-	if (bIsLockon) {
-		//이미 락온된 상태에서는 새로운 타겟
-		AActor* NewTarget = FindLockOnTarget();
-		if (NewTarget) {
-			ChangeTarget(NewTarget);
-			CreateLockonEffect();
-		}
-		else {
-			ChangeTarget(nullptr);
-		}
+	AActor* NewTarget = FindLockOnTarget();
+
+	//기존 타겟과 다르면 변경
+	if (bIsLockon && NewTarget) {
+		ChangeTarget(NewTarget);
 	}
 	else {
-		AActor* NewTarget = FindLockOnTarget();
-		if (NewTarget) {
-			ChangeTarget(NewTarget);
-			CreateLockonEffect();
-		}
+		ChangeTarget(NewTarget);
 	}
 }
 
 AActor* AMyCharacter::FindLockOnTarget()
 {
 	FCollisionQueryParams QueryParams;
-	QueryParams.AddIgnoredActor(this); // 자기 자신 무시
+	QueryParams.AddIgnoredActor(this); //자기 자신 무시
 	QueryParams.bTraceComplex = false;
 	QueryParams.bReturnPhysicalMaterial = false;
 
@@ -401,36 +434,28 @@ AActor* AMyCharacter::FindLockOnTarget()
 			}
 		}
 	}
+	else {
+		UE_LOG(LogTemp, Warning, TEXT("Can Not Hit Target"));
+	}
 	return NearestEnemy;
 }
 
 void AMyCharacter::UpdateTargetVisibility()
 {
-	if (bIsRoll)
-		return;
-
-	if (CurrentTarget) {
-		//타겟이 항상 보이도록
-		if (!IsTargetValid(CurrentTarget)) {
-			ChangeTarget(nullptr); // 타겟이 유효하지 않으면
-		}
+	if (!CurrentTarget && !IsTargetValid(CurrentTarget)) {
+		ChangeTarget(nullptr);
 	}
 }
 
 bool AMyCharacter::IsTargetValid(AActor* CheckTarget)
 {
-	if (CheckTarget == nullptr)
+	if (!IsValid(CheckTarget) || GetDistanceTo(CheckTarget) > TargetRange) {
 		return false;
+	}
 
-	if (!CheckTarget->IsValidLowLevel() && CheckTarget->IsPendingKill())
-		return false;
-
-	if (GetDistanceTo(CheckTarget) > TargetRange)
-		return false;
-
-	if (auto* TargetMonster = Cast<AMonster>(CurrentTarget)) {
+	if (AMonster* TargetMonster = Cast<AMonster>(CheckTarget)) {
 		if (TargetMonster->bIsMonsterDead) {
-			ChangeTarget(nullptr);
+			return false;
 		}
 	}
 
@@ -439,18 +464,19 @@ bool AMyCharacter::IsTargetValid(AActor* CheckTarget)
 
 void AMyCharacter::ChangeTarget(AActor* NewTarget)
 {
-	if (NewTarget != CurrentTarget) {
-		CurrentTarget = NewTarget;
-		if (CurrentTarget == nullptr) {
-			bIsLockon = false; 
-			if (LockonWidgetInstance) {
-				LockonWidgetInstance->SetVisibility(ESlateVisibility::Hidden);
-			}
+	if (NewTarget == CurrentTarget) 
+		return;
+
+	CurrentTarget = NewTarget;
+	bIsLockon = (CurrentTarget != nullptr);
+
+	if (!bIsLockon) {
+		if (LockonWidgetInstance) {
+			LockonWidgetInstance->SetVisibility(ESlateVisibility::Hidden);
 		}
-		else {
-			bIsLockon = true;
-			CreateLockonEffect();
-		}
+	}
+	else {
+		CreateLockonEffect();
 	}
 }
 
@@ -484,46 +510,30 @@ void AMyCharacter::UpdateLockonEffect()
 
 void AMyCharacter::UpdateLockOnCameraRotation()
 {
-	if (CurrentTarget) {
-		FVector DirectionToTarget = (CurrentTarget->GetActorLocation() - GetActorLocation()).GetSafeNormal();
-		FRotator TargetRotation = DirectionToTarget.Rotation();
+	if (!CurrentTarget) 
+		return;
 
-		FRotator CurrentRotation = GetControlRotation();
+	FVector DirectionToTarget = (CurrentTarget->GetActorLocation() - GetActorLocation()).GetSafeNormal();
+	FRotator TargetRotation = DirectionToTarget.Rotation();
 
-		//시야각 제한
-		float AngleDifference = FMath::Abs(FMath::FindDeltaAngleDegrees(CurrentRotation.Yaw, TargetRotation.Yaw));
+	FRotator CurrentRotation = GetControlRotation();
+	float AngleDiff = FMath::FindDeltaAngleDegrees(CurrentRotation.Yaw, TargetRotation.Yaw);
 
-		if (AngleDifference > MaxTargetAngle) {
-			//제한된 각도 내에서만 회전하도록 조정
-			float AdjustedYaw = CurrentRotation.Yaw + FMath::Sign(TargetRotation.Yaw - CurrentRotation.Yaw) * MaxTargetAngle;
-			CurrentRotation.Yaw = AdjustedYaw;
-			if (auto* PlayerController = Cast<AMyPlayerController>(GetController())) {
-				PlayerController->SetControlRotation(CurrentRotation);
-			}
-		}
-		else {
-			//제한이 없으면 자연스럽게 회전
-			if (auto* PlayerController = Cast<AMyPlayerController>(GetController())) {
-				PlayerController->SetControlRotation(TargetRotation);
-			}
-		}
+	if (FMath::Abs(AngleDiff) > MaxTargetAngle) {
+		TargetRotation.Yaw = CurrentRotation.Yaw + FMath::Sign(AngleDiff) * MaxTargetAngle;
+	}
+
+	if (AMyPlayerController* PlayerController = Cast<AMyPlayerController>(GetController())) {
+		PlayerController->SetControlRotation(TargetRotation);
 	}
 }
 
 void AMyCharacter::UpdateLockOnCameraPosition()
 {
-	FRotator CurrentRotation = GetControlRotation();
-	if (!bIsLockon) {
-		if (auto* PlayerController = Cast<AMyPlayerController>(GetController())) {
-			CurrentRotation.Yaw -= 5.0f;
-			PlayerController->SetControlRotation(GetActorRotation());
-		}
-	}
-	else {
-		CurrentRotation.Yaw += 5.0f;
-		if (auto* PlayerController = Cast<AMyPlayerController>(GetController())) {
-			PlayerController->SetControlRotation(CurrentRotation);
-		}
+	if (auto* PlayerController = Cast<AMyPlayerController>(GetController())) {
+		FRotator CurrentRotation = PlayerController->GetControlRotation();
+		CurrentRotation.Yaw += (bIsLockon ? 5.0f : -5.0f);
+		PlayerController->SetControlRotation(CurrentRotation);
 	}
 }
 
@@ -563,7 +573,7 @@ void AMyCharacter::OpenInventory()
 
 UInventoryComponent* AMyCharacter::GetInventory()
 {
-	return InventoryComponent;
+	return InventoryComponent ? InventoryComponent : nullptr;
 }
 
 void AMyCharacter::OnRootItemBoxOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComponent, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
@@ -666,7 +676,7 @@ void AMyCharacter::Close()
 }
 
 void AMyCharacter::EquipWeapon(TSubclassOf<class UWeaponBaseComponent> WeaponBaseComponentClass)
-{	
+{
 	if (WeaponBaseComponentClass) {
 		if (CurrentWeaponComponent) {
 			if (InventoryComponent) {
@@ -709,8 +719,10 @@ void AMyCharacter::SetupWidget()
 		PlayerWidgetInstance = CreateWidget<UPlayerWidget>(GetWorld(), PlayerWidgetClass);
 		if (PlayerWidgetInstance) {
 			PlayerWidgetInstance->AddToViewport();
-			PlayerWidgetInstance->UpdateHP(CurrentPlayerHP, MaxPlayerHP);
-			PlayerWidgetInstance->UpdateStamina(CurrentPlayerStamina, MaxPlayerStamina);
+			if (ResourceComponent) {
+				PlayerWidgetInstance->UpdateHP(ResourceComponent->GetCurrentHealth(), ResourceComponent->GetMaxHealth());
+				PlayerWidgetInstance->UpdateStamina(ResourceComponent->GetCurrentStamina(), ResourceComponent->GetMaxStamina());
+			}
 		}
 	}
 
@@ -723,50 +735,6 @@ void AMyCharacter::SetupWidget()
 	}
 }
 
-float AMyCharacter::UseStamina(float StaminaCost)
-{
-	if (StaminaCost >= 0) {
-		CurrentPlayerStamina = FMath::Max(CurrentPlayerStamina - StaminaCost, 0.0f);
-	}
-	else {
-		CurrentPlayerStamina = FMath::Min(CurrentPlayerStamina + StaminaCost, MaxPlayerStamina);
-	}
-	return CurrentPlayerStamina;
-}
-
-float AMyCharacter::UseHP(float HPCost)
-{
-	if (HPCost >= 0) {
-		CurrentPlayerHP = FMath::Max(CurrentPlayerHP - HPCost, 0.0f);
-	}
-	else {
-		CurrentPlayerHP = FMath::Min(CurrentPlayerHP - HPCost, MaxPlayerHP);
-	}
-	return CurrentPlayerHP;
-}
-
-void AMyCharacter::ConsumeStaminaForAction(float StaminaCost)
-{
-	UseStamina(StaminaCost);
-	OnPlayerUIUpdated.Broadcast(CurrentPlayerHP, CurrentPlayerStamina);
-}
-
-bool AMyCharacter::bHasEnoughStamina(float StaminaCost) const
-{
-	return CurrentPlayerStamina >= StaminaCost;
-}
-
-void AMyCharacter::ConsumeHPForAction(float HPCost)
-{
-	UseHP(HPCost);	
-	OnPlayerUIUpdated.Broadcast(CurrentPlayerHP, CurrentPlayerStamina);
-}
-
-bool AMyCharacter::bHasEnoughHP(float HPCost) const
-{
-	return CurrentPlayerHP > HPCost;
-}
-
 void AMyCharacter::ChangeMoveSpeed(float DeltaTime)
 {
 	//현재 속도를 보간
@@ -776,38 +744,29 @@ void AMyCharacter::ChangeMoveSpeed(float DeltaTime)
 		NewSpeed = WalkSpeed;
 	GetCharacterMovement()->MaxWalkSpeed = NewSpeed;
 
-	//달릴때만 스테미나 소모하도록
-	if (bIsRun) {
-		ConsumeStaminaForAction(RunStaminaCost);
-	}
-	//스테미나가 달리기에 부족하면
-	if (!bHasEnoughStamina(RunStaminaCost)) {
-		bIsRun = false;
-		TargetSpeed = WalkSpeed;
+	if (GetStateMachineComponent()->GetCurrentState() == EPlayerState::PlayerRun) {
+		if (GetResourceComponent()->bCanConsumeStamina(RunStaminaCost)) {
+			//달리기 가능하니까 스테미나 소모하도록
+			GetResourceComponent()->ConsumeStamina(RunStaminaCost);
+		}
+		else {
+			//달리기 불가능하니까 스테이트 변경
+			GetStateMachineComponent()->SetCurrentState(EPlayerState::PlayerWalk);
+			TargetSpeed = WalkSpeed;
+		}
 	}
 }
 
 void AMyCharacter::CheckStaminaRecovery(float DeltaTime)
 {
-	if (!bIsAttack && !bIsRun && !bIsRoll) {
-		if (CurrentPlayerStamina < MaxPlayerStamina) {
-			TimeWithoutAction += DeltaTime;
-			if (TimeWithoutAction >= 1.0f) {
-				RecoveryStaminia(DeltaTime);
-				TimeWithoutAction = 0.0f; //회복 후 초기화
-			}
+	if (!StateMachineComponent || !ResourceComponent)
+		return;
+
+	if (!bIsRoll && !bIsGuard && CanJump() && (StateMachineComponent->GetCurrentState() == EPlayerState::PlayerIdle || StateMachineComponent->GetCurrentState() == EPlayerState::PlayerWalk)) {
+		if (ResourceComponent->GetCurrentStamina() < ResourceComponent->GetMaxStamina()) {
+			ResourceComponent->ConsumeStamina(-StaminaRecoveryRate * DeltaTime);
 		}
 	}
-	else {
-		TimeWithoutAction = 0.0f; //동작 수행 시 초기화
-	}
-}
-
-void AMyCharacter::RecoveryStaminia(float DeltaTime)
-{
-	float StaminaRecoveryRate = 1000.0f;
-	CurrentPlayerStamina = FMath::Min(CurrentPlayerStamina + (StaminaRecoveryRate * DeltaTime), MaxPlayerStamina);
-	OnPlayerUIUpdated.Broadcast(CurrentPlayerHP, CurrentPlayerStamina);
 }
 
 void AMyCharacter::PlayerDie()
@@ -859,35 +818,26 @@ UInventoryQuickSlotWidget* AMyCharacter::GetInventoryQuickSlotWidgetInstance()
 	return InventoryQuickSlotWidgetInstance ? InventoryQuickSlotWidgetInstance : nullptr;
 }
 
-float AMyCharacter::GetMaxPlayerHP()
+UResourceComponent* AMyCharacter::GetResourceComponent()
 {
-	return MaxPlayerHP;
+	return ResourceComponent ? ResourceComponent : nullptr;
 }
 
-float AMyCharacter::GetCurrentPlayerHP()
+UStateMachineComponent* AMyCharacter::GetStateMachineComponent()
 {
-	return CurrentPlayerHP;
-}
-
-float AMyCharacter::GetMaxPlayerStamina()
-{
-	return MaxPlayerStamina;
-}
-
-float AMyCharacter::GetPlayerDamage()
-{
-	return PlayerDamage;
+	return StateMachineComponent ? StateMachineComponent : nullptr;
 }
 
 void AMyCharacter::SetPlayerInfo()
 {
-	if (CharacterData) {
-		MaxPlayerHP = CharacterData->MaxCharacterHP;
-		CurrentPlayerHP = MaxPlayerHP;
-		MaxPlayerStamina = CharacterData->MaxCharacterStamina;
-		CurrentPlayerStamina = MaxPlayerStamina;
-		PlayerDamage = CharacterData->CharacterDamage;
+	if (CharacterData && ResourceComponent) {
+		ResourceComponent->InitResource(CharacterData->MaxCharacterHP, CharacterData->MaxCharacterStamina, CharacterData->CharacterDamage);
 	}
+}
+
+void AMyCharacter::SetNextSectionName(FName ChangeSectionName)
+{
+	NextSectionName = ChangeSectionName;
 }
 
 void AMyCharacter::SetQuickSlotItem(AItemBase* NewQuickSlotItem)

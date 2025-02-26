@@ -31,13 +31,6 @@ void UWeaponBaseComponent::BeginPlay()
 	
 }
 
-int UWeaponBaseComponent::GetSectionCount(UAnimMontage* Montage)
-{
-	if(Montage)
-		return Montage->CompositeSections.Num();
-	return 0;
-}
-
 void UWeaponBaseComponent::SetOwnerCharacter(AMyCharacter* NewOwner)
 {
     //캐릭터는 하나니까
@@ -49,28 +42,28 @@ void UWeaponBaseComponent::SetOwnerCharacter(AMyCharacter* NewOwner)
 
 void UWeaponBaseComponent::AttachToCharacter()
 {
-    if (OwnerCharacter) {
-        if (RightHandWeapon) {
-            if (RightHandWeaponInstance = GetWorld()->SpawnActor<AWeapon>(RightHandWeapon)) {
-                RightHandWeaponInstance->AttachToComponent(OwnerCharacter->GetMesh(), FAttachmentTransformRules::SnapToTargetIncludingScale, FName(TEXT("Socket_R")));
-                RightHandWeaponInstance->SetOwnerCharacter(OwnerCharacter);
+    if (!OwnerCharacter) return;
+
+    auto AttachWeapon = [&](TSubclassOf<AWeapon> WeaponClass, FName SocketName, AWeapon*& WeaponInstance) {
+        if (WeaponClass) {
+            WeaponInstance = GetWorld()->SpawnActor<AWeapon>(WeaponClass);
+            if (WeaponInstance) {
+                WeaponInstance->AttachToComponent(OwnerCharacter->GetMesh(), FAttachmentTransformRules::SnapToTargetIncludingScale, SocketName);
+                WeaponInstance->SetOwnerCharacter(OwnerCharacter);
             }
         }
-        if (LeftHandWeapon) {
-            if (LeftHandWeaponInstance = GetWorld()->SpawnActor<AWeapon>(LeftHandWeapon)) {
-                LeftHandWeaponInstance->AttachToComponent(OwnerCharacter->GetMesh(), FAttachmentTransformRules::SnapToTargetIncludingScale, FName(TEXT("Socket_L")));
-                LeftHandWeaponInstance->SetOwnerCharacter(OwnerCharacter);
-            }
-        }
-    }
+    };
+
+    AttachWeapon(RightHandWeapon, TEXT("Socket_R"), RightHandWeaponInstance);
+    AttachWeapon(LeftHandWeapon, TEXT("Socket_L"), LeftHandWeaponInstance);
 }
 
 AWeapon* UWeaponBaseComponent::GetRightHandWeaponInstance() const
 {
-    return RightHandWeaponInstance ? RightHandWeaponInstance : nullptr;
+    return RightHandWeaponInstance;
 }
 
 AWeapon* UWeaponBaseComponent::GetLeftHandWeaponInstance() const
 {
-    return LeftHandWeaponInstance ? LeftHandWeaponInstance : nullptr;
+    return LeftHandWeaponInstance;
 }

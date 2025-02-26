@@ -24,7 +24,7 @@ public:
     void UpdateStamina(float CurrentStamina, float MaxStamina);
 
     UFUNCTION()
-    void OnPlayerStatusUswerWidgetUpdate(float NewHP, float NewStamina);
+    void OnPlayerResourceUpdate(float NewHP, float NewStamina);
 
 protected:
     UPROPERTY(meta = (BindWidget))

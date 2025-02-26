@@ -17,4 +17,8 @@ class RPG_API UComboCheckANS : public UAnimNotifyState
 	virtual void NotifyBegin(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, float TotalDuration) override;
 	virtual void NotifyEnd(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation) override;
 
+
+private:
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "SectionName", meta = (AllowPrivateAccess="true"))
+	FName NextSection;
 };

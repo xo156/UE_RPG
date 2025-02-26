@@ -64,7 +64,8 @@ void AWeapon::ApplyDamageToActor(AActor* ActorToDamage)
 		return;
 	}
 
-	float Damage = OwnerCharacter->GetPlayerDamage();
+	//float Damage = OwnerCharacter->GetPlayerDamage();
+	float Damage = OwnerCharacter->GetResourceComponent()->GetCurrentDamage();
 	FDamageEvent DamageEvent;
 	if (GetInstigator() == nullptr) {
 		return;

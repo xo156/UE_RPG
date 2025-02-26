@@ -10,7 +10,7 @@ void UPlayerWidget::NativeConstruct()
 	Super::NativeConstruct();
 
 	if (auto* PlayerCharacter = Cast<AMyCharacter>(GetOwningPlayerPawn())) {
-		PlayerCharacter->OnPlayerUIUpdated.AddDynamic(this, &UPlayerWidget::OnPlayerStatusUswerWidgetUpdate);
+		PlayerCharacter->GetResourceComponent()->OnPlayerUIUpdated.AddDynamic(this, &UPlayerWidget::OnPlayerResourceUpdate);
 	}
 }
 
@@ -28,10 +28,10 @@ void UPlayerWidget::UpdateStamina(float CurrentStamina, float MaxStamina)
 	}
 }
 
-void UPlayerWidget::OnPlayerStatusUswerWidgetUpdate(float NewHP, float NewStamina)
+void UPlayerWidget::OnPlayerResourceUpdate(float NewHP, float NewStamina)
 {
 	if (auto* PlayerCharacter = Cast<AMyCharacter>(GetOwningPlayerPawn())) {
-		UpdateHP(NewHP, PlayerCharacter->GetMaxPlayerHP());
-		UpdateStamina(NewStamina, PlayerCharacter->GetMaxPlayerStamina());
+		UpdateHP(NewHP, PlayerCharacter->GetResourceComponent()->GetMaxHealth());
+		UpdateStamina(NewStamina, PlayerCharacter->GetResourceComponent()->GetMaxStamina());
 	}
 }

@@ -21,6 +21,8 @@ public:
 
 	//getter
 	class AMyCharacter* GetCharacter();
+	class UResourceComponent* GetResourceComponent();
+	class UStateMachineComponent* GetStateMachineComponent();
 
 	//UI
 	void ShowTooltipAtMousePosition(class UInventoryTooltip* TooltipWidget);
@@ -39,21 +41,21 @@ protected:
 	virtual void SetupInputComponent() override;
 
 	//액션
-	void Move(const FInputActionValue& Value);
-	void RunStart();
-	void RunEnd();
-	void Jump();
-	void Look(const FInputActionValue& Value);
-	void AttackStart(const FInputActionValue& Value);
-	void GuardUp();
-	void GuardDown();
-	void Roll();
-	void LockOnTarget();
-	void RootItem();
-	void OpenInventory();
-	void QuickSlot();
-	void Interact();
-	void Close();
+	void TryMove(const FInputActionValue& Value);
+	void TryRunStart();
+	void TryRunEnd();
+	void TryJump();
+	void TryLook(const FInputActionValue& Value);
+	void TryAttackStart(const FInputActionValue& Value);
+	void TryGuardUp();
+	void TryGuardDown();
+	void TryRoll();
+	void TryLockOnTarget();
+	void TryRootItem();
+	void TryOpenInventory();
+	void TryQuickSlot();
+	void TryInteract();
+	void TryClose();
 
 private:
 	//인풋 액션
