@@ -194,7 +194,13 @@ float AMyCharacter::TakeDamage(float DamageAmount, FDamageEvent const& DamageEve
 
 void AMyCharacter::Move(FVector2D InputValue)
 {
-	GetStateMachineComponent()->SetCurrentState(EPlayerState::PlayerWalk);
+	if (!StateMachineComponent)
+		return;
+
+	if (StateMachineComponent->GetCurrentState() == EPlayerState::PlayerAttack)
+		return;
+
+	UE_LOG(LogTemp, Log, TEXT("void AMyCharacter::Move"));
 
 	const FRotator YawRotation(0.f, GetControlRotation().Yaw, 0.f);
 	const FVector ForwardDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);
@@ -204,13 +210,22 @@ void AMyCharacter::Move(FVector2D InputValue)
 
 	AddMovementInput(ForwardDirection, InputValue.Y);
 	AddMovementInput(RightDirection, InputValue.X);
+
+	if (StateMachineComponent->GetCurrentState() == EPlayerState::PlayerIdle) {
+		GetStateMachineComponent()->SetCurrentState(EPlayerState::PlayerWalk);
+	}
 }
 
 void AMyCharacter::RunStart()
 {
-	if (GetStateMachineComponent()->GetCurrentState() != EPlayerState::PlayerRun) {
-		GetStateMachineComponent()->SetCurrentState(EPlayerState::PlayerRun);
+	if (!StateMachineComponent)
+		return;
+
+	if (StateMachineComponent->GetCurrentState() != EPlayerState::PlayerRun) {
+		StateMachineComponent->SetCurrentState(EPlayerState::PlayerRun);
 	}
+
+	UE_LOG(LogTemp, Log, TEXT("void AMyCharacter::RunStart"));
 
 	TargetSpeed = RunSpeed;
 	//같은 위치에서 이미 호출되었다면 넘어가도록
@@ -223,16 +238,24 @@ void AMyCharacter::RunStart()
 
 void AMyCharacter::RunEnd()
 {
-	GetStateMachineComponent()->SetCurrentState(EPlayerState::PlayerWalk);
+	if (!StateMachineComponent)
+		return;
+
+	UE_LOG(LogTemp, Log, TEXT("void AMyCharacter::RunEnd"));
+
+	StateMachineComponent->SetCurrentState(EPlayerState::PlayerWalk);
 
 	TargetSpeed = WalkSpeed;
 }
 
 void AMyCharacter::Jump()
 {
-	GetStateMachineComponent()->SetCurrentState(EPlayerState::PlayerJump);
+	if (!StateMachineComponent || !ResourceComponent)
+		return;
 
-	GetResourceComponent()->ConsumeStamina(JumpStaminaCost);
+	StateMachineComponent->SetCurrentState(EPlayerState::PlayerJump);
+
+	ResourceComponent->ConsumeStamina(JumpStaminaCost);
 	ACharacter::Jump();
 }
 
@@ -263,6 +286,7 @@ void AMyCharacter::AttackStart()
 			SetAttackMontageSection();
 		return;
 	}
+	StateMachineComponent->SetCurrentState(EPlayerState::PlayerAttack);
 	AttackExecute();
 }
 
@@ -274,7 +298,6 @@ void AMyCharacter::SetAttackMontageSection()
 	UE_LOG(LogTemp, Log, TEXT("void AMyCharacter::SetAttackMontageSection"));
 	if (auto* AnimInstance = GetMesh()->GetAnimInstance()) {
 		if (auto* CurrentActiveMontage = AnimInstance->GetCurrentActiveMontage()) {
-			UE_LOG(LogTemp, Log, TEXT("CurrentActiveMontage: %s"), *CurrentActiveMontage->GetName());
 			auto CurrentSection = AnimInstance->Montage_GetCurrentSection(AnimInstance->GetCurrentActiveMontage());
 			if (!CurrentSection.IsNone()) {
 				AnimInstance->Montage_SetNextSection(CurrentSection, NextSectionName, CurrentWeaponComponent->LightAttackMontage);
@@ -289,11 +312,11 @@ void AMyCharacter::AttackExecute()
 	if (!CurrentWeaponComponent || !GetMesh() || !ResourceComponent) 
 		return;
 
-	if (StateMachineComponent->GetCurrentState() == EPlayerState::PlayerAttack)
-		return;
+	/*if (StateMachineComponent->GetCurrentState() == EPlayerState::PlayerAttack)
+		return;*/
 
 	UE_LOG(LogTemp, Log, TEXT("void AMyCharacter::AttackExecute"));
-	StateMachineComponent->SetCurrentState(EPlayerState::PlayerAttack);
+	//StateMachineComponent->SetCurrentState(EPlayerState::PlayerAttack);
 
 	auto* AnimInstance = GetMesh()->GetAnimInstance();
 	if (!AnimInstance)
@@ -324,9 +347,12 @@ void AMyCharacter::OnAttackEnded(UAnimMontage* Montage, bool bInterrupted)
 
 void AMyCharacter::AttackEnd()
 {
+	if (!StateMachineComponent)
+		return;
+
 	UE_LOG(LogTemp, Log, TEXT("void AMyCharacter::AttackEnd"));
 
-	GetStateMachineComponent()->SetCurrentState(EPlayerState::PlayerIdle);
+	StateMachineComponent->SetCurrentState(EPlayerState::PlayerIdle);
 	bIsEnableCombo = false;
 }
 

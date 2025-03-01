@@ -149,7 +149,8 @@ void AMyPlayerController::TryMove(const FInputActionValue& Value)
 {
 	const FVector2D InputValue = Value.Get<FVector2D>();
 	if (GetCharacter() != nullptr) {
-		if (!GetCharacter()->bIsRoll && GetStateMachineComponent()->GetCurrentState() != EPlayerState::PlayerAttack) {
+		if (!GetCharacter()->bIsRoll && 
+			GetStateMachineComponent()->GetCurrentState() != EPlayerState::PlayerAttack) {
 			GetCharacter()->Move(InputValue);
 		}
 	}
@@ -158,7 +159,8 @@ void AMyPlayerController::TryMove(const FInputActionValue& Value)
 void AMyPlayerController::TryRunStart()
 {
 	if (GetCharacter() != nullptr) {
-		if (!GetCharacter()->bIsRoll && GetStateMachineComponent()->GetCurrentState() == EPlayerState::PlayerWalk) {
+		if (!GetCharacter()->bIsRoll && 
+			GetStateMachineComponent()->GetCurrentState() == EPlayerState::PlayerWalk) {
 			if (GetResourceComponent()->bCanConsumeStamina(GetCharacter()->RunStaminaCost)) {
 				GetCharacter()->RunStart();
 			}
@@ -199,7 +201,6 @@ void AMyPlayerController::TryAttackStart(const FInputActionValue& Value)
 	if (GetCharacter() != nullptr) {
 		if (!GetCharacter()->bIsRoll) {
 			if (GetResourceComponent()->bCanConsumeStamina(GetCharacter()->AttackStaminaCost)) {
-				UE_LOG(LogTemp, Log, TEXT("void AMyPlayerController::TryAttackStart(const FInputActionValue& Value)"));
 				GetCharacter()->AttackStart();
 			}
 		}

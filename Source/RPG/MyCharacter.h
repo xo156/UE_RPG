@@ -20,8 +20,6 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
-	//특정 상황 재생 몽타주
-
 	virtual float TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
 
 	//액션
