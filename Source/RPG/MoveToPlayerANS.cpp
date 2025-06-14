@@ -2,13 +2,13 @@
 
 
 #include "MoveToPlayerANS.h"
-#include "Monster.h"
+#include "MonsterBase.h"
 #include "Kismet/GameplayStatics.h"
 #include "GameFramework/CharacterMovementComponent.h"
 
 void UMoveToPlayerANS::NotifyTick(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, float FrameDeltaTime)
 {
-    if (auto* Monster = Cast<AMonster>(MeshComp->GetOwner())) {
+    if (auto* Monster = Cast<AMonsterBase>(MeshComp->GetOwner())) {
         if (auto* PlayerCharacter = UGameplayStatics::GetPlayerCharacter(MeshComp->GetWorld(), 0)) {
             FVector PlayerLocation = PlayerCharacter->GetActorLocation();
             FVector MonsterLocation = Monster->GetActorLocation();

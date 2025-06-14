@@ -57,7 +57,8 @@ void UDialogueComponent::NextDialogue()
 		DialogueWidgetInstance->SetDialogueText(DialogueCache[CurrentIndex]->TableContent);
 	}
 	else {
-		DialogueWidgetInstance->RemoveFromViewport();
+		//DialogueWidgetInstance->RemoveFromViewport();
+		DialogueWidgetInstance->RemoveFromParent();
 		DialogueWidgetInstance = nullptr;
 		if (auto* PlayerCharacter = Cast<AMyCharacter>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0))) {
 			PlayerCharacter->bIsTalk = false;

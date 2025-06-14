@@ -8,8 +8,7 @@
 #include "Components/SphereComponent.h"
 #include "Components/StaticMeshComponent.h"
 #include "GameFramework/DamageType.h"
-#include "Monster.h"
-#include "BossMonster.h"
+#include "MonsterBase.h"
 #include "Engine/DamageEvents.h"
 
 // Sets default values

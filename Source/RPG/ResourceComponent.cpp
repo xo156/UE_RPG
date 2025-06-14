@@ -32,64 +32,85 @@ void UResourceComponent::TickComponent(float DeltaTime, ELevelTick TickType, FAc
 	// ...
 }
 
-void UResourceComponent::InitResource(float MaxHealthAmount, float MaxStaminaAmount, float Damage)
+void UResourceComponent::InitResource(float MaxHealthAmount, float MaxStaminaAmount, float Damage, bool bUseStaminaResource)
 {
-	MaxHealth = MaxHealthAmount;
-	MaxStamina = MaxStaminaAmount;
+	MaxHP = MaxHealthAmount;
+	CurrentHP = MaxHP;
 
-	CurrentHealth = MaxHealth;
+	MaxStamina = MaxStaminaAmount;
 	CurrentStamina = MaxStamina;
 
 	CurrentDamage = Damage;
+
+	bUseStamina = bUseStaminaResource;
 }
 
 bool UResourceComponent::bCanConsumeStamina(float Consumption)
 {
-	return CurrentStamina >= Consumption ? true : false;
+	return bUseStamina && (CurrentStamina >= Consumption);
 }
 
 bool UResourceComponent::bCanConsumeHealth(float Consumption)
 {
-	return CurrentHealth >= Consumption ? true : false;
+	return CurrentHP >= Consumption;
 }
 
 void UResourceComponent::ConsumeHP(float HPConsumeption)
 {
-	UE_LOG(LogTemp, Log, TEXT("UResourceComponent::ConsumeHP"));
+	CurrentHP = FMath::Clamp(CurrentHP - HPConsumeption, 0.0f, MaxHP);
+	OnUIUpdated.Broadcast(CurrentHP, CurrentStamina);
+}
 
-	CurrentHealth = FMath::Clamp(CurrentHealth - HPConsumeption, 0.0f, MaxHealth);
-	OnPlayerUIUpdated.Broadcast(CurrentHealth, CurrentStamina);
+void UResourceComponent::RecoverHP(float HPRecoveryAmount)
+{
+	CurrentHP = FMath::Clamp(CurrentHP + HPRecoveryAmount, 0.0f, MaxHP);
+	OnUIUpdated.Broadcast(CurrentHP, CurrentStamina);
 }
 
 void UResourceComponent::ConsumeStamina(float StaminaComsumption)
 {
-	UE_LOG(LogTemp, Log, TEXT("UResourceComponent::ConsumeStamina"));
+	if (!bUseStamina)
+		return;
 
 	CurrentStamina = FMath::Clamp(CurrentStamina - StaminaComsumption, 0.0f, MaxStamina);
-	OnPlayerUIUpdated.Broadcast(CurrentHealth, CurrentStamina);
+	OnUIUpdated.Broadcast(CurrentHP, CurrentStamina);
 }
 
-float UResourceComponent::GetCurrentHealth()
+void UResourceComponent::RecoverStamina(float StaminaRecoveryAmount)
 {
-	return CurrentHealth;
+	if (!bUseStamina)
+		return;
+
+	CurrentStamina = FMath::Clamp(CurrentStamina + StaminaRecoveryAmount, 0.0f, MaxStamina);
+	OnUIUpdated.Broadcast(CurrentHP, CurrentStamina);
 }
 
-float UResourceComponent::GetMaxHealth()
+float UResourceComponent::GetCurrentHP() const
 {
-	return MaxHealth;
+	return CurrentHP;
 }
 
-float UResourceComponent::GetCurrentStamina()
+float UResourceComponent::GetMaxHP() const
+{
+	return MaxHP;
+}
+
+float UResourceComponent::GetHPRatio() const
+{
+	return CurrentHP / MaxHP;
+}
+
+float UResourceComponent::GetCurrentStamina() const
 {
 	return CurrentStamina;
 }
 
-float UResourceComponent::GetMaxStamina()
+float UResourceComponent::GetMaxStamina() const
 {
 	return MaxStamina;
 }
 
-float UResourceComponent::GetCurrentDamage()
+float UResourceComponent::GetCurrentDamage() const
 {
 	return CurrentDamage;
 }

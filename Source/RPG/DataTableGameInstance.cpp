@@ -24,11 +24,11 @@ FDropRate* UDataTableGameInstance::GetDropRate(int32 ItemID)
 	return FoundItem ? *FoundItem : nullptr;
 }
 
-FMonsterData* UDataTableGameInstance::GetMonsterInfo(int32 MonsterID)
-{
-	FMonsterData** FoundMonster = MonsterDataCache.Find(MonsterID);
-	return FoundMonster ? *FoundMonster : nullptr;
-}
+//FMonsterData* UDataTableGameInstance::GetMonsterInfo(int32 MonsterID)
+//{
+//	FMonsterData** FoundMonster = MonsterDataCache.Find(MonsterID);
+//	return FoundMonster ? *FoundMonster : nullptr;
+//}
 
 FCharacterData* UDataTableGameInstance::GetCharacterInfo(int32 CharacterID)
 {

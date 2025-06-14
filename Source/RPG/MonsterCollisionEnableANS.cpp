@@ -2,30 +2,25 @@
 
 
 #include "MonsterCollisionEnableANS.h"
-#include "Monster.h"
+#include "MonsterBase.h"
 #include "Components/CapsuleComponent.h"
 
 void UMonsterCollisionEnableANS::NotifyBegin(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, float TotalDuration)
 {
-	if (MeshComp && MeshComp->GetOwner()) {
-		if (auto* Monster = Cast<AMonster>(MeshComp->GetOwner())) {
-			if (UCapsuleComponent* CollisionComponent = Monster->GetAttackCollisionComponent(WantCollision)) {
-				CollisionComponent->SetCollisionProfileName(FName("Enemy"));
-				CollisionComponent->SetNotifyRigidBodyCollision(true);
-			}
-		}
+	if (!MeshComp)
+		return;
+
+	if (auto* MonsterBase = Cast<AMonsterBase>(MeshComp->GetOwner())) {
+		MonsterBase->EnableAttackBody(TargetBodyName, true);
 	}
 }
 
 void UMonsterCollisionEnableANS::NotifyEnd(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation)
 {
-	if (MeshComp && MeshComp->GetOwner()) {
-		if (auto* Monster = Cast<AMonster>(MeshComp->GetOwner())) {
-			if (UCapsuleComponent* CollisionComponent = Monster->GetAttackCollisionComponent(WantCollision)) {
-				CollisionComponent->SetCollisionProfileName(FName("NoCollision"));
-				CollisionComponent->SetNotifyRigidBodyCollision(false);
-			}
-			Monster->GetOverlapActors().Empty();
-		}
+	if (!MeshComp)
+		return;
+
+	if (auto* MonsterBase = Cast<AMonsterBase>(MeshComp->GetOwner())) {
+		MonsterBase->EnableAttackBody(TargetBodyName, false);
 	}
 }

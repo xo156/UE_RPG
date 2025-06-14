@@ -4,7 +4,7 @@
 #include "Weapon.h"
 #include "MyCharacter.h"
 #include "Components/BoxComponent.h"
-#include "Monster.h"
+#include "MonsterBase.h"
 #include "Kismet/GameplayStatics.h"
 #include "Engine/DamageEvents.h"
 #include "WeaponBaseComponent.h"

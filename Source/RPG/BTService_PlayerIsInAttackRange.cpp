@@ -2,11 +2,9 @@
 
 
 #include "BTService_PlayerIsInAttackRange.h"
-#include "MonsterAICSight.h"
-#include "MonsterAICHearing.h"
-#include "Monster.h"
-#include "BossMonsterAIC.h"
-#include "BossMonster.h"
+#include "PatrolMonsterAIC.h"
+#include "BlindMonsterAIC.h"
+#include "MonsterBase.h"
 #include "Kismet/GameplayStatics.h"
 #include "BehaviorTree/BlackboardComponent.h"
 
@@ -20,36 +18,20 @@ void UBTService_PlayerIsInAttackRange::OnBecomeRelevant(UBehaviorTreeComponent& 
 {
 	//일반
 	if (bIsSight) {
-		if (auto* MonsterAICSight = Cast<AMonsterAICSight>(OwnerComp.GetAIOwner())) {
-			if (auto* Monster = Cast<AMonster>(MonsterAICSight->GetPawn())) {
+		if (auto* PatrolMonsterAIC = Cast<APatrolMonsterAIC>(OwnerComp.GetAIOwner())) {
+			if (auto* MonsterBase = Cast<AMonsterBase>(PatrolMonsterAIC->GetPawn())) {
 				if (auto* PlayerCharacter = UGameplayStatics::GetPlayerCharacter(GetWorld(), 0)) {
-					OwnerComp.GetBlackboardComponent()->SetValueAsBool(GetSelectedBlackboardKey(), Monster->GetDistanceTo(PlayerCharacter) <= AttackRange);
+					OwnerComp.GetBlackboardComponent()->SetValueAsBool(GetSelectedBlackboardKey(), MonsterBase->GetDistanceTo(PlayerCharacter) <= AttackRange);
 				}
 			}
 		}
 	}
 
 	if (bIsHearing) {
-		if (auto* MonsterAICHearing = Cast<AMonsterAICHearing>(OwnerComp.GetAIOwner())) {
-			if (auto* Monster = Cast<AMonster>(MonsterAICHearing->GetPawn())) {
+		if (auto* BlindMonsterAIC = Cast<ABlindMonsterAIC>(OwnerComp.GetAIOwner())) {
+			if (auto* MonsterBase = Cast<AMonsterBase>(BlindMonsterAIC->GetPawn())) {
 				if (auto* PlayerCharacter = UGameplayStatics::GetPlayerCharacter(GetWorld(), 0)) {
-					OwnerComp.GetBlackboardComponent()->SetValueAsBool(GetSelectedBlackboardKey(), Monster->GetDistanceTo(PlayerCharacter) <= AttackRange);
-				}
-			}
-		}
-	}
-
-	//보스
-	if (bIsBoss) {
-		if (auto* BossMonsterAIC = Cast<ABossMonsterAIC>(OwnerComp.GetAIOwner())) {
-			if (auto* BossMonster = Cast<ABossMonster>(BossMonsterAIC->GetPawn())) {
-				if (auto* PlayerCharacter = UGameplayStatics::GetPlayerCharacter(GetWorld(), 0)) {
-					if (PlayerCharacter->GetDistanceTo(BossMonster) <= AttackRange) {
-						OwnerComp.GetBlackboardComponent()->SetValueAsBool(GetSelectedBlackboardKey(), true);
-					}
-					else {
-						OwnerComp.GetBlackboardComponent()->SetValueAsBool(GetSelectedBlackboardKey(), false);
-					}
+					OwnerComp.GetBlackboardComponent()->SetValueAsBool(GetSelectedBlackboardKey(), MonsterBase->GetDistanceTo(PlayerCharacter) <= AttackRange);
 				}
 			}
 		}

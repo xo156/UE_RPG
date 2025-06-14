@@ -21,6 +21,7 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 	virtual float TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
+	void PlayerDie();
 
 	//액션
 	void Move(FVector2D InputValue);
@@ -77,10 +78,9 @@ public:
 	void ChangeMoveSpeed(float DeltaTime);
 	void CheckStaminaRecovery(float DeltaTime);
 
-	void PlayerDie();
-
 	//AI
 	void SetupStimulusSource();
+	void ReportNoiseToAI(float Loudness);
 
 	//캐릭터 특수 상태
 	bool bIsEnableCombo = false;
@@ -201,9 +201,6 @@ private:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "LockOn", meta = (AllowPrivateAccess = "true"))
 	TSubclassOf<class UUserWidget> LockonWidgetClass;
 	class UUserWidget* LockonWidgetInstance;
-
-	//구르기
-	//bool bPrevUseControllerRotationYaw; //구르기 하기 이전에 값 저장용
 
 	//아이템
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Inventory", meta = (AllowPrivateAccess = "true"))

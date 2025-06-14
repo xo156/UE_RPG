@@ -19,7 +19,7 @@
 #include "InventoryWidget.h"
 #include "InventoryItemAction.h"
 #include "Kismet/KismetMathLibrary.h"
-#include "Monster.h"
+#include "MonsterBase.h"
 #include "DataTableGameInstance.h"
 #include "InventoryQuickSlotWidget.h"
 #include "DialogueNPC.h"
@@ -104,7 +104,7 @@ void AMyCharacter::BeginPlay() {
 	}
 
 	if (StateMachineComponent) {
-		StateMachineComponent->SetCurrentState(EPlayerState::PlayerIdle);
+		StateMachineComponent->SetPlayerState(EPlayerState::PlayerIdle);
 	}
 }
 
@@ -121,14 +121,14 @@ void AMyCharacter::Tick(float DeltaTime) {
 
 	if (bIsRoll && GetVelocity().SizeSquared() < KINDA_SMALL_NUMBER) {
 		//구르기가 해제될 때 Idle로
-		StateMachineComponent->SetCurrentState(EPlayerState::PlayerIdle);
+		StateMachineComponent->SetPlayerState(EPlayerState::PlayerIdle);
 	}
 
 	//이전 위치와 현재 위치가 다른 경우 움직임이 있음
 	float SpeedSq = GetVelocity().SizeSquared();
 	if (SpeedSq > KINDA_SMALL_NUMBER) {
-		if (StateMachineComponent->GetCurrentState() != EPlayerState::PlayerRun) {
-			StateMachineComponent->SetCurrentState(EPlayerState::PlayerWalk);
+		if (StateMachineComponent->GetPlayerState() != EPlayerState::PlayerRun) {
+			StateMachineComponent->SetPlayerState(EPlayerState::PlayerWalk);
 		}
 	}
 
@@ -176,7 +176,7 @@ float AMyCharacter::TakeDamage(float DamageAmount, FDamageEvent const& DamageEve
 		return 0.f;
 
 	if (auto* PlayerController = Cast<AMyPlayerController>(GetController())) {
-		PlayerController->ClientPlayCameraShake(CameraShake);
+		PlayerController->ClientStartCameraShake(CameraShake);
 	}
 
 	if (GetResourceComponent()->bCanConsumeHealth(DamageAmount)) {
@@ -192,13 +192,30 @@ float AMyCharacter::TakeDamage(float DamageAmount, FDamageEvent const& DamageEve
 	return DamageAmount;
 }
 
+void AMyCharacter::PlayerDie()
+{
+	if (auto* AnimInstance = GetMesh()->GetAnimInstance()) {
+		GetMesh()->SetSimulatePhysics(true);
+		GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+		if (auto* PlayerController = Cast<AMyPlayerController>(GetController())) {
+			DisableInput(PlayerController);
+		}
+		if (DieMontage) {
+			AnimInstance->Montage_Play(DieMontage);
+		}
+	}
+}
+
 void AMyCharacter::Move(FVector2D InputValue)
 {
 	if (!StateMachineComponent)
 		return;
 
-	if (StateMachineComponent->GetCurrentState() == EPlayerState::PlayerAttack)
+	//공격중에 호출 금지
+	if (StateMachineComponent->GetPlayerState() == EPlayerState::PlayerAttack)
 		return;
+
+	StateMachineComponent->SetPlayerState(EPlayerState::PlayerWalk);
 
 	UE_LOG(LogTemp, Log, TEXT("void AMyCharacter::Move"));
 
@@ -210,10 +227,6 @@ void AMyCharacter::Move(FVector2D InputValue)
 
 	AddMovementInput(ForwardDirection, InputValue.Y);
 	AddMovementInput(RightDirection, InputValue.X);
-
-	if (StateMachineComponent->GetCurrentState() == EPlayerState::PlayerIdle) {
-		GetStateMachineComponent()->SetCurrentState(EPlayerState::PlayerWalk);
-	}
 }
 
 void AMyCharacter::RunStart()
@@ -221,19 +234,14 @@ void AMyCharacter::RunStart()
 	if (!StateMachineComponent)
 		return;
 
-	if (StateMachineComponent->GetCurrentState() != EPlayerState::PlayerRun) {
-		StateMachineComponent->SetCurrentState(EPlayerState::PlayerRun);
+	if (StateMachineComponent->GetPlayerState() != EPlayerState::PlayerRun) {
+		StateMachineComponent->SetPlayerState(EPlayerState::PlayerRun);
+		TargetSpeed = RunSpeed;
+		ReportNoiseToAI(RunLoudness);
 	}
 
 	UE_LOG(LogTemp, Log, TEXT("void AMyCharacter::RunStart"));
 
-	TargetSpeed = RunSpeed;
-	//같은 위치에서 이미 호출되었다면 넘어가도록
-	FVector LastNoiseLocation = FVector::ZeroVector;
-	if (!LastNoiseLocation.Equals(GetActorLocation(), 10.0f)) {
-		UAISense_Hearing::ReportNoiseEvent(GetWorld(), GetActorLocation(), RunLoudness, this);
-		LastNoiseLocation = GetActorLocation();
-	}
 }
 
 void AMyCharacter::RunEnd()
@@ -243,7 +251,7 @@ void AMyCharacter::RunEnd()
 
 	UE_LOG(LogTemp, Log, TEXT("void AMyCharacter::RunEnd"));
 
-	StateMachineComponent->SetCurrentState(EPlayerState::PlayerWalk);
+	StateMachineComponent->SetPlayerState(EPlayerState::PlayerWalk);
 
 	TargetSpeed = WalkSpeed;
 }
@@ -253,7 +261,7 @@ void AMyCharacter::Jump()
 	if (!StateMachineComponent || !ResourceComponent)
 		return;
 
-	StateMachineComponent->SetCurrentState(EPlayerState::PlayerJump);
+	StateMachineComponent->SetPlayerState(EPlayerState::PlayerJump);
 
 	ResourceComponent->ConsumeStamina(JumpStaminaCost);
 	ACharacter::Jump();
@@ -281,12 +289,17 @@ void AMyCharacter::AttackStart()
 
 	UE_LOG(LogTemp, Log, TEXT("void AMyCharacter::AttackStart"));
 
-	if (StateMachineComponent->GetCurrentState() == EPlayerState::PlayerAttack) {
+	if (StateMachineComponent->GetPlayerState() == EPlayerState::PlayerAttack) {
 		if (bIsEnableCombo)
 			SetAttackMontageSection();
 		return;
 	}
-	StateMachineComponent->SetCurrentState(EPlayerState::PlayerAttack);
+	if (auto* PC = Cast<APlayerController>(GetController())) {
+		PC->SetIgnoreMoveInput(true);
+	}
+	StateMachineComponent->SetPlayerState(EPlayerState::PlayerAttack);
+	UE_LOG(LogTemp, Log, TEXT("Now CurrentPlayerState: %d"), (int32)StateMachineComponent->GetPlayerState());
+
 	AttackExecute();
 }
 
@@ -312,28 +325,16 @@ void AMyCharacter::AttackExecute()
 	if (!CurrentWeaponComponent || !GetMesh() || !ResourceComponent) 
 		return;
 
-	/*if (StateMachineComponent->GetCurrentState() == EPlayerState::PlayerAttack)
-		return;*/
-
 	UE_LOG(LogTemp, Log, TEXT("void AMyCharacter::AttackExecute"));
-	//StateMachineComponent->SetCurrentState(EPlayerState::PlayerAttack);
 
 	auto* AnimInstance = GetMesh()->GetAnimInstance();
-	if (!AnimInstance)
+	if (!AnimInstance || AnimInstance->Montage_IsPlaying(CurrentWeaponComponent->LightAttackMontage))
 		return;
 
-	//기존 바인딩이 있다면 제거 (이전 공격 애니메이션이 끝나기 전에 공격을 다시 하면 중복 호출 방지)
-	if (AnimInstance->OnMontageEnded.IsAlreadyBound(this, &AMyCharacter::OnAttackEnded)) {
-		AnimInstance->OnMontageEnded.RemoveDynamic(this, &AMyCharacter::OnAttackEnded);
-	}
+	AnimInstance->OnMontageEnded.RemoveDynamic(this, &AMyCharacter::OnAttackEnded);
 	AnimInstance->OnMontageEnded.AddDynamic(this, &AMyCharacter::OnAttackEnded);
 	AnimInstance->Montage_Play(CurrentWeaponComponent->LightAttackMontage);
-	//같은 위치에서 이미 호출되었다면 넘어가도록
-	FVector LastNoiseLocation = FVector::ZeroVector;
-	if (!LastNoiseLocation.Equals(GetActorLocation(), 10.0f)) {
-		UAISense_Hearing::ReportNoiseEvent(GetWorld(), GetActorLocation(), RunLoudness, this);
-		LastNoiseLocation = GetActorLocation();
-	}
+	ReportNoiseToAI(AttackLoudness);
 }
 
 void AMyCharacter::OnAttackEnded(UAnimMontage* Montage, bool bInterrupted)
@@ -341,8 +342,8 @@ void AMyCharacter::OnAttackEnded(UAnimMontage* Montage, bool bInterrupted)
 	UE_LOG(LogTemp, Warning, TEXT("AMyCharacter::OnAttackEnded - Montage: %s, Interrupted: %s"),
 		   *Montage->GetName(), bInterrupted ? TEXT("True") : TEXT("False"));
 
-	if(!bIsEnableCombo)
-		AttackEnd();
+	//if(!bIsEnableCombo)
+	AttackEnd();
 }
 
 void AMyCharacter::AttackEnd()
@@ -352,7 +353,10 @@ void AMyCharacter::AttackEnd()
 
 	UE_LOG(LogTemp, Log, TEXT("void AMyCharacter::AttackEnd"));
 
-	StateMachineComponent->SetCurrentState(EPlayerState::PlayerIdle);
+	StateMachineComponent->SetPlayerState(EPlayerState::PlayerIdle);
+	if (auto* PC = Cast<APlayerController>(GetController())) {
+		PC->SetIgnoreMoveInput(false);
+	}
 	bIsEnableCombo = false;
 }
 
@@ -387,10 +391,8 @@ void AMyCharacter::Roll()
 	}
 	bUseControllerRotationYaw = false;
 	GetCharacterMovement()->bOrientRotationToMovement = true;
-	//기존 바인딩이 있다면 제거 (이전 구르기 애니메이션이 끝나기 전에 구르기를 다시 하면 중복 호출 방지)
-	if (AnimInstance->OnMontageEnded.IsAlreadyBound(this, &AMyCharacter::OnRollEnded)) {
-		AnimInstance->OnMontageEnded.RemoveDynamic(this, &AMyCharacter::OnRollEnded);
-	}
+
+	AnimInstance->OnMontageEnded.RemoveDynamic(this, &AMyCharacter::OnRollEnded);
 	AnimInstance->OnMontageEnded.AddDynamic(this, &AMyCharacter::OnRollEnded);
 	AnimInstance->Montage_Play(RollMontage);
 	GetResourceComponent()->ConsumeStamina(RollStaminaCost);
@@ -479,10 +481,10 @@ bool AMyCharacter::IsTargetValid(AActor* CheckTarget)
 		return false;
 	}
 
-	if (AMonster* TargetMonster = Cast<AMonster>(CheckTarget)) {
-		if (TargetMonster->bIsMonsterDead) {
+	if (AMonsterBase* TargetMonster = Cast<AMonsterBase>(CheckTarget)) {
+		/*if (TargetMonster->bIsMonsterDead) {
 			return false;
-		}
+		}*/
 	}
 
 	return true;
@@ -699,6 +701,7 @@ void AMyCharacter::Close()
 	if (InventoryComponent->InventoryWidget) {
 		InventoryComponent->InventoryWidget->SetVisibility(ESlateVisibility::Hidden);
 	}
+
 }
 
 void AMyCharacter::EquipWeapon(TSubclassOf<class UWeaponBaseComponent> WeaponBaseComponentClass)
@@ -746,7 +749,7 @@ void AMyCharacter::SetupWidget()
 		if (PlayerWidgetInstance) {
 			PlayerWidgetInstance->AddToViewport();
 			if (ResourceComponent) {
-				PlayerWidgetInstance->UpdateHP(ResourceComponent->GetCurrentHealth(), ResourceComponent->GetMaxHealth());
+				PlayerWidgetInstance->UpdateHP(ResourceComponent->GetCurrentHP(), ResourceComponent->GetMaxHP());
 				PlayerWidgetInstance->UpdateStamina(ResourceComponent->GetCurrentStamina(), ResourceComponent->GetMaxStamina());
 			}
 		}
@@ -770,14 +773,14 @@ void AMyCharacter::ChangeMoveSpeed(float DeltaTime)
 		NewSpeed = WalkSpeed;
 	GetCharacterMovement()->MaxWalkSpeed = NewSpeed;
 
-	if (GetStateMachineComponent()->GetCurrentState() == EPlayerState::PlayerRun) {
+	if (GetStateMachineComponent()->GetPlayerState() == EPlayerState::PlayerRun) {
 		if (GetResourceComponent()->bCanConsumeStamina(RunStaminaCost)) {
 			//달리기 가능하니까 스테미나 소모하도록
 			GetResourceComponent()->ConsumeStamina(RunStaminaCost);
 		}
 		else {
 			//달리기 불가능하니까 스테이트 변경
-			GetStateMachineComponent()->SetCurrentState(EPlayerState::PlayerWalk);
+			GetStateMachineComponent()->SetPlayerState(EPlayerState::PlayerWalk);
 			TargetSpeed = WalkSpeed;
 		}
 	}
@@ -788,23 +791,9 @@ void AMyCharacter::CheckStaminaRecovery(float DeltaTime)
 	if (!StateMachineComponent || !ResourceComponent)
 		return;
 
-	if (!bIsRoll && !bIsGuard && CanJump() && (StateMachineComponent->GetCurrentState() == EPlayerState::PlayerIdle || StateMachineComponent->GetCurrentState() == EPlayerState::PlayerWalk)) {
+	if (!bIsRoll && !bIsGuard && CanJump() && (StateMachineComponent->GetPlayerState() == EPlayerState::PlayerIdle || StateMachineComponent->GetPlayerState() == EPlayerState::PlayerWalk)) {
 		if (ResourceComponent->GetCurrentStamina() < ResourceComponent->GetMaxStamina()) {
 			ResourceComponent->ConsumeStamina(-StaminaRecoveryRate * DeltaTime);
-		}
-	}
-}
-
-void AMyCharacter::PlayerDie()
-{
-	if (auto* AnimInstance = GetMesh()->GetAnimInstance()) {
-		GetMesh()->SetSimulatePhysics(true);
-		GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-		if (auto* PlayerController = Cast<AMyPlayerController>(GetController())) {
-			DisableInput(PlayerController);
-		}
-		if (DieMontage) {
-			AnimInstance->Montage_Play(DieMontage);
 		}
 	}
 }
@@ -816,6 +805,15 @@ void AMyCharacter::SetupStimulusSource()
 		StimulusSource->RegisterForSense(TSubclassOf<UAISense_Sight>());
 		StimulusSource->RegisterForSense(TSubclassOf<UAISense_Hearing>());
 		StimulusSource->RegisterWithPerceptionSystem();
+	}
+}
+
+void AMyCharacter::ReportNoiseToAI(float Loudness)
+{
+	static FVector LastNoiseLocation = FVector::ZeroVector;
+	if (!LastNoiseLocation.Equals(GetActorLocation(), 10.0f)) {
+		UAISense_Hearing::ReportNoiseEvent(GetWorld(), GetActorLocation(), Loudness, this);
+		LastNoiseLocation = GetActorLocation();
 	}
 }
 
@@ -857,7 +855,7 @@ UStateMachineComponent* AMyCharacter::GetStateMachineComponent()
 void AMyCharacter::SetPlayerInfo()
 {
 	if (CharacterData && ResourceComponent) {
-		ResourceComponent->InitResource(CharacterData->MaxCharacterHP, CharacterData->MaxCharacterStamina, CharacterData->CharacterDamage);
+		ResourceComponent->InitResource(CharacterData->MaxCharacterHP, CharacterData->MaxCharacterStamina, CharacterData->CharacterDamage, true);
 	}
 }
 

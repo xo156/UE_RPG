@@ -2,9 +2,8 @@
 
 
 #include "BTService_ChangeSpeed.h"
-#include "MonsterAICSight.h"
-#include "MonsterAICHearing.h"
-#include "Monster.h"
+#include "AIController.h"
+#include "MonsterBase.h"
 #include "GameFramework/CharacterMovementComponent.h"
 
 UBTService_ChangeSpeed::UBTService_ChangeSpeed()
@@ -17,15 +16,13 @@ void UBTService_ChangeSpeed::OnBecomeRelevant(UBehaviorTreeComponent& OwnerComp,
 {
 	Super::OnBecomeRelevant(OwnerComp, NodeMemory);
 
-	if (AMonsterAICSight* MonsterAICSight = Cast<AMonsterAICSight>(OwnerComp.GetAIOwner())) {
-		if (AMonster* Monster = Cast<AMonster>(MonsterAICSight->GetPawn())) {
-			Monster->GetCharacterMovement()->MaxWalkSpeed = Speed;
-		}
-	}
+	if (!OwnerComp.GetAIOwner())
+		return;
 
-	if (AMonsterAICHearing* MonsterAICHearing = Cast<AMonsterAICHearing>(OwnerComp.GetAIOwner())) {
-		if (AMonster* Monster = Cast<AMonster>(MonsterAICHearing->GetPawn())) {
-			Monster->GetCharacterMovement()->MaxWalkSpeed = Speed;
-		}
-	}
+	auto* MonsterBase = Cast<AMonsterBase>(OwnerComp.GetAIOwner()->GetPawn());
+	if (!MonsterBase)
+		return;
+
+	MonsterBase->GetCharacterMovement()->MaxWalkSpeed = MonsterBase->GetCharacterMovement()->MaxWalkSpeed * 1.5f;
+
 }

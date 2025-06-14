@@ -74,9 +74,11 @@ void UInventorySlotWidget::RefreshSlot(TArray<FInventoryItemData> InventoryItem,
 	if (ItemCache.Contains(CurrentInventoryItemData.ItemTableID)) {
 		FItemData* ItemData = ItemCache.FindRef(CurrentInventoryItemData.ItemTableID);
 		if (ItemData) {
-			FButtonStyle ButtonStyle = Thumbnail->WidgetStyle;
+			//FButtonStyle ButtonStyle = Thumbnail->WidgetStyle;
+			FButtonStyle ButtonStyle = Thumbnail->GetStyle();
 			FSlateBrush NewBrush;
 			NewBrush.SetResourceObject(ItemData->ItemIcon);
+
 			ButtonStyle.SetNormal(NewBrush);
 			ButtonStyle.SetHovered(NewBrush);
 			ButtonStyle.SetPressed(NewBrush);
@@ -95,9 +97,11 @@ void UInventorySlotWidget::RefreshSlot(TArray<FInventoryItemData> InventoryItem,
 
 void UInventorySlotWidget::ClearSlot()
 {	
-	FButtonStyle ButtonStyle = Thumbnail->WidgetStyle;
+	//FButtonStyle ButtonStyle = Thumbnail->WidgetStyle;
+	FButtonStyle ButtonStyle = Thumbnail->GetStyle();
 	FSlateBrush NewBrush;
 	NewBrush.SetResourceObject(nullptr);
+
 	ButtonStyle.SetNormal(NewBrush);
 	ButtonStyle.SetHovered(NewBrush);
 	ButtonStyle.SetPressed(NewBrush);

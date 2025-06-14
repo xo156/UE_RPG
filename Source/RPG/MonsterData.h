@@ -4,11 +4,10 @@
 
 #include "CoreMinimal.h"
 #include "Engine/DataTable.h"
+#include "MonsterBase.h"
+#include "MonsterAttackPatternDataAsset.h"
 #include "MonsterData.generated.h"
 
-/**
- * 
- */
 USTRUCT(BlueprintType)
 struct RPG_API FMonsterData : public FTableRowBase
 {
@@ -22,6 +21,9 @@ public:
 	FName MonsterName;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Data")
+	TSubclassOf<AMonsterBase> MonsterClass;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Data")
 	float MaxMonsterHP;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Data")
@@ -29,4 +31,7 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Data")
 	TArray<int32> DropItemIDS;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Data")
+	TArray<UMonsterAttackPatternDataAsset*> MonsterAttackPatterns;
 };

@@ -2,32 +2,38 @@
 
 
 #include "BTTask_FindPathPoint.h"
-#include "MonsterAICSight.h"
 #include "BehaviorTree/BlackboardComponent.h"
-#include "Monster.h"
+#include "AIController.h"
+#include "MonsterBase.h"
 #include "PatrolPath.h"
 
 UBTTask_FindPathPoint::UBTTask_FindPathPoint()
 {
 	NodeName = TEXT("Find Path Point");
-	//몬스터가 캐릭터를 찾지 못해서 돌아다니는 상황에 task
 }
 
 EBTNodeResult::Type UBTTask_FindPathPoint::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
 {
-	if (auto* MonsterAICSight = Cast<AMonsterAICSight>(OwnerComp.GetAIOwner())) {
-		if (UBlackboardComponent* BlackboardComponent = OwnerComp.GetBlackboardComponent()) {
-			//patrolpath(몬스터가 거쳐가는 위치 좌표) index를 블랙보드에서 가져오기
-			int32 Index = BlackboardComponent->GetValueAsInt(GetSelectedBlackboardKey());
-			if (auto* Monster = Cast<AMonster>(MonsterAICSight->GetPawn())) {
-				//현재 normal monster가 가지고 있는 patrol path vector(patrol path actor에 있는)
-				FVector LocalPoint = Monster->GetPatrolPath()->GetPatrolPoints(Index);
-				auto GlobalPoint = Monster->GetPatrolPath()->GetActorTransform().TransformPosition(LocalPoint);
-				BlackboardComponent->SetValueAsVector(PatrolPathVectorKey.SelectedKeyName, GlobalPoint);
-				FinishLatentTask(OwnerComp, EBTNodeResult::Succeeded);
-				return EBTNodeResult::Succeeded;
-			}
-		}
-	}
-	return EBTNodeResult::Failed;
+	Super::ExecuteTask(OwnerComp, NodeMemory);
+
+	if (!OwnerComp.GetAIOwner())
+		return EBTNodeResult::Failed;
+
+	auto* BlackboardComponent = OwnerComp.GetBlackboardComponent();
+	if (!BlackboardComponent)
+		return EBTNodeResult::Failed;
+
+	//patrolpath(몬스터가 거쳐가는 위치 좌표) index를 블랙보드에서 가져오기
+	int32 PatrolPathIndex = BlackboardComponent->GetValueAsInt(GetSelectedBlackboardKey());
+
+	auto* MonsterBase = Cast<AMonsterBase>(OwnerComp.GetAIOwner()->GetPawn());
+	if (!MonsterBase)
+		return EBTNodeResult::Failed;
+	
+	//현재 monster가 가지고 있는 patrol path vector(patrol path actor에 있는)
+	FVector LocalPoint = MonsterBase->GetPatrolPath()->GetPatrolPoints(PatrolPathIndex);
+	auto GlobalPoint = MonsterBase->GetPatrolPath()->GetActorTransform().TransformPosition(LocalPoint);
+	BlackboardComponent->SetValueAsVector(PatrolPathVectorKey.SelectedKeyName, GlobalPoint);
+	FinishLatentTask(OwnerComp, EBTNodeResult::Succeeded);
+	return EBTNodeResult::Succeeded;
 }

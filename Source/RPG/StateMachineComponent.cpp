@@ -2,7 +2,7 @@
 
 
 #include "StateMachineComponent.h"
-#include "ResourceComponent.h"
+#include "MonsterBase.h"
 
 // Sets default values for this component's properties
 UStateMachineComponent::UStateMachineComponent()
@@ -10,7 +10,7 @@ UStateMachineComponent::UStateMachineComponent()
 	// Set this component to be initialized when the game starts, and to be ticked every frame.  You can turn these features
 	// off to improve performance if you don't need them.
 	PrimaryComponentTick.bCanEverTick = true;
-	CurrentState = EPlayerState::PlayerIdle;
+
 }
 
 
@@ -20,7 +20,6 @@ void UStateMachineComponent::BeginPlay()
 	Super::BeginPlay();
 
 	// ...
-	
 }
 
 
@@ -32,36 +31,37 @@ void UStateMachineComponent::TickComponent(float DeltaTime, ELevelTick TickType,
 	// ...
 }
 
-void UStateMachineComponent::SetCurrentState(EPlayerState NewState)
+void UStateMachineComponent::SetPlayerState(EPlayerState NewState)
 {
-	switch (NewState)
-	{
-	case EPlayerState::PlayerIdle:
-		CurrentState = NewState;
-		break;
-	case EPlayerState::PlayerWalk:
-		CurrentState = NewState;
-		break;
-	case EPlayerState::PlayerRun:
-		CurrentState = NewState;
-		break;
-	case EPlayerState::PlayerJump:
-		CurrentState = NewState;
-		break;
-	case EPlayerState::PlayerAttack:
-		CurrentState = NewState;
-		break;
-	case EPlayerState::PlayerHit:
-		CurrentState = NewState;
-		break;
-	default:
-		CurrentState = EPlayerState::PlayerIdle;
-		break;
-	}
+	if (CurrentPlayerState != NewState)
+		CurrentPlayerState = NewState;
 }
 
-EPlayerState UStateMachineComponent::GetCurrentState()
+void UStateMachineComponent::SetMonsterState(EMonsterState NewState)
 {
-	return CurrentState;
+	if (CurrentMonsterState != NewState)
+		CurrentMonsterState = NewState;
+
+	auto* MonsterBase = Cast<AMonsterBase>(GetOwner());
+	if (!MonsterBase)
+		return;
+
+	MonsterBase->OnExitState(CurrentMonsterState);
+
+	EMonsterState OldState = CurrentMonsterState;
+	CurrentMonsterState = NewState;
+
+	MonsterBase->OnEnterState(NewState);
 }
 
+void UStateMachineComponent::SetNPCState(ENPCState NewState)
+{
+	if (CurrentNPCState != NewState)
+		CurrentNPCState = NewState;
+}
+
+void UStateMachineComponent::SetAnimalState(EAnimalState NewState)
+{
+	if (CurrentAnimalState != NewState)
+		CurrentAnimalState = NewState;
+}

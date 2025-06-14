@@ -26,6 +26,6 @@ private:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AI", meta = (AllowPrivateAccess = "true"))
 	float MaxDistance = 500.f; //이동 한계 거리
 
-	FVector OriginPos; //Normal Monster의 초기 위치 저장
-	bool bInitOriginPosSet = false; //Normal Monster의 초기 위치 설정 확인
+	FVector OriginPos; //Monster의 초기 위치 저장
+	bool bInitOriginPosSet = false; //Monster의 초기 위치 설정 확인
 };

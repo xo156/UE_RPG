@@ -2,46 +2,49 @@
 
 
 #include "BTTask_ChasePlayer.h"
-#include "Monster.h"
-#include "MonsterAICSight.h"
-#include "MonsterAICHearing.h"
 #include "BehaviorTree/BlackboardComponent.h"
+#include "AIController.h"
 #include "Blueprint/AIBlueprintHelperLibrary.h"
+#include "MonsterBase.h"
+#include "StateMachineComponent.h"
 
 UBTTask_ChasePlayer::UBTTask_ChasePlayer()
 {
 	NodeName = TEXT("Chase Player");
+
+	TargetActorKey.SelectedKeyName = "TargetActor";
 }
 
 EBTNodeResult::Type UBTTask_ChasePlayer::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
 {
-	FVector PlayerLocation = OwnerComp.GetBlackboardComponent()->GetValueAsVector(GetSelectedBlackboardKey());
+	Super::ExecuteTask(OwnerComp, NodeMemory);
+
+	if (!OwnerComp.GetAIOwner())
+		return EBTNodeResult::Failed;
+
+	auto* BlackboardComponent = OwnerComp.GetBlackboardComponent();
+	if (!BlackboardComponent)
+		return EBTNodeResult::Failed;
+
+	auto* TargetActor = Cast<AActor>(OwnerComp.GetBlackboardComponent()->GetValueAsObject(TargetActorKey.SelectedKeyName));
+	if (!TargetActor)
+		return EBTNodeResult::Failed;
+
+	//FVector PlayerLocation = OwnerComp.GetBlackboardComponent()->GetValueAsVector(GetSelectedBlackboardKey());
+	FVector PlayerLocation = TargetActor->GetActorLocation();
 	FVector GoalLocation = PlayerLocation + FVector(0.f, -30.f, 0.f);
 
-	if (bIsSight) {
-		if (auto* MonsterAICSight = Cast<AMonsterAICSight>(OwnerComp.GetAIOwner())) {
-			if (auto* Monster = Cast<AMonster>(MonsterAICSight->GetPawn())) {
-				if (Monster->bIsMonsterAttack) {
-					return EBTNodeResult::Succeeded;
-				}
-				UAIBlueprintHelperLibrary::SimpleMoveToLocation(MonsterAICSight, GoalLocation);
-				FinishLatentTask(OwnerComp, EBTNodeResult::Succeeded);
-				return EBTNodeResult::Succeeded;
-			}
-		}
-	}
-	if (bIsHearing) {
-		if (auto* MonsterAICHearing = Cast<AMonsterAICHearing>(OwnerComp.GetAIOwner())) {
-			if (auto* Monster = Cast<AMonster>(MonsterAICHearing->GetPawn())) {
-				if (Monster->bIsMonsterAttack) {
-					return EBTNodeResult::Succeeded;
-				}
-				UAIBlueprintHelperLibrary::SimpleMoveToLocation(MonsterAICHearing, GoalLocation);
-				FinishLatentTask(OwnerComp, EBTNodeResult::Succeeded);
-				return EBTNodeResult::Succeeded;
-			}
-		}
-	}
+	auto* MonsterBase = Cast<AMonsterBase>(OwnerComp.GetAIOwner()->GetPawn());
+	if (!MonsterBase)
+		return EBTNodeResult::Failed;
 
+	if (MonsterBase->GetStateMachineComponent()->GetMonsterState() == EMonsterState::MonsterAttack) {
+		return EBTNodeResult::Succeeded;
+	}
+	else {
+		UAIBlueprintHelperLibrary::SimpleMoveToLocation(MonsterBase->GetInstigatorController(), GoalLocation);
+		FinishLatentTask(OwnerComp, EBTNodeResult::Succeeded);
+		return EBTNodeResult::Succeeded;
+	}
 	return EBTNodeResult::Failed;
 }

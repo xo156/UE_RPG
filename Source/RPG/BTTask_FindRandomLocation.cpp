@@ -2,9 +2,10 @@
 
 
 #include "BTTask_FindRandomLocation.h"
-#include "MonsterAICHearing.h"
-#include "NavigationSystem.h"
 #include "BehaviorTree/BlackboardComponent.h"
+#include "AIController.h"
+#include "NavigationSystem.h"
+#include "MonsterBase.h"
 
 UBTTask_FindRandomLocation::UBTTask_FindRandomLocation()
 {
@@ -13,24 +14,36 @@ UBTTask_FindRandomLocation::UBTTask_FindRandomLocation()
 
 EBTNodeResult::Type UBTTask_FindRandomLocation::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
 {
-	if (auto* MonsterAICHearing = Cast<AMonsterAICHearing>(OwnerComp.GetAIOwner())) {
-		if (auto* Monster = MonsterAICHearing->GetPawn()) {
-			if (!bInitOriginPosSet) { //처음에만 위치 정보를 저장
-				OriginPos = Monster->GetActorLocation();
-				bInitOriginPosSet = true;
-			}
-			if (UNavigationSystemV1* NavSystem = UNavigationSystemV1::GetCurrent(GetWorld())) {
-				FNavLocation NavLocation;
-				if (NavSystem->GetRandomPointInNavigableRadius(OriginPos, SearchRadius, NavLocation)) {
-					float Distance = FVector::Dist(OriginPos, NavLocation.Location);
-					if (Distance <= MaxDistance) {
-						OwnerComp.GetBlackboardComponent()->SetValueAsVector(GetSelectedBlackboardKey(), NavLocation.Location);
-					}
-					FinishLatentTask(OwnerComp, EBTNodeResult::Succeeded);
-					return EBTNodeResult::Succeeded;
-				}
-			}
+	Super::ExecuteTask(OwnerComp, NodeMemory);
+
+	if (!OwnerComp.GetAIOwner())
+		return EBTNodeResult::Failed;
+
+	auto* BlackboardComponent = OwnerComp.GetBlackboardComponent();
+	if (!BlackboardComponent)
+		return EBTNodeResult::Failed;
+
+	auto* MonsterBase = Cast<AMonsterBase>(OwnerComp.GetAIOwner()->GetPawn());
+	if (!MonsterBase)
+		return EBTNodeResult::Failed;
+
+	if (!bInitOriginPosSet) { 
+		//스폰시 위치 정보를 저장
+		OriginPos = MonsterBase->GetActorLocation();
+		bInitOriginPosSet = true;
+	}
+	auto* NavSystem = UNavigationSystemV1::GetCurrent(GetWorld());
+	if (!NavSystem)
+		return EBTNodeResult::Failed;
+
+	FNavLocation NavLocation;
+	if (NavSystem->GetRandomPointInNavigableRadius(OriginPos, SearchRadius, NavLocation)) {
+		float Distance = FVector::Dist(OriginPos, NavLocation.Location);
+		if (Distance <= MaxDistance) {
+			OwnerComp.GetBlackboardComponent()->SetValueAsVector(GetSelectedBlackboardKey(), NavLocation.Location);
 		}
+		FinishLatentTask(OwnerComp, EBTNodeResult::Succeeded);
+		return EBTNodeResult::Succeeded;
 	}
 	return EBTNodeResult::Failed;
 }

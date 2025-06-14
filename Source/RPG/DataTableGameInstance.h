@@ -20,7 +20,7 @@ public:
 
 	//getter
 	struct FDropRate* GetDropRate(int32 ItemID);
-	struct FMonsterData* GetMonsterInfo(int32 MonsterID);
+	//struct FMonsterData* GetMonsterInfo(int32 MonsterID);
 	struct FCharacterData* GetCharacterInfo(int32 CharacterID);
 	class UDataTable* GetItemTable();
 	class UDataTable* GetDropItemTable();

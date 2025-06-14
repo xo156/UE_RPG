@@ -6,7 +6,7 @@
 #include "Components/ActorComponent.h"
 #include "ResourceComponent.generated.h"
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnPlayerUIUpdated, float, NewHP, float, NewStamina);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnUIUpdated, float, NewHP, float, NewStamina);
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class RPG_API UResourceComponent : public UActorComponent
 {
@@ -25,31 +25,35 @@ public:
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
 	//초기화
-	void InitResource(float MaxHealthAmount, float MaxStaminaAmount, float Damage);
+	void InitResource(float MaxHealthAmount, float MaxStaminaAmount, float Damage, bool bUseStaminaResource);
 
 	//확인
 	bool bCanConsumeStamina(float Consumption);
 	bool bCanConsumeHealth(float Consumption);
 
-	//setter
+	//조정
 	void ConsumeHP(float HPConsumeption);
+	void RecoverHP(float HPRecoveryAmount);
 	void ConsumeStamina(float StaminaComsumption);
+	void RecoverStamina(float StaminaRecoveryAmount);
 	
 	//getter
-	float GetCurrentHealth();
-	float GetMaxHealth();
-	float GetCurrentStamina();
-	float GetMaxStamina();
-	float GetCurrentDamage();
+	float GetCurrentHP() const;
+	float GetMaxHP() const;
+	float GetHPRatio() const;
+	float GetCurrentStamina() const;
+	float GetMaxStamina() const;
+	float GetCurrentDamage() const;
 
 	//델리게이트
-	FOnPlayerUIUpdated OnPlayerUIUpdated;
+	FOnUIUpdated OnUIUpdated;
 
 private:
-	//플레이어
-	float MaxHealth;
+	float MaxHP;
+	float CurrentHP;
 	float MaxStamina;
-	float CurrentHealth;
 	float CurrentStamina;
 	float CurrentDamage;
+
+	bool bUseStamina = false;
 };
