@@ -54,7 +54,6 @@ protected:
 	void TryRootItem();
 	void TryOpenInventory();
 	void TryQuickSlot();
-	void TryInteract();
 	void TryClose();
 
 private:
@@ -85,8 +84,6 @@ private:
 	class UInputAction* QuickSlotAction;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input", meta = (AllowPrivateAccess = "true"))
 	class UInputAction* CloseAction;
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input", meta = (AllowPrivateAccess = "true"))
-	class UInputAction* InteractAction;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UI", meta = (AllowPrivateAccess = "true"))
 	class UInventoryTooltip* CurrentTooltip;

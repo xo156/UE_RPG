@@ -42,7 +42,7 @@ void UStateMachineComponent::SetMonsterState(EMonsterState NewState)
 	if (CurrentMonsterState != NewState)
 		CurrentMonsterState = NewState;
 
-	auto* MonsterBase = Cast<AMonsterBase>(GetOwner());
+	/*auto* MonsterBase = Cast<AMonsterBase>(GetOwner());
 	if (!MonsterBase)
 		return;
 
@@ -51,7 +51,7 @@ void UStateMachineComponent::SetMonsterState(EMonsterState NewState)
 	EMonsterState OldState = CurrentMonsterState;
 	CurrentMonsterState = NewState;
 
-	MonsterBase->OnEnterState(NewState);
+	MonsterBase->OnEnterState(NewState);*/
 }
 
 void UStateMachineComponent::SetNPCState(ENPCState NewState)

@@ -15,6 +15,8 @@ class RPG_API UDataTableGameInstance : public UGameInstance
 	GENERATED_BODY()
 
 public:
+	virtual void Init() override;
+
 	//Ä³½Ã
 	void LoadAllTableAndCache();
 

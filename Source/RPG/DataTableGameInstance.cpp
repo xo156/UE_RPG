@@ -10,6 +10,12 @@
 #include "MonsterData.h"
 #include "CharacterData.h"
 
+void UDataTableGameInstance::Init()
+{
+	Super::Init();
+	LoadAllTableAndCache();
+}
+
 void UDataTableGameInstance::LoadAllTableAndCache()
 {
 	LoadItemCache();

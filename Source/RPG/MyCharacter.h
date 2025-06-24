@@ -63,8 +63,6 @@ public:
 	void OnRootItemBoxOverlapEnd(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComponent, int32 OtherBodyIndex);
 	void QuickSlot();
 
-	void Interact();
-	void TalkNPC();
 	void Close();
 
 	//무기
@@ -88,7 +86,6 @@ public:
 	bool bIsGuard = false;
 	bool bIsLockon = false;
 	bool bIsNoDamage = false;
-	bool bIsTalk = false;
 
 	//캐릭터 스테미나 소모량
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Player/Stamina")
@@ -119,7 +116,6 @@ public:
 	void SetQuickSlotItem(class AItemBase* NewQuickSlotItem);
 	void SetQuickSlotItemAmount(int32 NewAmount);
 	void SetQuickSlotItemID(int32 NewID);
-	void SetCurrentTalkNPC(class ADialogueNPC* TalkNPC);
 
 protected:
 	// Called when the game starts or when spawned
@@ -138,9 +134,6 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UI")
 	TSubclassOf<class UInventoryQuickSlotWidget> InventoryQuickSlotWidgetClass;
 	class UInventoryQuickSlotWidget* InventoryQuickSlotWidgetInstance;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UI")
-	TSubclassOf<class UShowControlKeysWidget> ShowControlKeysWidgetClass;
-	class UShowControlKeysWidget* ShowControlKeysWidgetInstance;
 
 	//몽타주
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Montage")
@@ -218,9 +211,4 @@ private:
 	//가드
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat", meta = (AllowPrivateAccess = "true"))
 	class UBoxComponent* GuardComponent;
-
-	//상호작용
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Interact", meta = (AllowPrivateAccess = "true"))
-	float InteractRange = 300.f;
-	class ADialogueNPC* CurrentTalkNPC;
 };

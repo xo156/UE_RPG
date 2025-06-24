@@ -43,10 +43,6 @@ public:
 	void OnDieMontageEnded(UAnimMontage* NowPlayMontage, bool bInterrupted);
 	void ApplyDamageToActor(AActor* ActorToDamage, UPrimitiveComponent* OtherComponent);
 
-	//ป๓ลย
-	void OnEnterState(EMonsterState NewState);
-	void OnExitState(EMonsterState OldState);
-
 	//getter
 	class UBehaviorTree* GetBehaviorTree() const;
 	class APatrolPath* GetPatrolPath() const;

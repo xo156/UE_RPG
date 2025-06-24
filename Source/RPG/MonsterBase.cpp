@@ -290,16 +290,6 @@ void AMonsterBase::ApplyDamageToActor(AActor* ActorToDamage, UPrimitiveComponent
 	}
 }
 
-void AMonsterBase::OnEnterState(EMonsterState NewState)
-{
-
-}
-
-void AMonsterBase::OnExitState(EMonsterState OldState)
-{
-
-}
-
 UBehaviorTree* AMonsterBase::GetBehaviorTree() const
 {
 	return BehaviorTree;

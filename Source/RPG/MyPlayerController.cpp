@@ -140,8 +140,6 @@ void AMyPlayerController::SetupInputComponent() {
 		EnHancedInputComponent->BindAction(InventoryAction, ETriggerEvent::Started, this, &AMyPlayerController::TryOpenInventory);
 
 		EnHancedInputComponent->BindAction(QuickSlotAction, ETriggerEvent::Started, this, &AMyPlayerController::TryQuickSlot);
-		
-		EnHancedInputComponent->BindAction(InteractAction, ETriggerEvent::Started, this, &AMyPlayerController::TryInteract);
 	}
 }
 
@@ -266,13 +264,6 @@ void AMyPlayerController::TryQuickSlot()
 {
 	if (GetCharacter() != nullptr) {
 		GetCharacter()->QuickSlot();
-	}
-}
-
-void AMyPlayerController::TryInteract()
-{
-	if (GetCharacter() != nullptr) {
-		GetCharacter()->Interact();
 	}
 }
 

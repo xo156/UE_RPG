@@ -22,7 +22,6 @@
 #include "MonsterBase.h"
 #include "DataTableGameInstance.h"
 #include "InventoryQuickSlotWidget.h"
-#include "DialogueNPC.h"
 #include "ResourceComponent.h"
 #include "StateMachineComponent.h"
 
@@ -646,56 +645,6 @@ void AMyCharacter::QuickSlot()
 	}
 }
 
-void AMyCharacter::Interact()
-{
-	//상호작용 가능한 NPC 또는 동물 찾기
-	FCollisionQueryParams QueryParams;
-	QueryParams.AddIgnoredActor(this); //자기 자신 무시
-	QueryParams.bTraceComplex = false;
-	QueryParams.bReturnPhysicalMaterial = false;
-
-	TArray<FHitResult> HitResults;
-
-	//트레이스 수행
-	bool bHit = GetWorld()->SweepMultiByChannel(
-		HitResults,
-		GetActorLocation(),
-		GetActorLocation(),
-		FQuat::Identity,
-		ECC_Visibility,
-		FCollisionShape::MakeSphere(InteractRange),
-		QueryParams
-	);
-
-	if (bHit) {
-		for (FHitResult& Hit : HitResults) {
-			AActor* HitActor = Hit.GetActor();
-			if (HitActor) {
-				if (HitActor->ActorHasTag(FName("NPC"))) {
-					if (auto* NPC = Cast<ADialogueNPC>(HitActor)) {
-						CurrentTalkNPC = NPC;
-						TalkNPC();
-						return; //NPC가 발견되면 함수 종료
-					}
-				}
-			}
-		}
-	}
-}
-
-void AMyCharacter::TalkNPC()
-{
-	if (CurrentTalkNPC) {
-		if (bIsTalk) {
-			CurrentTalkNPC->GetDialogueComponent()->NextDialogue();
-		}
-		else {
-			CurrentTalkNPC->ShowDialogues();
-			bIsTalk = true;
-		}
-	}
-}
-
 void AMyCharacter::Close()
 {
 	if (InventoryComponent->InventoryWidget) {
@@ -879,9 +828,4 @@ void AMyCharacter::SetQuickSlotItemAmount(int32 NewAmount)
 void AMyCharacter::SetQuickSlotItemID(int32 NewID)
 {
 	QuickSlotItemID = NewID;
-}
-
-void AMyCharacter::SetCurrentTalkNPC(ADialogueNPC* TalkNPC)
-{
-	CurrentTalkNPC = TalkNPC;
 }

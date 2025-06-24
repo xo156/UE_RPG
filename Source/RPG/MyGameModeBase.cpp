@@ -15,14 +15,6 @@ void AMyGameModeBase::BeginPlay()
 {
 	Super::BeginPlay();
 
-	auto* GameInstance = Cast<UDataTableGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
-	if (GameInstance) {
-		GameInstance->LoadAllTableAndCache();
-		ItemDropCache = GameInstance->GetItemDropCache();
-		ItemCache = GameInstance->GetItemCache();
-		MonsterDataCache = GameInstance->GetMonsterDataCache();
-		CharacterDataCache = GameInstance->GetCharacterDataCache();
-	}
 }
 
 void AMyGameModeBase::Tick(float DeltaTime)
