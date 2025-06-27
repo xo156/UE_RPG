@@ -22,14 +22,13 @@ public:
 
 	//getter
 	struct FDropRate* GetDropRate(int32 ItemID);
-	//struct FMonsterData* GetMonsterInfo(int32 MonsterID);
+	struct FMonsterData* GetMonsterInfo(int32 MonsterID);
 	struct FCharacterData* GetCharacterInfo(int32 CharacterID);
 	class UDataTable* GetItemTable();
 	class UDataTable* GetDropItemTable();
 	class UDataTable* GetMonsterDataTable();
 	class UDataTable* GetCharacterDataTable();
 	TSubclassOf<class UCameraShakeBase> GetCameraShake();
-	TSubclassOf<class UCameraShakeBase> GetBossCameraShake();
 
 	const TMap<int32, struct FDropRate*>& GetItemDropCache() const { return ItemDropCache; }
 	const TMap<int32, struct FItemData*>& GetItemCache() const { return ItemCache; }
@@ -63,7 +62,4 @@ private:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "CameraShake", meta = (AllowPrivateAccess = "true"))
 	TSubclassOf<class UCameraShakeBase> CameraShake;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "CameraShake", meta = (AllowPrivateAccess = "true"))
-	TSubclassOf<class UCameraShakeBase> BossCameraShake;
 };
