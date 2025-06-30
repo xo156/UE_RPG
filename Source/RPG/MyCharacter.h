@@ -25,6 +25,7 @@ public:
 
 	//액션
 	void Move(FVector2D InputValue);
+	void ChangeMoveSpeed(float DeltaTime);
 	void RunStart();
 	void RunEnd();
 	void Jump();
@@ -36,8 +37,6 @@ public:
 	UFUNCTION()
 	void OnAttackEnded(class UAnimMontage* Montage, bool bInterrupted);
 	void AttackEnd();
-	void GuardUp();
-	void GuardDown();
 	void Roll();
 	UFUNCTION()
 	void OnRollEnded(class UAnimMontage* Montage, bool bInterrupted);
@@ -73,7 +72,6 @@ public:
 	void SetupWidget();
 
 	//Resource
-	void ChangeMoveSpeed(float DeltaTime);
 	void CheckStaminaRecovery(float DeltaTime);
 
 	//AI
@@ -82,6 +80,7 @@ public:
 
 	//캐릭터 특수 상태
 	bool bIsEnableCombo = false;
+	bool bIsRun = false;
 	bool bIsRoll = false;
 	bool bIsGuard = false;
 	bool bIsLockon = false;
@@ -104,11 +103,10 @@ public:
 	//getter
 	class AItemBase* GetQuickSlotItem();
 	class UWeaponBaseComponent* GetCurrentWeaponComponent();
-	class UBoxComponent* GetGuardComponent();
 	class UUserWidget* GetLockonWidgetInstance();
 	class UInventoryQuickSlotWidget* GetInventoryQuickSlotWidgetInstance();
 	class UResourceComponent* GetResourceComponent();
-	class UStateMachineComponent* GetStateMachineComponent();
+	class UPlayerStateMachineComponent* GetPlayerStateMachineComponent();
 
 	//setter
 	void SetPlayerInfo();
@@ -166,7 +164,7 @@ private:
 
 	//상태
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "StateMachine", meta = (AllowPrivateAccess="true"))
-	class UStateMachineComponent* StateMachineComponent;
+	class UPlayerStateMachineComponent* PlayerStateMachineComponent;
 
 	//공격
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon", meta = (AllowPrivateAccess = "true"))
@@ -205,10 +203,4 @@ private:
 	int32 QuickSlotItemAmount = 0;
 	int32 QuickSlotItemID;
 
-	//흔들림
-	TSubclassOf<class UCameraShakeBase> CameraShake;
-
-	//가드
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat", meta = (AllowPrivateAccess = "true"))
-	class UBoxComponent* GuardComponent;
 };

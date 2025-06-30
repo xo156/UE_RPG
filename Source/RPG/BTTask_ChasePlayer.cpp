@@ -6,7 +6,7 @@
 #include "AIController.h"
 #include "Blueprint/AIBlueprintHelperLibrary.h"
 #include "MonsterBase.h"
-#include "StateMachineComponent.h"
+#include "MonsterStateMachineComponent.h"
 
 UBTTask_ChasePlayer::UBTTask_ChasePlayer()
 {
@@ -38,7 +38,7 @@ EBTNodeResult::Type UBTTask_ChasePlayer::ExecuteTask(UBehaviorTreeComponent& Own
 	if (!MonsterBase)
 		return EBTNodeResult::Failed;
 
-	if (MonsterBase->GetStateMachineComponent()->GetMonsterState() == EMonsterState::MonsterAttack) {
+	if (MonsterBase->GetMonsterStateMachineComponent()->IsInAnyState({EMonsterState::Attack})) {
 		return EBTNodeResult::Succeeded;
 	}
 	else {

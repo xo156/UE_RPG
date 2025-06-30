@@ -19,7 +19,7 @@
 #include "MonsterData.h"
 #include "DropRate.h"
 #include "ResourceComponent.h"
-#include "StateMachineComponent.h"
+#include "MonsterStateMachineComponent.h"
 #include "MonsterAttackPatternDataAsset.h"
 
 // Sets default values
@@ -42,7 +42,7 @@ AMonsterBase::AMonsterBase()
 	ResourceComponent = CreateDefaultSubobject<UResourceComponent>(TEXT("Resource"));
 
 	//상태
-	StateMachineComponent = CreateDefaultSubobject<UStateMachineComponent>(TEXT("StateMachine"));
+	MonsterStateMachineComponent = CreateDefaultSubobject<UMonsterStateMachineComponent>(TEXT("StateMachine"));
 
 }
 
@@ -113,10 +113,10 @@ void AMonsterBase::MonsterAttackStart(int32 AttackIndex)
 	if (!bIsValidAttackPatternIndex(AttackIndex))
 		return;
 
-	if (!StateMachineComponent)
+	if (!MonsterStateMachineComponent)
 		return;
 
-	StateMachineComponent->SetMonsterState(EMonsterState::MonsterAttack);
+	MonsterStateMachineComponent->ChangeState(EMonsterState::Attack);
 	MonsterAttackExecute(AttackIndex);
 }
 
@@ -168,18 +168,18 @@ void AMonsterBase::OnAttackMontageEnded(UAnimMontage* NowPlayMontage, bool bInte
 
 void AMonsterBase::MonsterAttackEnd()
 {
-	if (!StateMachineComponent)
+	if (!MonsterStateMachineComponent)
 		return;
 
-	StateMachineComponent->SetMonsterState(EMonsterState::MonsterIdle);
+	MonsterStateMachineComponent->ChangeState(EMonsterState::Idle);
 }
 
 void AMonsterBase::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComponent, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	if (!StateMachineComponent)
+	if (!MonsterStateMachineComponent)
 		return;
 
-	if (StateMachineComponent->GetMonsterState() != EMonsterState::MonsterAttack)
+	if (MonsterStateMachineComponent->IsInAnyState({EMonsterState::Attack}))
 		return;
 
 	if (OtherActor && OtherActor != this && OtherActor->IsA(AMyCharacter::StaticClass())) {
@@ -200,7 +200,7 @@ float AMonsterBase::TakeDamage(float DamageAmount, FDamageEvent const& DamageEve
 		return -1.f;
 	if (!ResourceComponent)
 		return -1.f;
-	if (!StateMachineComponent)
+	if (!MonsterStateMachineComponent)
 		return -1.f;
 
 	if (auto* PlayerController = Cast<AMyPlayerController>(UGameplayStatics::GetPlayerController(GetWorld(), 0))) {
@@ -242,10 +242,10 @@ void AMonsterBase::DroppedItem()
 
 void AMonsterBase::DieMonster()
 {
-	if (!StateMachineComponent)
+	if (!MonsterStateMachineComponent)
 		return;
 
-	StateMachineComponent->SetMonsterState(EMonsterState::MonsterDead);
+	MonsterStateMachineComponent->ChangeState(EMonsterState::Dead);
 
 	if (auto* AIController = Cast<AAIController>(GetController())) {
 		AIController->StopMovement();
@@ -281,9 +281,7 @@ void AMonsterBase::ApplyDamageToActor(AActor* ActorToDamage, UPrimitiveComponent
 	auto* PlayerCharacter = Cast<AMyCharacter>(ActorToDamage);
 	if (PlayerCharacter) {
 		float FinalDamage = MonsterDamage;
-		if (PlayerCharacter->bIsGuard && OtherComponent == PlayerCharacter->GetGuardComponent()) {
-			FinalDamage = 0.f; //가드 성공
-		}
+		//TODO: 피격시 데미지를 증감하게 하는 로직 추가해볼것(방어력 계산, 가드 성공, 패링 실패등)
 		//TODO: 스테미나 소모나 카메라 흔들림 추가해볼것
 		FDamageEvent DamageEvent;
 		ActorToDamage->TakeDamage(MonsterDamage, DamageEvent, GetInstigatorController(), this);
@@ -320,7 +318,7 @@ UResourceComponent* AMonsterBase::GetResourceComponent() const
 	return ResourceComponent ? ResourceComponent : nullptr;
 }
 
-UStateMachineComponent* AMonsterBase::GetStateMachineComponent() const
+UMonsterStateMachineComponent* AMonsterBase::GetMonsterStateMachineComponent() const
 {
-	return StateMachineComponent ? StateMachineComponent : nullptr;
+	return MonsterStateMachineComponent ? MonsterStateMachineComponent : nullptr;
 }

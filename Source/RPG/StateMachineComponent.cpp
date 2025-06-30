@@ -2,7 +2,6 @@
 
 
 #include "StateMachineComponent.h"
-#include "MonsterBase.h"
 
 // Sets default values for this component's properties
 UStateMachineComponent::UStateMachineComponent()
@@ -18,7 +17,7 @@ UStateMachineComponent::UStateMachineComponent()
 void UStateMachineComponent::BeginPlay()
 {
 	Super::BeginPlay();
-
+	StateElapsedTime = 0.f;
 	// ...
 }
 
@@ -28,40 +27,10 @@ void UStateMachineComponent::TickComponent(float DeltaTime, ELevelTick TickType,
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
+	if (bUseElapsedTime) {
+		StateElapsedTime += DeltaTime;
+	}
+	OnTickState(DeltaTime);
 	// ...
 }
 
-void UStateMachineComponent::SetPlayerState(EPlayerState NewState)
-{
-	if (CurrentPlayerState != NewState)
-		CurrentPlayerState = NewState;
-}
-
-void UStateMachineComponent::SetMonsterState(EMonsterState NewState)
-{
-	if (CurrentMonsterState != NewState)
-		CurrentMonsterState = NewState;
-
-	/*auto* MonsterBase = Cast<AMonsterBase>(GetOwner());
-	if (!MonsterBase)
-		return;
-
-	MonsterBase->OnExitState(CurrentMonsterState);
-
-	EMonsterState OldState = CurrentMonsterState;
-	CurrentMonsterState = NewState;
-
-	MonsterBase->OnEnterState(NewState);*/
-}
-
-void UStateMachineComponent::SetNPCState(ENPCState NewState)
-{
-	if (CurrentNPCState != NewState)
-		CurrentNPCState = NewState;
-}
-
-void UStateMachineComponent::SetAnimalState(EAnimalState NewState)
-{
-	if (CurrentAnimalState != NewState)
-		CurrentAnimalState = NewState;
-}

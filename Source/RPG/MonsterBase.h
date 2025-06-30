@@ -50,7 +50,7 @@ public:
 	TArray<int32> GetValidPatternIndexes() const;
 	TArray<AActor*>& GetOverlapActors();
 	class UResourceComponent* GetResourceComponent() const;
-	class UStateMachineComponent* GetStateMachineComponent() const;
+	class UMonsterStateMachineComponent* GetMonsterStateMachineComponent() const;
 
 protected:
 	// Called when the game starts or when spawned
@@ -86,7 +86,7 @@ private:
 
 	//상태
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "StateMachine", meta = (AllowPrivateAccess = "true"))
-	class UStateMachineComponent* StateMachineComponent;
+	class UMonsterStateMachineComponent* MonsterStateMachineComponent;
 
 	//몽타주
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Montage", meta = (AllowPrivateAccess = "true"))

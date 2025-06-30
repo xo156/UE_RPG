@@ -23,7 +23,7 @@
 #include "DataTableGameInstance.h"
 #include "InventoryQuickSlotWidget.h"
 #include "ResourceComponent.h"
-#include "StateMachineComponent.h"
+#include "PlayerStateMachineComponent.h"
 
 // Sets default values
 AMyCharacter::AMyCharacter() {
@@ -64,11 +64,6 @@ AMyCharacter::AMyCharacter() {
 	RootItemBoxComponent->OnComponentBeginOverlap.AddDynamic(this, &AMyCharacter::OnRootItemBoxOverlapBegin);
 	RootItemBoxComponent->OnComponentEndOverlap.AddDynamic(this, &AMyCharacter::OnRootItemBoxOverlapEnd);
 
-	//막기
-	GuardComponent = CreateDefaultSubobject<UBoxComponent>(TEXT("GuardBox"));
-	GuardComponent->SetupAttachment(RootComponent);
-	GuardComponent->SetCollisionProfileName(TEXT("NoCollision"));
-
 	//자원
 	ResourceComponent = CreateDefaultSubobject<UResourceComponent>(TEXT("Resource"));
 	WalkStaminaCost = 0.f;
@@ -78,8 +73,8 @@ AMyCharacter::AMyCharacter() {
 	GuardStaminaCost = 5.f;
 	RollStaminaCost = 5.f;
 	
-	//상태
-	StateMachineComponent = CreateDefaultSubobject<UStateMachineComponent>(TEXT("StateMachine"));
+	//상태 머신
+	PlayerStateMachineComponent = CreateDefaultSubobject<UPlayerStateMachineComponent>(TEXT("StateMachine"));
 }
 
 // Called when the game starts or when spawned
@@ -87,7 +82,6 @@ void AMyCharacter::BeginPlay() {
 	Super::BeginPlay();
 
 	if (auto* GameInstance = Cast<UDataTableGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()))) {
-		CameraShake = GameInstance->GetCameraShake();
 		CharacterData = GameInstance->GetCharacterInfo(PlayerCharacterID);
 		SetPlayerInfo();
 	}
@@ -101,10 +95,6 @@ void AMyCharacter::BeginPlay() {
 	if (InventoryComponent) {
 		InventoryComponent->CreateInventoryWidget();
 	}
-
-	if (StateMachineComponent) {
-		StateMachineComponent->SetPlayerState(EPlayerState::PlayerIdle);
-	}
 }
 
 // Called every frame
@@ -115,19 +105,19 @@ void AMyCharacter::Tick(float DeltaTime) {
 	CheckStaminaRecovery(DeltaTime);
 	ChangeMoveSpeed(DeltaTime);
 
-	if (!StateMachineComponent)
+	if (!PlayerStateMachineComponent)
 		return;
 
 	if (bIsRoll && GetVelocity().SizeSquared() < KINDA_SMALL_NUMBER) {
 		//구르기가 해제될 때 Idle로
-		StateMachineComponent->SetPlayerState(EPlayerState::PlayerIdle);
+		PlayerStateMachineComponent->ChangeState(EPlayerState::Idle);
 	}
 
 	//이전 위치와 현재 위치가 다른 경우 움직임이 있음
 	float SpeedSq = GetVelocity().SizeSquared();
 	if (SpeedSq > KINDA_SMALL_NUMBER) {
-		if (StateMachineComponent->GetPlayerState() != EPlayerState::PlayerRun) {
-			StateMachineComponent->SetPlayerState(EPlayerState::PlayerWalk);
+		if (!bIsRun) {
+			PlayerStateMachineComponent->ChangeState(EPlayerState::Move);
 		}
 	}
 
@@ -174,10 +164,6 @@ float AMyCharacter::TakeDamage(float DamageAmount, FDamageEvent const& DamageEve
 	if (bIsRoll)
 		return 0.f;
 
-	if (auto* PlayerController = Cast<AMyPlayerController>(GetController())) {
-		PlayerController->ClientStartCameraShake(CameraShake);
-	}
-
 	if (GetResourceComponent()->bCanConsumeHealth(DamageAmount)) {
 		//아직 살아있음
 		GetResourceComponent()->ConsumeHP(DamageAmount);
@@ -207,16 +193,14 @@ void AMyCharacter::PlayerDie()
 
 void AMyCharacter::Move(FVector2D InputValue)
 {
-	if (!StateMachineComponent)
+	if (!PlayerStateMachineComponent)
 		return;
 
 	//공격중에 호출 금지
-	if (StateMachineComponent->GetPlayerState() == EPlayerState::PlayerAttack)
+	if (PlayerStateMachineComponent->IsInAnyState({EPlayerState::LightAttack, EPlayerState::HeavyAttack}))
 		return;
 
-	StateMachineComponent->SetPlayerState(EPlayerState::PlayerWalk);
-
-	UE_LOG(LogTemp, Log, TEXT("void AMyCharacter::Move"));
+	PlayerStateMachineComponent->ChangeState(EPlayerState::Move);
 
 	const FRotator YawRotation(0.f, GetControlRotation().Yaw, 0.f);
 	const FVector ForwardDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);
@@ -228,42 +212,60 @@ void AMyCharacter::Move(FVector2D InputValue)
 	AddMovementInput(RightDirection, InputValue.X);
 }
 
+void AMyCharacter::ChangeMoveSpeed(float DeltaTime)
+{
+	//현재 속도를 보간
+	float CurrentSpeed = GetCharacterMovement()->MaxWalkSpeed;
+	float NewSpeed = FMath::Lerp(CurrentSpeed, TargetSpeed, 2.f * DeltaTime);
+	if (NewSpeed < WalkSpeed)
+		NewSpeed = WalkSpeed;
+	GetCharacterMovement()->MaxWalkSpeed = NewSpeed;
+
+	if (bIsRun) {
+		if (GetResourceComponent()->bCanConsumeStamina(RunStaminaCost)) {
+			//달리기 가능하니까 스테미나 소모하도록
+			GetResourceComponent()->ConsumeStamina(RunStaminaCost);
+		}
+		else {
+			//달리기 불가능하니까 스테이트 변경
+			bIsRun = false;
+			TargetSpeed = WalkSpeed;
+		}
+	}
+}
+
 void AMyCharacter::RunStart()
 {
-	if (!StateMachineComponent)
+	if (!PlayerStateMachineComponent)
 		return;
 
-	if (StateMachineComponent->GetPlayerState() != EPlayerState::PlayerRun) {
-		StateMachineComponent->SetPlayerState(EPlayerState::PlayerRun);
+	if (PlayerStateMachineComponent->IsInAnyState({EPlayerState::Move})) {
+		bIsRun = true;
 		TargetSpeed = RunSpeed;
 		ReportNoiseToAI(RunLoudness);
 	}
-
-	UE_LOG(LogTemp, Log, TEXT("void AMyCharacter::RunStart"));
-
 }
 
 void AMyCharacter::RunEnd()
 {
-	if (!StateMachineComponent)
+	if (!PlayerStateMachineComponent)
 		return;
-
-	UE_LOG(LogTemp, Log, TEXT("void AMyCharacter::RunEnd"));
-
-	StateMachineComponent->SetPlayerState(EPlayerState::PlayerWalk);
-
-	TargetSpeed = WalkSpeed;
+	
+	if (bIsRun) {
+		bIsRun = false;
+		TargetSpeed = WalkSpeed;
+	}
 }
 
 void AMyCharacter::Jump()
 {
-	if (!StateMachineComponent || !ResourceComponent)
+	if (!PlayerStateMachineComponent || !ResourceComponent)
 		return;
 
-	StateMachineComponent->SetPlayerState(EPlayerState::PlayerJump);
-
-	ResourceComponent->ConsumeStamina(JumpStaminaCost);
-	ACharacter::Jump();
+	if (PlayerStateMachineComponent->IsInAnyState({EPlayerState::Guard,EPlayerState::Idle,EPlayerState::Move})) {
+		ResourceComponent->ConsumeStamina(JumpStaminaCost);
+		ACharacter::Jump();
+	}
 }
 
 void AMyCharacter::Look(FVector2D InputValue)
@@ -283,12 +285,12 @@ void AMyCharacter::PlayAirboneMontage()
 
 void AMyCharacter::AttackStart()
 {
-	if (!StateMachineComponent)
+	if (!PlayerStateMachineComponent)
 		return;
 
 	UE_LOG(LogTemp, Log, TEXT("void AMyCharacter::AttackStart"));
 
-	if (StateMachineComponent->GetPlayerState() == EPlayerState::PlayerAttack) {
+	if (PlayerStateMachineComponent->IsInAnyState({EPlayerState::LightAttack, EPlayerState::HeavyAttack})) {
 		if (bIsEnableCombo)
 			SetAttackMontageSection();
 		return;
@@ -296,8 +298,7 @@ void AMyCharacter::AttackStart()
 	if (auto* PC = Cast<APlayerController>(GetController())) {
 		PC->SetIgnoreMoveInput(true);
 	}
-	StateMachineComponent->SetPlayerState(EPlayerState::PlayerAttack);
-	UE_LOG(LogTemp, Log, TEXT("Now CurrentPlayerState: %d"), (int32)StateMachineComponent->GetPlayerState());
+	PlayerStateMachineComponent->ChangeState(EPlayerState::LightAttack);
 
 	AttackExecute();
 }
@@ -341,41 +342,21 @@ void AMyCharacter::OnAttackEnded(UAnimMontage* Montage, bool bInterrupted)
 	UE_LOG(LogTemp, Warning, TEXT("AMyCharacter::OnAttackEnded - Montage: %s, Interrupted: %s"),
 		   *Montage->GetName(), bInterrupted ? TEXT("True") : TEXT("False"));
 
-	//if(!bIsEnableCombo)
 	AttackEnd();
 }
 
 void AMyCharacter::AttackEnd()
 {
-	if (!StateMachineComponent)
+	if (!PlayerStateMachineComponent)
 		return;
 
 	UE_LOG(LogTemp, Log, TEXT("void AMyCharacter::AttackEnd"));
 
-	StateMachineComponent->SetPlayerState(EPlayerState::PlayerIdle);
+	PlayerStateMachineComponent->ChangeState(EPlayerState::Idle);
 	if (auto* PC = Cast<APlayerController>(GetController())) {
 		PC->SetIgnoreMoveInput(false);
 	}
 	bIsEnableCombo = false;
-}
-
-void AMyCharacter::GuardUp()
-{
-	if (!InventoryComponent->bIsOpen) {
-		bIsGuard = true;
-		if (auto* AnimInstance = GetMesh()->GetAnimInstance()) {
-			GuardComponent->SetCollisionProfileName(TEXT("Pawn"));
-			GuardComponent->SetVisibility(true);
-			AnimInstance->Montage_Play(GuardMontage);
-		}
-	}
-}
-
-void AMyCharacter::GuardDown()
-{
-	bIsGuard = false;
-	GuardComponent->SetCollisionProfileName(TEXT("NoCollision"));
-	GuardComponent->SetVisibility(false);
 }
 
 void AMyCharacter::Roll()
@@ -713,34 +694,14 @@ void AMyCharacter::SetupWidget()
 	}
 }
 
-void AMyCharacter::ChangeMoveSpeed(float DeltaTime)
-{
-	//현재 속도를 보간
-	float CurrentSpeed = GetCharacterMovement()->MaxWalkSpeed;
-	float NewSpeed = FMath::Lerp(CurrentSpeed, TargetSpeed, 2.f * DeltaTime);
-	if (NewSpeed < WalkSpeed)
-		NewSpeed = WalkSpeed;
-	GetCharacterMovement()->MaxWalkSpeed = NewSpeed;
 
-	if (GetStateMachineComponent()->GetPlayerState() == EPlayerState::PlayerRun) {
-		if (GetResourceComponent()->bCanConsumeStamina(RunStaminaCost)) {
-			//달리기 가능하니까 스테미나 소모하도록
-			GetResourceComponent()->ConsumeStamina(RunStaminaCost);
-		}
-		else {
-			//달리기 불가능하니까 스테이트 변경
-			GetStateMachineComponent()->SetPlayerState(EPlayerState::PlayerWalk);
-			TargetSpeed = WalkSpeed;
-		}
-	}
-}
 
 void AMyCharacter::CheckStaminaRecovery(float DeltaTime)
 {
-	if (!StateMachineComponent || !ResourceComponent)
+	if (!PlayerStateMachineComponent || !ResourceComponent)
 		return;
 
-	if (!bIsRoll && !bIsGuard && CanJump() && (StateMachineComponent->GetPlayerState() == EPlayerState::PlayerIdle || StateMachineComponent->GetPlayerState() == EPlayerState::PlayerWalk)) {
+	if (!bIsRoll && !bIsGuard && CanJump() && (PlayerStateMachineComponent->IsInAnyState({EPlayerState::Guard, EPlayerState::Idle, EPlayerState::Move}))) {
 		if (ResourceComponent->GetCurrentStamina() < ResourceComponent->GetMaxStamina()) {
 			ResourceComponent->ConsumeStamina(-StaminaRecoveryRate * DeltaTime);
 		}
@@ -776,11 +737,6 @@ UWeaponBaseComponent* AMyCharacter::GetCurrentWeaponComponent()
 	return CurrentWeaponComponent ? CurrentWeaponComponent : nullptr;
 }
 
-UBoxComponent* AMyCharacter::GetGuardComponent()
-{
-	return GuardComponent ? GuardComponent : nullptr;
-}
-
 UUserWidget* AMyCharacter::GetLockonWidgetInstance()
 {
 	return LockonWidgetInstance ? LockonWidgetInstance : nullptr;
@@ -796,9 +752,9 @@ UResourceComponent* AMyCharacter::GetResourceComponent()
 	return ResourceComponent ? ResourceComponent : nullptr;
 }
 
-UStateMachineComponent* AMyCharacter::GetStateMachineComponent()
+UPlayerStateMachineComponent* AMyCharacter::GetPlayerStateMachineComponent()
 {
-	return StateMachineComponent ? StateMachineComponent : nullptr;
+	return PlayerStateMachineComponent ? PlayerStateMachineComponent : nullptr;
 }
 
 void AMyCharacter::SetPlayerInfo()

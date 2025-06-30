@@ -5,16 +5,14 @@
 #include "Camera/CameraShakeBase.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
-#include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/Pawn.h"
 #include "InputMappingContext.h"
 #include "InventoryItemAction.h"
 #include "InventoryTooltip.h"
 #include "ItemBase.h"
 #include "MyCharacter.h"
-#include "WeaponBaseComponent.h"
 #include "ResourceComponent.h"
-#include "StateMachineComponent.h"
+#include "PlayerStateMachineComponent.h"
 
 AMyPlayerController::AMyPlayerController()
 {
@@ -27,16 +25,6 @@ AMyCharacter* AMyPlayerController::GetCharacter()
 		MyCharacter = Cast<AMyCharacter>(GetPawn());
 	}
 	return MyCharacter;
-}
-
-UResourceComponent* AMyPlayerController::GetResourceComponent()
-{
-	return GetCharacter() != nullptr ? GetCharacter()->GetResourceComponent() : nullptr;
-}
-
-UStateMachineComponent* AMyPlayerController::GetStateMachineComponent()
-{
-	return GetCharacter() != nullptr ? GetCharacter()->GetStateMachineComponent() : nullptr;
 }
 
 void AMyPlayerController::ShowTooltipAtMousePosition(UInventoryTooltip* TooltipWidget)
@@ -127,9 +115,6 @@ void AMyPlayerController::SetupInputComponent() {
 		EnHancedInputComponent->BindAction(JumpAction, ETriggerEvent::Started, this, &AMyPlayerController::TryJump);
 		
 		EnHancedInputComponent->BindAction(LightAttackAction, ETriggerEvent::Started, this, &AMyPlayerController::TryAttackStart);
-				
-		EnHancedInputComponent->BindAction(GuardAction, ETriggerEvent::Triggered, this, &AMyPlayerController::TryGuardUp);
-		EnHancedInputComponent->BindAction(GuardAction, ETriggerEvent::Completed, this, &AMyPlayerController::TryGuardDown);
 		
 		EnHancedInputComponent->BindAction(RollAction, ETriggerEvent::Started, this, &AMyPlayerController::TryRoll);
 
@@ -148,7 +133,7 @@ void AMyPlayerController::TryMove(const FInputActionValue& Value)
 	const FVector2D InputValue = Value.Get<FVector2D>();
 	if (GetCharacter() != nullptr) {
 		if (!GetCharacter()->bIsRoll && 
-			GetStateMachineComponent()->GetPlayerState() != EPlayerState::PlayerAttack) {
+			GetCharacter()->GetPlayerStateMachineComponent()->IsInAnyState({EPlayerState::Guard, EPlayerState::Idle, EPlayerState::Move})) {
 			GetCharacter()->Move(InputValue);
 		}
 	}
@@ -158,8 +143,8 @@ void AMyPlayerController::TryRunStart()
 {
 	if (GetCharacter() != nullptr) {
 		if (!GetCharacter()->bIsRoll && 
-			GetStateMachineComponent()->GetPlayerState() == EPlayerState::PlayerWalk) {
-			if (GetResourceComponent()->bCanConsumeStamina(GetCharacter()->RunStaminaCost)) {
+			GetCharacter()->GetPlayerStateMachineComponent()->IsInAnyState({EPlayerState::Move})) {
+			if (GetCharacter()->GetResourceComponent()->bCanConsumeStamina(GetCharacter()->RunStaminaCost)) {
 				GetCharacter()->RunStart();
 			}
 		}
@@ -169,7 +154,7 @@ void AMyPlayerController::TryRunStart()
 void AMyPlayerController::TryRunEnd()
 {
 	if (GetCharacter() != nullptr) {
-		if (GetStateMachineComponent()->GetPlayerState() == EPlayerState::PlayerRun) {
+		if (GetCharacter()->bIsRun) {
 			GetCharacter()->RunEnd();
 		}
 	}
@@ -179,7 +164,7 @@ void AMyPlayerController::TryJump()
 {
 	if (GetCharacter() != nullptr) {
 		if (GetCharacter()->CanJump() && !GetCharacter()->bIsRoll) {
-			if (GetResourceComponent()->bCanConsumeStamina(GetCharacter()->JumpStaminaCost)) {
+			if (GetCharacter()->GetResourceComponent()->bCanConsumeStamina(GetCharacter()->JumpStaminaCost)) {
 				GetCharacter()->Jump();
 			}
 		}
@@ -198,29 +183,9 @@ void AMyPlayerController::TryAttackStart(const FInputActionValue& Value)
 {
 	if (GetCharacter() != nullptr) {
 		if (!GetCharacter()->bIsRoll && !GetCharacter()->bIsGuard) {
-			if (GetResourceComponent()->bCanConsumeStamina(GetCharacter()->AttackStaminaCost)) {
+			if (GetCharacter()->GetResourceComponent()->bCanConsumeStamina(GetCharacter()->AttackStaminaCost)) {
 				GetCharacter()->AttackStart();
 			}
-		}
-	}
-}
-
-void AMyPlayerController::TryGuardUp()
-{
-	if (GetCharacter() != nullptr) {
-		if (!GetCharacter()->bIsRoll && GetStateMachineComponent()->GetPlayerState() != EPlayerState::PlayerAttack) {
-			if (GetResourceComponent()->bCanConsumeStamina(GetCharacter()->GuardStaminaCost)) {
-				GetCharacter()->GuardUp();
-			}
-		}
-	}
-}
-
-void AMyPlayerController::TryGuardDown()
-{
-	if (GetCharacter() != nullptr) {
-		if (GetCharacter()->bIsGuard) {
-			GetCharacter()->GuardDown();
 		}
 	}
 }
@@ -229,8 +194,8 @@ void AMyPlayerController::TryRoll()
 {
 	if (GetCharacter() != nullptr) {
 		if (GetCharacter()->CanJump() && !GetCharacter()->bIsRoll && 
-			GetStateMachineComponent()->GetPlayerState() != EPlayerState::PlayerAttack) {
-			if (GetResourceComponent()->bCanConsumeStamina(GetCharacter()->RollStaminaCost)) {
+			!GetCharacter()->GetPlayerStateMachineComponent()->IsInAnyState({EPlayerState::LightAttack, EPlayerState::HeavyAttack, EPlayerState::Hit, EPlayerState::Parry})) {
+			if (GetCharacter()->GetResourceComponent()->bCanConsumeStamina(GetCharacter()->RollStaminaCost)) {
 				GetCharacter()->Roll();
 			}
 		}
@@ -247,7 +212,8 @@ void AMyPlayerController::TryLockOnTarget()
 void AMyPlayerController::TryRootItem()
 {
 	if (GetCharacter() != nullptr) {
-		if ((GetStateMachineComponent()->GetPlayerState() != EPlayerState::PlayerAttack) && !GetCharacter()->bIsRoll) {
+		if (GetCharacter()->GetPlayerStateMachineComponent()->IsInAnyState({EPlayerState::LightAttack, EPlayerState::HeavyAttack, EPlayerState::Hit, EPlayerState::Dodge}) &&
+			!GetCharacter()->bIsRoll) {
 			GetCharacter()->RootItem();
 		}
 	}

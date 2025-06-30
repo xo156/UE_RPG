@@ -21,8 +21,6 @@ public:
 
 	//getter
 	class AMyCharacter* GetCharacter();
-	class UResourceComponent* GetResourceComponent();
-	class UStateMachineComponent* GetStateMachineComponent();
 
 	//UI
 	void ShowTooltipAtMousePosition(class UInventoryTooltip* TooltipWidget);
@@ -47,8 +45,6 @@ protected:
 	void TryJump();
 	void TryLook(const FInputActionValue& Value);
 	void TryAttackStart(const FInputActionValue& Value);
-	void TryGuardUp();
-	void TryGuardDown();
 	void TryRoll();
 	void TryLockOnTarget();
 	void TryRootItem();
@@ -70,8 +66,6 @@ private:
 	class UInputAction* LightAttackAction;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input", meta = (AllowPrivateAccess = "true"))
 	class UInputAction* LookAction;
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input", meta = (AllowPrivateAccess = "true"))
-	class UInputAction* GuardAction;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input", meta = (AllowPrivateAccess = "true"))
 	class UInputAction* RollAction;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input", meta = (AllowPrivateAccess = "true"))
