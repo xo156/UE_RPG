@@ -49,7 +49,7 @@ public:
 	TArray<class UMonsterAttackPatternDataAsset*>& GetAttackPatterns();
 	TArray<int32> GetValidPatternIndexes() const;
 	TArray<AActor*>& GetOverlapActors();
-	class UResourceComponent* GetResourceComponent() const;
+	class UHPActorComponent* GetHPActorComponent() const;
 	class UMonsterStateMachineComponent* GetMonsterStateMachineComponent() const;
 
 protected:
@@ -82,7 +82,7 @@ private:
 
 	//자원
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Resource", meta = (AllowPrivateAccess))
-	class UResourceComponent* ResourceComponent;
+	class UHPActorComponent* HPActorComponent;
 
 	//상태
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "StateMachine", meta = (AllowPrivateAccess = "true"))

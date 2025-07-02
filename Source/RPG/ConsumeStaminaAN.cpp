@@ -3,6 +3,7 @@
 
 #include "ConsumeStaminaAN.h"
 #include "MyCharacter.h"
+#include "StaminaActorComponent.h"
 
 void UConsumeStaminaAN::Notify(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation)
 {
@@ -10,8 +11,8 @@ void UConsumeStaminaAN::Notify(USkeletalMeshComponent* MeshComp, UAnimSequenceBa
 		return;
 
 	if (auto* PlayerCharacter = Cast<AMyCharacter>(MeshComp->GetOwner())) {
-		if (PlayerCharacter->GetResourceComponent()) {
-			PlayerCharacter->GetResourceComponent()->ConsumeStamina(PlayerCharacter->AttackStaminaCost);
+		if (PlayerCharacter->GetStaminaActorComponent()) {
+			PlayerCharacter->GetStaminaActorComponent()->ConsumeStamina(PlayerCharacter->AttackStaminaCost);
 		}
 	}
 }

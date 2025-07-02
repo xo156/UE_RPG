@@ -18,7 +18,7 @@
 #include "MyGameModeBase.h"
 #include "MonsterData.h"
 #include "DropRate.h"
-#include "ResourceComponent.h"
+#include "HPActorComponent.h"
 #include "MonsterStateMachineComponent.h"
 #include "MonsterAttackPatternDataAsset.h"
 
@@ -39,7 +39,7 @@ AMonsterBase::AMonsterBase()
 	GetMesh()->SetCollisionProfileName(TEXT("NoCollision"));
 
 	//자원
-	ResourceComponent = CreateDefaultSubobject<UResourceComponent>(TEXT("Resource"));
+	HPActorComponent = CreateDefaultSubobject<UHPActorComponent>(TEXT("Resource"));
 
 	//상태
 	MonsterStateMachineComponent = CreateDefaultSubobject<UMonsterStateMachineComponent>(TEXT("StateMachine"));
@@ -53,10 +53,6 @@ void AMonsterBase::BeginPlay()
 
 	//TODO: 체력바 바인딩할것
 
-	if (auto* GameInstance = Cast<UDataTableGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()))) {
-		CameraShake = GameInstance->GetCameraShake();
-		ItemCache = GameInstance->GetItemDropCache();
-	}
 }
 
 // Called every frame
@@ -74,10 +70,10 @@ void AMonsterBase::SetupPlayerInputComponent(UInputComponent* PlayerInputCompone
 
 void AMonsterBase::InitMonsterInfo(const FMonsterData& MonsterData)
 {
-	if (!ResourceComponent)
+	if (!HPActorComponent)
 		return;
 
-	ResourceComponent->InitResource(MonsterData.MaxMonsterHP, 0.f, MonsterData.Damage, false);
+	HPActorComponent->InitHP(MonsterData.MaxMonsterHP);
 
 	MonsterID = MonsterData.MonsterID;
 	MonsterName = MonsterData.MonsterName;
@@ -198,7 +194,7 @@ float AMonsterBase::TakeDamage(float DamageAmount, FDamageEvent const& DamageEve
 		return -1.f;
 	if (!DamageCauser)
 		return -1.f;
-	if (!ResourceComponent)
+	if (!HPActorComponent)
 		return -1.f;
 	if (!MonsterStateMachineComponent)
 		return -1.f;
@@ -207,11 +203,11 @@ float AMonsterBase::TakeDamage(float DamageAmount, FDamageEvent const& DamageEve
 		PlayerController->ClientStartCameraShake(CameraShake);
 	}
 
-	if (ResourceComponent->bCanConsumeHealth(DamageAmount)) { //생존
-		ResourceComponent->ConsumeHP(DamageAmount);
+	if (HPActorComponent->bCanConsumeHP(DamageAmount)) { //생존
+		HPActorComponent->ConsumeHP(DamageAmount);
 	}
 	else { //사망
-		ResourceComponent->ConsumeHP(DamageAmount);
+		HPActorComponent->ConsumeHP(DamageAmount);
 		DroppedItem();
 		DieMonster();
 	}
@@ -313,9 +309,9 @@ TArray<AActor*>& AMonsterBase::GetOverlapActors()
 	return OverlapActors;
 }
 
-UResourceComponent* AMonsterBase::GetResourceComponent() const
+UHPActorComponent* AMonsterBase::GetHPActorComponent() const
 {
-	return ResourceComponent ? ResourceComponent : nullptr;
+	return HPActorComponent ? HPActorComponent : nullptr;
 }
 
 UMonsterStateMachineComponent* AMonsterBase::GetMonsterStateMachineComponent() const

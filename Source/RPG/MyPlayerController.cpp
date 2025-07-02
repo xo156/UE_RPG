@@ -11,7 +11,7 @@
 #include "InventoryTooltip.h"
 #include "ItemBase.h"
 #include "MyCharacter.h"
-#include "ResourceComponent.h"
+#include "StaminaActorComponent.h"
 #include "PlayerStateMachineComponent.h"
 
 AMyPlayerController::AMyPlayerController()
@@ -144,7 +144,7 @@ void AMyPlayerController::TryRunStart()
 	if (GetCharacter() != nullptr) {
 		if (!GetCharacter()->bIsRoll && 
 			GetCharacter()->GetPlayerStateMachineComponent()->IsInAnyState({EPlayerState::Move})) {
-			if (GetCharacter()->GetResourceComponent()->bCanConsumeStamina(GetCharacter()->RunStaminaCost)) {
+			if (GetCharacter()->GetStaminaActorComponent()->bCanConsumeStamina(GetCharacter()->RunStaminaCost)) {
 				GetCharacter()->RunStart();
 			}
 		}
@@ -164,7 +164,7 @@ void AMyPlayerController::TryJump()
 {
 	if (GetCharacter() != nullptr) {
 		if (GetCharacter()->CanJump() && !GetCharacter()->bIsRoll) {
-			if (GetCharacter()->GetResourceComponent()->bCanConsumeStamina(GetCharacter()->JumpStaminaCost)) {
+			if (GetCharacter()->GetStaminaActorComponent()->bCanConsumeStamina(GetCharacter()->JumpStaminaCost)) {
 				GetCharacter()->Jump();
 			}
 		}
@@ -182,8 +182,9 @@ void AMyPlayerController::TryLook(const FInputActionValue& Value)
 void AMyPlayerController::TryAttackStart(const FInputActionValue& Value)
 {
 	if (GetCharacter() != nullptr) {
-		if (!GetCharacter()->bIsRoll && !GetCharacter()->bIsGuard) {
-			if (GetCharacter()->GetResourceComponent()->bCanConsumeStamina(GetCharacter()->AttackStaminaCost)) {
+		if (!GetCharacter()->bIsRoll && !GetCharacter()->bIsGuard && 
+			GetCharacter()->GetPlayerStateMachineComponent()->IsInAnyState({EPlayerState::Guard, EPlayerState::Idle, EPlayerState::Move})) {
+			if (GetCharacter()->GetStaminaActorComponent()->bCanConsumeStamina(GetCharacter()->AttackStaminaCost)) {
 				GetCharacter()->AttackStart();
 			}
 		}
@@ -195,7 +196,7 @@ void AMyPlayerController::TryRoll()
 	if (GetCharacter() != nullptr) {
 		if (GetCharacter()->CanJump() && !GetCharacter()->bIsRoll && 
 			!GetCharacter()->GetPlayerStateMachineComponent()->IsInAnyState({EPlayerState::LightAttack, EPlayerState::HeavyAttack, EPlayerState::Hit, EPlayerState::Parry})) {
-			if (GetCharacter()->GetResourceComponent()->bCanConsumeStamina(GetCharacter()->RollStaminaCost)) {
+			if (GetCharacter()->GetStaminaActorComponent()->bCanConsumeStamina(GetCharacter()->RollStaminaCost)) {
 				GetCharacter()->Roll();
 			}
 		}
@@ -212,7 +213,7 @@ void AMyPlayerController::TryLockOnTarget()
 void AMyPlayerController::TryRootItem()
 {
 	if (GetCharacter() != nullptr) {
-		if (GetCharacter()->GetPlayerStateMachineComponent()->IsInAnyState({EPlayerState::LightAttack, EPlayerState::HeavyAttack, EPlayerState::Hit, EPlayerState::Dodge}) &&
+		if (!GetCharacter()->GetPlayerStateMachineComponent()->IsInAnyState({EPlayerState::LightAttack, EPlayerState::HeavyAttack, EPlayerState::Hit, EPlayerState::Dodge}) &&
 			!GetCharacter()->bIsRoll) {
 			GetCharacter()->RootItem();
 		}

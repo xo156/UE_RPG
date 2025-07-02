@@ -4,7 +4,7 @@
 
 #include "HPPotion.h"
 #include "MyCharacter.h"
-#include "ResourceComponent.h"
+#include "HPActorComponent.h"
 
 // Sets default values
 AHPPotion::AHPPotion()
@@ -31,14 +31,12 @@ void AHPPotion::Tick(float DeltaTime)
 
 void AHPPotion::Use()
 {
-	UE_LOG(LogTemp, Log, TEXT("AHPPotion::Use()"));
-
 	if (auto* PlayerCharacter = Cast<AMyCharacter>(GetWorld()->GetFirstPlayerController()->GetPawn())) {
-		if (PlayerCharacter->GetResourceComponent()->GetCurrentHP() + HPRecoveryAmount >= PlayerCharacter->GetResourceComponent()->GetMaxHP()) {
-			PlayerCharacter->GetResourceComponent()->RecoverHP(PlayerCharacter->GetResourceComponent()->GetMaxHP());
+		if (PlayerCharacter->GetHPActorComponent()->GetCurrentHP() + HPRecoveryAmount >= PlayerCharacter->GetHPActorComponent()->GetMaxHP()) {
+			PlayerCharacter->GetHPActorComponent()->RecoverHP(PlayerCharacter->GetHPActorComponent()->GetMaxHP());
 		}
 		else {
-			PlayerCharacter->GetResourceComponent()->RecoverHP(HPRecoveryAmount);
+			PlayerCharacter->GetHPActorComponent()->RecoverHP(HPRecoveryAmount);
 		}
 	}
 }

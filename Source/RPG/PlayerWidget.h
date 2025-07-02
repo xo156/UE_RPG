@@ -14,22 +14,4 @@ class RPG_API UPlayerWidget : public UUserWidget
 {
 	GENERATED_BODY()
 	
-public:
-    virtual void NativeConstruct() override;
-
-    UFUNCTION(BlueprintCallable, Category = "Status")
-    void UpdateHP(float CurrentHP, float MaxHP);
-
-    UFUNCTION(BlueprintCallable, Category = "Status")
-    void UpdateStamina(float CurrentStamina, float MaxStamina);
-
-    UFUNCTION()
-    void OnPlayerResourceUpdate(float NewHP, float NewStamina);
-
-protected:
-    UPROPERTY(meta = (BindWidget))
-    class UProgressBar* HPProgressBar;
-
-    UPROPERTY(meta = (BindWidget))
-    class UProgressBar* StaminaProgressBar;
 };

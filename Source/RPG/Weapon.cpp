@@ -5,6 +5,7 @@
 #include "MyCharacter.h"
 #include "Components/BoxComponent.h"
 #include "MonsterBase.h"
+#include "HPActorComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Engine/DamageEvents.h"
 #include "WeaponBaseComponent.h"
@@ -64,8 +65,8 @@ void AWeapon::ApplyDamageToActor(AActor* ActorToDamage)
 		return;
 	}
 
-	//float Damage = OwnerCharacter->GetPlayerDamage();
-	float Damage = OwnerCharacter->GetResourceComponent()->GetCurrentDamage();
+	//float Damage = OwnerCharacter->GetHPActorComponent()->GetCurrentDamage();
+	float Damage = 0.f;
 	FDamageEvent DamageEvent;
 	if (GetInstigator() == nullptr) {
 		return;

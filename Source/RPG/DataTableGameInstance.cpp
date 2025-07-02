@@ -62,11 +62,6 @@ UDataTable* UDataTableGameInstance::GetCharacterDataTable()
 	return CharacterDataTable ? CharacterDataTable : nullptr;
 }
 
-TSubclassOf<class UCameraShakeBase> UDataTableGameInstance::GetCameraShake()
-{
-	return CameraShake ? CameraShake : nullptr;
-}
-
 void UDataTableGameInstance::LoadItemCache()
 {
 	if (ItemTable) {

@@ -105,7 +105,8 @@ public:
 	class UWeaponBaseComponent* GetCurrentWeaponComponent();
 	class UUserWidget* GetLockonWidgetInstance();
 	class UInventoryQuickSlotWidget* GetInventoryQuickSlotWidgetInstance();
-	class UResourceComponent* GetResourceComponent();
+	class UHPActorComponent* GetHPActorComponent();
+	class UStaminaActorComponent* GetStaminaActorComponent();
 	class UPlayerStateMachineComponent* GetPlayerStateMachineComponent();
 
 	//setter
@@ -126,9 +127,6 @@ protected:
 	float AttackLoudness;
 
 	//À§Á¬
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UI")
-	TSubclassOf<class UPlayerWidget> PlayerWidgetClass;
-	class UPlayerWidget* PlayerWidgetInstance;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UI")
 	TSubclassOf<class UInventoryQuickSlotWidget> InventoryQuickSlotWidgetClass;
 	class UInventoryQuickSlotWidget* InventoryQuickSlotWidgetInstance;
@@ -159,7 +157,9 @@ private:
 	int32 PlayerCharacterID;
 	struct FCharacterData* CharacterData;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Resource", meta = (AllowPrivateAccess))
-	class UResourceComponent* ResourceComponent;
+	class UHPActorComponent* HPActorComponent;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Resource", meta = (AllowPrivateAccess))
+	class UStaminaActorComponent* StaminaActorComponent;
 	float StaminaRecoveryRate = 10.f;
 
 	//»óÅÂ

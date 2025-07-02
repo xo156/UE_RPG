@@ -14,7 +14,6 @@
 #include "Perception/AIPerceptionStimuliSourceComponent.h"
 #include "Perception/AISense_Sight.h"
 #include "Perception/AISense_Hearing.h"
-#include "PlayerWidget.h"
 #include "DropItem.h"
 #include "InventoryWidget.h"
 #include "InventoryItemAction.h"
@@ -22,7 +21,8 @@
 #include "MonsterBase.h"
 #include "DataTableGameInstance.h"
 #include "InventoryQuickSlotWidget.h"
-#include "ResourceComponent.h"
+#include "HPActorComponent.h"
+#include "StaminaActorComponent.h"
 #include "PlayerStateMachineComponent.h"
 
 // Sets default values
@@ -51,9 +51,6 @@ AMyCharacter::AMyCharacter() {
 	CameraComponent = CreateDefaultSubobject<UCameraComponent>(TEXT("VGCamera"));
 	CameraComponent->SetupAttachment(CameraBoom, USpringArmComponent::SocketName);
 
-	//위젯
-	PlayerWidgetClass = UPlayerWidget::StaticClass();
-
 	//인벤토리
 	InventoryComponent = CreateDefaultSubobject<UInventoryComponent>(TEXT("InventoryComponent"));
 
@@ -65,7 +62,8 @@ AMyCharacter::AMyCharacter() {
 	RootItemBoxComponent->OnComponentEndOverlap.AddDynamic(this, &AMyCharacter::OnRootItemBoxOverlapEnd);
 
 	//자원
-	ResourceComponent = CreateDefaultSubobject<UResourceComponent>(TEXT("Resource"));
+	HPActorComponent = CreateDefaultSubobject<UHPActorComponent>(TEXT("Resource"));
+	StaminaActorComponent = CreateDefaultSubobject<UStaminaActorComponent>(TEXT("StaminaActorComponent"));
 	WalkStaminaCost = 0.f;
 	RunStaminaCost = 0.05f;
 	JumpStaminaCost = 5.f;
@@ -164,13 +162,13 @@ float AMyCharacter::TakeDamage(float DamageAmount, FDamageEvent const& DamageEve
 	if (bIsRoll)
 		return 0.f;
 
-	if (GetResourceComponent()->bCanConsumeHealth(DamageAmount)) {
+	if (GetHPActorComponent()->bCanConsumeHP(DamageAmount)) {
 		//아직 살아있음
-		GetResourceComponent()->ConsumeHP(DamageAmount);
+		GetHPActorComponent()->ConsumeHP(DamageAmount);
 	}
 	else {
 		//으악 죽음
-		GetResourceComponent()->ConsumeHP(DamageAmount);
+		GetHPActorComponent()->ConsumeHP(DamageAmount);
 		PlayerDie();
 	}
 
@@ -222,9 +220,9 @@ void AMyCharacter::ChangeMoveSpeed(float DeltaTime)
 	GetCharacterMovement()->MaxWalkSpeed = NewSpeed;
 
 	if (bIsRun) {
-		if (GetResourceComponent()->bCanConsumeStamina(RunStaminaCost)) {
+		if (GetStaminaActorComponent()->bCanConsumeStamina(RunStaminaCost)) {
 			//달리기 가능하니까 스테미나 소모하도록
-			GetResourceComponent()->ConsumeStamina(RunStaminaCost);
+			GetStaminaActorComponent()->ConsumeStamina(RunStaminaCost);
 		}
 		else {
 			//달리기 불가능하니까 스테이트 변경
@@ -259,11 +257,11 @@ void AMyCharacter::RunEnd()
 
 void AMyCharacter::Jump()
 {
-	if (!PlayerStateMachineComponent || !ResourceComponent)
+	if (!PlayerStateMachineComponent || !StaminaActorComponent)
 		return;
 
 	if (PlayerStateMachineComponent->IsInAnyState({EPlayerState::Guard,EPlayerState::Idle,EPlayerState::Move})) {
-		ResourceComponent->ConsumeStamina(JumpStaminaCost);
+		StaminaActorComponent->ConsumeStamina(JumpStaminaCost);
 		ACharacter::Jump();
 	}
 }
@@ -305,7 +303,7 @@ void AMyCharacter::AttackStart()
 
 void AMyCharacter::SetAttackMontageSection()
 {
-	if (!CurrentWeaponComponent || !ResourceComponent || !GetMesh() || !GetMesh()->GetAnimInstance())
+	if (!CurrentWeaponComponent || !HPActorComponent || !GetMesh() || !GetMesh()->GetAnimInstance())
 		return;
 
 	UE_LOG(LogTemp, Log, TEXT("void AMyCharacter::SetAttackMontageSection"));
@@ -322,7 +320,7 @@ void AMyCharacter::SetAttackMontageSection()
 
 void AMyCharacter::AttackExecute()
 {
-	if (!CurrentWeaponComponent || !GetMesh() || !ResourceComponent) 
+	if (!CurrentWeaponComponent || !GetMesh() || !HPActorComponent) 
 		return;
 
 	UE_LOG(LogTemp, Log, TEXT("void AMyCharacter::AttackExecute"));
@@ -361,6 +359,9 @@ void AMyCharacter::AttackEnd()
 
 void AMyCharacter::Roll()
 {
+	if (!StaminaActorComponent)
+		return;
+
 	auto* AnimInstance = GetMesh()->GetAnimInstance();
 	if (!AnimInstance || InventoryComponent->bIsOpen)
 		return;
@@ -375,7 +376,7 @@ void AMyCharacter::Roll()
 	AnimInstance->OnMontageEnded.RemoveDynamic(this, &AMyCharacter::OnRollEnded);
 	AnimInstance->OnMontageEnded.AddDynamic(this, &AMyCharacter::OnRollEnded);
 	AnimInstance->Montage_Play(RollMontage);
-	GetResourceComponent()->ConsumeStamina(RollStaminaCost);
+	StaminaActorComponent->ConsumeStamina(RollStaminaCost);
 }
 
 void AMyCharacter::OnRollEnded(UAnimMontage* Montage, bool bInterrupted)
@@ -461,10 +462,8 @@ bool AMyCharacter::IsTargetValid(AActor* CheckTarget)
 		return false;
 	}
 
-	if (AMonsterBase* TargetMonster = Cast<AMonsterBase>(CheckTarget)) {
-		/*if (TargetMonster->bIsMonsterDead) {
-			return false;
-		}*/
+	if (auto* TargetMonster = Cast<AMonsterBase>(CheckTarget)) {
+		//TODO: 타겟이 죽으면 락온 해제
 	}
 
 	return true;
@@ -531,7 +530,7 @@ void AMyCharacter::UpdateLockOnCameraRotation()
 		TargetRotation.Yaw = CurrentRotation.Yaw + FMath::Sign(AngleDiff) * MaxTargetAngle;
 	}
 
-	if (AMyPlayerController* PlayerController = Cast<AMyPlayerController>(GetController())) {
+	if (auto* PlayerController = Cast<AMyPlayerController>(GetController())) {
 		PlayerController->SetControlRotation(TargetRotation);
 	}
 }
@@ -674,17 +673,6 @@ void AMyCharacter::EquipWeapon(TSubclassOf<class UWeaponBaseComponent> WeaponBas
 
 void AMyCharacter::SetupWidget()
 {
-	if (PlayerWidgetClass) {
-		PlayerWidgetInstance = CreateWidget<UPlayerWidget>(GetWorld(), PlayerWidgetClass);
-		if (PlayerWidgetInstance) {
-			PlayerWidgetInstance->AddToViewport();
-			if (ResourceComponent) {
-				PlayerWidgetInstance->UpdateHP(ResourceComponent->GetCurrentHP(), ResourceComponent->GetMaxHP());
-				PlayerWidgetInstance->UpdateStamina(ResourceComponent->GetCurrentStamina(), ResourceComponent->GetMaxStamina());
-			}
-		}
-	}
-
 	if (InventoryQuickSlotWidgetClass) {
 		InventoryQuickSlotWidgetInstance = CreateWidget<UInventoryQuickSlotWidget>(GetWorld(), InventoryQuickSlotWidgetClass);
 		if (InventoryQuickSlotWidgetInstance) {
@@ -698,12 +686,12 @@ void AMyCharacter::SetupWidget()
 
 void AMyCharacter::CheckStaminaRecovery(float DeltaTime)
 {
-	if (!PlayerStateMachineComponent || !ResourceComponent)
+	if (!PlayerStateMachineComponent || !StaminaActorComponent)
 		return;
 
 	if (!bIsRoll && !bIsGuard && CanJump() && (PlayerStateMachineComponent->IsInAnyState({EPlayerState::Guard, EPlayerState::Idle, EPlayerState::Move}))) {
-		if (ResourceComponent->GetCurrentStamina() < ResourceComponent->GetMaxStamina()) {
-			ResourceComponent->ConsumeStamina(-StaminaRecoveryRate * DeltaTime);
+		if (StaminaActorComponent->GetCurrentStamina() < StaminaActorComponent->GetMaxStamina()) {
+			StaminaActorComponent->ConsumeStamina(-StaminaRecoveryRate * DeltaTime);
 		}
 	}
 }
@@ -747,9 +735,14 @@ UInventoryQuickSlotWidget* AMyCharacter::GetInventoryQuickSlotWidgetInstance()
 	return InventoryQuickSlotWidgetInstance ? InventoryQuickSlotWidgetInstance : nullptr;
 }
 
-UResourceComponent* AMyCharacter::GetResourceComponent()
+UHPActorComponent* AMyCharacter::GetHPActorComponent()
 {
-	return ResourceComponent ? ResourceComponent : nullptr;
+	return HPActorComponent ? HPActorComponent : nullptr;
+}
+
+UStaminaActorComponent* AMyCharacter::GetStaminaActorComponent()
+{
+	return StaminaActorComponent ? StaminaActorComponent : nullptr;
 }
 
 UPlayerStateMachineComponent* AMyCharacter::GetPlayerStateMachineComponent()
@@ -759,8 +752,8 @@ UPlayerStateMachineComponent* AMyCharacter::GetPlayerStateMachineComponent()
 
 void AMyCharacter::SetPlayerInfo()
 {
-	if (CharacterData && ResourceComponent) {
-		ResourceComponent->InitResource(CharacterData->MaxCharacterHP, CharacterData->MaxCharacterStamina, CharacterData->CharacterDamage, true);
+	if (CharacterData && HPActorComponent) {
+		HPActorComponent->InitHP(CharacterData->MaxCharacterHP);
 	}
 }
 

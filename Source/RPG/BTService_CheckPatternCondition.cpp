@@ -5,7 +5,7 @@
 #include "BehaviorTree/BlackboardComponent.h"
 #include "AIController.h"
 #include "MonsterBase.h"
-#include "ResourceComponent.h"
+#include "HPActorComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "MonsterAttackPatternDataAsset.h"
 
@@ -35,7 +35,7 @@ void UBTService_CheckPatternCondition::TickNode(UBehaviorTreeComponent& OwnerCom
 		return;
 
 	float Distance = MonsterBase->GetDistanceTo(TargetActor);
-	float HPRatio = MonsterBase->GetResourceComponent()->GetHPRatio();
+	float HPRatio = MonsterBase->GetHPActorComponent()->GetHPRatio();
 
 	OwnerComp.GetBlackboardComponent()->SetValueAsFloat(TargetDistanceKey.SelectedKeyName, Distance);
 	OwnerComp.GetBlackboardComponent()->SetValueAsFloat(HPRatioKey.SelectedKeyName, HPRatio);
