@@ -83,25 +83,6 @@ void AMonsterBase::InitMonsterInfo(const FMonsterData& MonsterData)
 
 	UE_LOG(LogTemp, Log, TEXT("Monster [%s] Initialized | HP: %f | Damage: %f"), *MonsterName.ToString(), MonsterData.MaxMonsterHP, MonsterData.Damage);
 
-	CacheAttackBodies();
-}
-
-void AMonsterBase::CacheAttackBodies()
-{
-	AttackBodies.Empty();
-	TArray<FName> BodyCast;
-	GetMesh()->GetBoneNames(BodyCast);
-	for (FName Bone : BodyCast) {
-		if (Bone.ToString().EndsWith(TEXT("_Attack"))) {
-			FBodyInstance* BodyInstance = GetMesh()->GetBodyInstance(Bone);
-			if (BodyInstance && BodyInstance->OwnerComponent.IsValid()) {
-				BodyInstance->SetInstanceSimulatePhysics(false); //혹시 모를 물리 연산 차단
-				BodyInstance->SetResponseToAllChannels(ECR_Ignore);
-				BodyInstance->SetResponseToChannel(ECC_Pawn, ECR_Overlap); //명시적으로 필요한 채널만
-				AttackBodies.Add(Bone, BodyInstance->OwnerComponent.Get());
-			}
-		}
-	}
 }
 
 void AMonsterBase::MonsterAttackStart(int32 AttackIndex)
@@ -150,11 +131,14 @@ bool AMonsterBase::bIsValidAttackPatternIndex(int32 Index) const
 	return MonsterAttackPatterns.IsValidIndex(Index) && MonsterAttackPatterns[Index] != nullptr;
 }
 
-void AMonsterBase::EnableAttackBody(FName TargetBodyName, bool bEnable)
+void AMonsterBase::EnableCollisionName(FName TargetName)
 {
-	if (UPrimitiveComponent** CompPtr = AttackBodies.Find(TargetBodyName)) {
-		(*CompPtr)->SetCollisionEnabled(bEnable ? ECollisionEnabled::QueryOnly : ECollisionEnabled::NoCollision);
-	}
+
+}
+
+void AMonsterBase::DisableCollisionNAme(FName TargetName)
+{
+
 }
 
 void AMonsterBase::OnAttackMontageEnded(UAnimMontage* NowPlayMontage, bool bInterrupted)
@@ -198,10 +182,6 @@ float AMonsterBase::TakeDamage(float DamageAmount, FDamageEvent const& DamageEve
 		return -1.f;
 	if (!MonsterStateMachineComponent)
 		return -1.f;
-
-	if (auto* PlayerController = Cast<AMyPlayerController>(UGameplayStatics::GetPlayerController(GetWorld(), 0))) {
-		PlayerController->ClientStartCameraShake(CameraShake);
-	}
 
 	if (HPActorComponent->bCanConsumeHP(DamageAmount)) { //생존
 		HPActorComponent->ConsumeHP(DamageAmount);

@@ -36,19 +36,19 @@ void UStaminaActorComponent::InitStamina(float InMaxStamina)
 {
 	MaxStamina = InMaxStamina;
 	CurrentStamina = MaxStamina;
-	OnStaminaChanged.Broadcast(CurrentStamina);
+	OnStaminaChanged.Broadcast();
 }
 
 void UStaminaActorComponent::ConsumeStamina(float Amount)
 {
 	CurrentStamina = FMath::Clamp(CurrentStamina - Amount, 0.f, MaxStamina);
-	OnStaminaChanged.Broadcast(CurrentStamina);
+	OnStaminaChanged.Broadcast();
 }
 
 void UStaminaActorComponent::RecoverStamina(float Amount)
 {
 	CurrentStamina = FMath::Clamp(CurrentStamina + Amount, 0.f, MaxStamina);
-	OnStaminaChanged.Broadcast(CurrentStamina);
+	OnStaminaChanged.Broadcast();
 }
 
 bool UStaminaActorComponent::bCanConsumeStamina(float Consumption) const

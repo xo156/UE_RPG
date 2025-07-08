@@ -31,7 +31,8 @@ public:
 	void Jump();
 	void Look(FVector2D InputValue);
 	void PlayAirboneMontage();
-	void AttackStart();
+	void LightAttackStart();
+	void HeavyAttackChargeStart();
 	void SetAttackMontageSection();
 	void AttackExecute();
 	UFUNCTION()
@@ -80,6 +81,7 @@ public:
 
 	//캐릭터 특수 상태
 	bool bIsEnableCombo = false;
+	bool bIsChargingHeavyAttack = false;
 	bool bIsRun = false;
 	bool bIsRoll = false;
 	bool bIsGuard = false;
@@ -135,15 +137,11 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Montage")
 	class UAnimMontage* AirboneMontage;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Montage")
-	class UAnimMontage* GuardMontage;
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Montage")
 	class UAnimMontage* RollMontage;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Montage")
 	class UAnimMontage* HitMontage;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Montage")
 	class UAnimMontage* DieMontage;
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Montage")
-	class UAnimMontage* TaimMontage;
 
 private:
 	//카메라
@@ -171,6 +169,8 @@ private:
 	TSubclassOf<class UWeaponBaseComponent> WeaponComponent;
 	class UWeaponBaseComponent* CurrentWeaponComponent;
 	FName NextSectionName;
+	float HeavyAttackChargeStartTime = 0.f;
+	float HeavyAttackThreshold = 0.5;
 
 	//AI
 	class UAIPerceptionStimuliSourceComponent* StimulusSource; //Monster가 탐지할 수 있도록

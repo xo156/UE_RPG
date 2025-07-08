@@ -114,8 +114,11 @@ void AMyPlayerController::SetupInputComponent() {
 		
 		EnHancedInputComponent->BindAction(JumpAction, ETriggerEvent::Started, this, &AMyPlayerController::TryJump);
 		
-		EnHancedInputComponent->BindAction(LightAttackAction, ETriggerEvent::Started, this, &AMyPlayerController::TryAttackStart);
-		
+		EnHancedInputComponent->BindAction(LightAttackAction, ETriggerEvent::Started, this, &AMyPlayerController::TryLightAttackStart);
+		EnHancedInputComponent->BindAction(HeavyAttackModifierPressedAction, ETriggerEvent::Triggered, this, &AMyPlayerController::OnHeavyAttackModifierPressed);
+		EnHancedInputComponent->BindAction(HeavyAttackModifierPressedAction, ETriggerEvent::Completed , this, &AMyPlayerController::OnHeavyAttackModifierRelesed);
+		EnHancedInputComponent->BindAction(HeavyAttackAction, ETriggerEvent::Triggered, this, &AMyPlayerController::TryHeavyAttakStart);
+
 		EnHancedInputComponent->BindAction(RollAction, ETriggerEvent::Started, this, &AMyPlayerController::TryRoll);
 
 		EnHancedInputComponent->BindAction(LockOnAction, ETriggerEvent::Started, this, &AMyPlayerController::TryLockOnTarget);
@@ -179,13 +182,41 @@ void AMyPlayerController::TryLook(const FInputActionValue& Value)
 	}
 }
 
-void AMyPlayerController::TryAttackStart(const FInputActionValue& Value)
+void AMyPlayerController::TryLightAttackStart(const FInputActionValue& Value)
 {
 	if (GetCharacter() != nullptr) {
 		if (!GetCharacter()->bIsRoll && !GetCharacter()->bIsGuard && 
-			GetCharacter()->GetPlayerStateMachineComponent()->IsInAnyState({EPlayerState::Guard, EPlayerState::Idle, EPlayerState::Move})) {
+			GetCharacter()->GetPlayerStateMachineComponent()->IsInAnyState({EPlayerState::Guard, EPlayerState::Idle, EPlayerState::Move, EPlayerState::HeavyAttack, EPlayerState::LightAttack})) {
 			if (GetCharacter()->GetStaminaActorComponent()->bCanConsumeStamina(GetCharacter()->AttackStaminaCost)) {
-				GetCharacter()->AttackStart();
+				GetCharacter()->LightAttackStart();
+			}
+		}
+	}
+}
+
+void AMyPlayerController::OnHeavyAttackModifierPressed(const FInputActionValue& Value)
+{
+	bIsAttackModifierPressed = true;
+}
+
+void AMyPlayerController::OnHeavyAttackModifierRelesed(const FInputActionValue& Value)
+{
+	bIsAttackModifierPressed = false;
+}
+
+void AMyPlayerController::TryHeavyAttakStart(const FInputActionValue& Value)
+{
+	//TODO: 구현하자
+	if (!bIsAttackModifierPressed)
+		return;
+
+	if (GetCharacter() != nullptr) {
+		if (!GetCharacter()->bIsRoll && !GetCharacter()->bIsGuard &&
+			GetCharacter()->GetPlayerStateMachineComponent()->IsInAnyState({EPlayerState::Guard, EPlayerState::Idle, EPlayerState::Move, EPlayerState::HeavyAttack, EPlayerState::LightAttack})) {
+			if (GetCharacter()->GetStaminaActorComponent()->bCanConsumeStamina(GetCharacter()->AttackStaminaCost)) {
+				if (bIsAttackModifierPressed) {
+					GetCharacter()->HeavyAttackChargeStart();
+				}
 			}
 		}
 	}

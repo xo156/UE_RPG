@@ -165,6 +165,9 @@ float AMyCharacter::TakeDamage(float DamageAmount, FDamageEvent const& DamageEve
 	if (GetHPActorComponent()->bCanConsumeHP(DamageAmount)) {
 		//아직 살아있음
 		GetHPActorComponent()->ConsumeHP(DamageAmount);
+		if (bIsChargingHeavyAttack) {
+
+		}
 	}
 	else {
 		//으악 죽음
@@ -281,14 +284,14 @@ void AMyCharacter::PlayAirboneMontage()
 	}
 }
 
-void AMyCharacter::AttackStart()
+void AMyCharacter::LightAttackStart()
 {
 	if (!PlayerStateMachineComponent)
 		return;
 
-	UE_LOG(LogTemp, Log, TEXT("void AMyCharacter::AttackStart"));
+	UE_LOG(LogTemp, Log, TEXT("AMyCharacter::LightAttackStart()"));
 
-	if (PlayerStateMachineComponent->IsInAnyState({EPlayerState::LightAttack, EPlayerState::HeavyAttack})) {
+	if (PlayerStateMachineComponent->IsInAnyState({EPlayerState::LightAttack})) {
 		if (bIsEnableCombo)
 			SetAttackMontageSection();
 		return;
@@ -301,19 +304,42 @@ void AMyCharacter::AttackStart()
 	AttackExecute();
 }
 
+void AMyCharacter::HeavyAttackChargeStart()
+{
+	if (!PlayerStateMachineComponent || bIsChargingHeavyAttack)
+		return;
+
+	UE_LOG(LogTemp, Log, TEXT("AMyCharacter::HeavyAttackChargeStart()"));
+
+	if (PlayerStateMachineComponent->IsInAnyState({EPlayerState::HeavyAttack})) {
+		if (bIsEnableCombo)
+			SetAttackMontageSection();
+		return;
+	}
+	if (auto* PC = Cast<APlayerController>(GetController())) {
+		PC->SetIgnoreMoveInput(true);
+	}
+	bIsChargingHeavyAttack = true;
+	PlayerStateMachineComponent->ChangeState(EPlayerState::HeavyAttack);
+
+	AttackExecute();
+}
+
 void AMyCharacter::SetAttackMontageSection()
 {
-	if (!CurrentWeaponComponent || !HPActorComponent || !GetMesh() || !GetMesh()->GetAnimInstance())
+	if (!CurrentWeaponComponent || !GetMesh() || !GetMesh()->GetAnimInstance())
+		return;
+
+	auto* AnimInstance = GetMesh()->GetAnimInstance();
+	if (!AnimInstance)
 		return;
 
 	UE_LOG(LogTemp, Log, TEXT("void AMyCharacter::SetAttackMontageSection"));
-	if (auto* AnimInstance = GetMesh()->GetAnimInstance()) {
-		if (auto* CurrentActiveMontage = AnimInstance->GetCurrentActiveMontage()) {
-			auto CurrentSection = AnimInstance->Montage_GetCurrentSection(AnimInstance->GetCurrentActiveMontage());
-			if (!CurrentSection.IsNone()) {
-				AnimInstance->Montage_SetNextSection(CurrentSection, NextSectionName, CurrentWeaponComponent->LightAttackMontage);
-				UE_LOG(LogTemp, Log, TEXT("Montage Next Section: %s"), *NextSectionName.ToString());
-			}
+	if (auto* CurrentActiveMontage = AnimInstance->GetCurrentActiveMontage()) {
+		auto CurrentSection = AnimInstance->Montage_GetCurrentSection(AnimInstance->GetCurrentActiveMontage());
+		if (!CurrentSection.IsNone()) {
+			AnimInstance->Montage_SetNextSection(CurrentSection, NextSectionName, CurrentActiveMontage);
+			UE_LOG(LogTemp, Log, TEXT("Montage Next Section: %s"), *NextSectionName.ToString());
 		}
 	}
 }
@@ -326,12 +352,24 @@ void AMyCharacter::AttackExecute()
 	UE_LOG(LogTemp, Log, TEXT("void AMyCharacter::AttackExecute"));
 
 	auto* AnimInstance = GetMesh()->GetAnimInstance();
-	if (!AnimInstance || AnimInstance->Montage_IsPlaying(CurrentWeaponComponent->LightAttackMontage))
+	if (!AnimInstance)
 		return;
 
-	AnimInstance->OnMontageEnded.RemoveDynamic(this, &AMyCharacter::OnAttackEnded);
-	AnimInstance->OnMontageEnded.AddDynamic(this, &AMyCharacter::OnAttackEnded);
-	AnimInstance->Montage_Play(CurrentWeaponComponent->LightAttackMontage);
+	if (bIsChargingHeavyAttack) {
+		if (AnimInstance->Montage_IsPlaying(CurrentWeaponComponent->HeavyAttackMontage))
+			return;
+		AnimInstance->OnMontageEnded.RemoveDynamic(this, &AMyCharacter::OnAttackEnded);
+		AnimInstance->OnMontageEnded.AddDynamic(this, &AMyCharacter::OnAttackEnded);
+		AnimInstance->Montage_Play(CurrentWeaponComponent->HeavyAttackMontage);
+	}
+	else {
+		if (AnimInstance->Montage_IsPlaying(CurrentWeaponComponent->LightAttackMontage))
+			return;
+
+		AnimInstance->OnMontageEnded.RemoveDynamic(this, &AMyCharacter::OnAttackEnded);
+		AnimInstance->OnMontageEnded.AddDynamic(this, &AMyCharacter::OnAttackEnded);
+		AnimInstance->Montage_Play(CurrentWeaponComponent->LightAttackMontage);
+	}
 	ReportNoiseToAI(AttackLoudness);
 }
 
@@ -355,6 +393,7 @@ void AMyCharacter::AttackEnd()
 		PC->SetIgnoreMoveInput(false);
 	}
 	bIsEnableCombo = false;
+	bIsChargingHeavyAttack = false;
 }
 
 void AMyCharacter::Roll()
@@ -673,6 +712,8 @@ void AMyCharacter::EquipWeapon(TSubclassOf<class UWeaponBaseComponent> WeaponBas
 
 void AMyCharacter::SetupWidget()
 {
+	//TODO: 위젯을 다른곳으로 옮기는게 좋을것같다
+
 	if (InventoryQuickSlotWidgetClass) {
 		InventoryQuickSlotWidgetInstance = CreateWidget<UInventoryQuickSlotWidget>(GetWorld(), InventoryQuickSlotWidgetClass);
 		if (InventoryQuickSlotWidgetInstance) {
@@ -752,9 +793,11 @@ UPlayerStateMachineComponent* AMyCharacter::GetPlayerStateMachineComponent()
 
 void AMyCharacter::SetPlayerInfo()
 {
-	if (CharacterData && HPActorComponent) {
-		HPActorComponent->InitHP(CharacterData->MaxCharacterHP);
-	}
+	if (!CharacterData || !HPActorComponent || !StaminaActorComponent)
+		return;
+
+	HPActorComponent->InitHP(CharacterData->MaxCharacterHP);
+	StaminaActorComponent->InitStamina(CharacterData->MaxCharacterStamina);
 }
 
 void AMyCharacter::SetNextSectionName(FName ChangeSectionName)

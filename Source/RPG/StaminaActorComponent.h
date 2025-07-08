@@ -6,7 +6,7 @@
 #include "Components/ActorComponent.h"
 #include "StaminaActorComponent.generated.h"
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnStaminaChanged, float, NewStamina);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnStaminaChanged);
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class RPG_API UStaminaActorComponent : public UActorComponent

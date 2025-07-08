@@ -2,13 +2,10 @@
 
 
 #include "MyGameModeBase.h"
-#include "DataTableGameInstance.h"
-#include "Kismet/GameplayStatics.h"
 
 AMyGameModeBase::AMyGameModeBase()
 {
 	PrimaryActorTick.bCanEverTick = true;
-
 }
 
 void AMyGameModeBase::BeginPlay()

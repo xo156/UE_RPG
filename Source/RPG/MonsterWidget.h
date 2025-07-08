@@ -4,33 +4,26 @@
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
-#include "PlayerWidget.generated.h"
+#include "MonsterWidget.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class RPG_API UPlayerWidget : public UUserWidget
+class RPG_API UMonsterWidget : public UUserWidget
 {
 	GENERATED_BODY()
-	
+
 public:
 	UFUNCTION()
-	void BindToComponents(class UHPActorComponent* InHPActorComponent, class UStaminaActorComponent* InStaminaActorComponent);
+	void BindToComponents(class UHPActorComponent* InHPActorComponent);
 
 	UFUNCTION()
 	void OnHPChanged();
-
-	UFUNCTION()
-	void OnStaminaChanged();
 
 protected:
 	UPROPERTY(meta = (BindWidget))
 	class UProgressBar* ProgressBar_HP;
 
-	UPROPERTY(meta = (BindWidget))
-	class UProgressBar* ProgressBar_Stamina;
-
 	class UHPActorComponent* HPActorComponent;
-	class UStaminaActorComponent* StaminaActorComponent;
 };

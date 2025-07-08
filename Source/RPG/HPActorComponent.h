@@ -6,7 +6,7 @@
 #include "Components/ActorComponent.h"
 #include "HPActorComponent.generated.h"
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnHPChanged, float, NewHP);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnHPChanged);
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class RPG_API UHPActorComponent : public UActorComponent

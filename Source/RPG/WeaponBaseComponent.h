@@ -36,6 +36,8 @@ protected:
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Montage")
 	class UAnimMontage* LightAttackMontage;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Montage")
+	class UAnimMontage* HeavyAttackMontage;
 
 	class AMyCharacter* OwnerCharacter;
 

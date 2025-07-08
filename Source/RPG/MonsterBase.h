@@ -23,14 +23,14 @@ public:
 
 	//준비
 	void InitMonsterInfo(const struct FMonsterData& InData);
-	void CacheAttackBodies();
 
 	//공격
 	void MonsterAttackStart(int32 AttackIndex);
 	virtual void MonsterAttackExecute(int32 AttackIndex);
 	void UpdateValidPatternIndexes(float Distance, float HPRatio);
 	bool bIsValidAttackPatternIndex(int32 Index) const;
-	void EnableAttackBody(FName TargetBodyName, bool bEnable);
+	void EnableCollisionName(FName TargetName);
+	void DisableCollisionNAme(FName TargetName);
 	void OnAttackMontageEnded(UAnimMontage* Montage, bool bInterrupted);
 	void MonsterAttackEnd();
 	UFUNCTION()
@@ -75,7 +75,6 @@ private:
 	TArray<int32> MonsterDropItemIDs;
 
 	//공격
-	TMap<FName, UPrimitiveComponent*> AttackBodies; //몬스터가 공격할 때 사용할 콜리전들
 	TArray<AActor*> OverlapActors; //몬스터가 때릴 때 콜리전 검출하기
 	TArray<class UMonsterAttackPatternDataAsset*> MonsterAttackPatterns; //몬스터 공격 패턴 목록
 	TArray<int32> ValidAttackPatternIndexes; //공격 가능한 패턴의 인덱스
@@ -98,7 +97,4 @@ private:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item", meta = (AllowPrivateAccess="true"))
 	TSubclassOf<class ADropItem> DropItemClass;
 	TMap<int32, struct FDropRate*> ItemCache;
-
-	//흔들림
-	TSubclassOf<class UCameraShakeBase> CameraShake;
 };

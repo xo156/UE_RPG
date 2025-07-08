@@ -36,7 +36,7 @@ void UHPActorComponent::InitHP(float InMaxHP)
 {
 	MaxHP = InMaxHP;
 	CurrentHP = MaxHP;
-	OnHPChanged.Broadcast(CurrentHP);
+	OnHPChanged.Broadcast();
 
 	CurrentDamage = CurrentDamage;
 }
@@ -44,13 +44,13 @@ void UHPActorComponent::InitHP(float InMaxHP)
 void UHPActorComponent::ConsumeHP(float Amount)
 {
 	CurrentHP = FMath::Clamp(CurrentHP - Amount, 0.0f, MaxHP);
-	OnHPChanged.Broadcast(CurrentHP);
+	OnHPChanged.Broadcast();
 }
 
 void UHPActorComponent::RecoverHP(float Amount)
 {
 	CurrentHP = FMath::Clamp(CurrentHP + Amount, 0.0f, MaxHP);
-	OnHPChanged.Broadcast(CurrentHP);
+	OnHPChanged.Broadcast();
 }
 
 bool UHPActorComponent::bCanConsumeHP(float Consumption) const

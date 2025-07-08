@@ -11,7 +11,7 @@ void UMonsterCollisionEnableANS::NotifyBegin(USkeletalMeshComponent* MeshComp, U
 		return;
 
 	if (auto* MonsterBase = Cast<AMonsterBase>(MeshComp->GetOwner())) {
-		MonsterBase->EnableAttackBody(TargetBodyName, true);
+		MonsterBase->EnableCollisionName(TargetName);
 	}
 }
 
@@ -21,6 +21,6 @@ void UMonsterCollisionEnableANS::NotifyEnd(USkeletalMeshComponent* MeshComp, UAn
 		return;
 
 	if (auto* MonsterBase = Cast<AMonsterBase>(MeshComp->GetOwner())) {
-		MonsterBase->EnableAttackBody(TargetBodyName, false);
+		MonsterBase->DisableCollisionNAme(TargetName);
 	}
 }
