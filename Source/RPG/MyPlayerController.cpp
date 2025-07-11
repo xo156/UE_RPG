@@ -147,7 +147,7 @@ void AMyPlayerController::TryRunStart()
 	if (GetCharacter() != nullptr) {
 		if (!GetCharacter()->bIsRoll && 
 			GetCharacter()->GetPlayerStateMachineComponent()->IsInAnyState({EPlayerState::Move})) {
-			if (GetCharacter()->GetStaminaActorComponent()->bCanConsumeStamina(GetCharacter()->RunStaminaCost)) {
+			if (GetCharacter()->GetStaminaActorComponent()->CanConsumeStamina(GetCharacter()->RunStaminaCost)) {
 				GetCharacter()->RunStart();
 			}
 		}
@@ -167,7 +167,7 @@ void AMyPlayerController::TryJump()
 {
 	if (GetCharacter() != nullptr) {
 		if (GetCharacter()->CanJump() && !GetCharacter()->bIsRoll) {
-			if (GetCharacter()->GetStaminaActorComponent()->bCanConsumeStamina(GetCharacter()->JumpStaminaCost)) {
+			if (GetCharacter()->GetStaminaActorComponent()->CanConsumeStamina(GetCharacter()->JumpStaminaCost)) {
 				GetCharacter()->Jump();
 			}
 		}
@@ -187,7 +187,7 @@ void AMyPlayerController::TryLightAttackStart(const FInputActionValue& Value)
 	if (GetCharacter() != nullptr) {
 		if (!GetCharacter()->bIsRoll && !GetCharacter()->bIsGuard && 
 			GetCharacter()->GetPlayerStateMachineComponent()->IsInAnyState({EPlayerState::Guard, EPlayerState::Idle, EPlayerState::Move, EPlayerState::HeavyAttack, EPlayerState::LightAttack})) {
-			if (GetCharacter()->GetStaminaActorComponent()->bCanConsumeStamina(GetCharacter()->AttackStaminaCost)) {
+			if (GetCharacter()->GetStaminaActorComponent()->CanConsumeStamina(GetCharacter()->AttackStaminaCost)) {
 				GetCharacter()->LightAttackStart();
 			}
 		}
@@ -213,7 +213,7 @@ void AMyPlayerController::TryHeavyAttakStart(const FInputActionValue& Value)
 	if (GetCharacter() != nullptr) {
 		if (!GetCharacter()->bIsRoll && !GetCharacter()->bIsGuard &&
 			GetCharacter()->GetPlayerStateMachineComponent()->IsInAnyState({EPlayerState::Guard, EPlayerState::Idle, EPlayerState::Move, EPlayerState::HeavyAttack, EPlayerState::LightAttack})) {
-			if (GetCharacter()->GetStaminaActorComponent()->bCanConsumeStamina(GetCharacter()->AttackStaminaCost)) {
+			if (GetCharacter()->GetStaminaActorComponent()->CanConsumeStamina(GetCharacter()->AttackStaminaCost)) {
 				if (bIsAttackModifierPressed) {
 					GetCharacter()->HeavyAttackChargeStart();
 				}
@@ -227,7 +227,7 @@ void AMyPlayerController::TryRoll()
 	if (GetCharacter() != nullptr) {
 		if (GetCharacter()->CanJump() && !GetCharacter()->bIsRoll && 
 			!GetCharacter()->GetPlayerStateMachineComponent()->IsInAnyState({EPlayerState::LightAttack, EPlayerState::HeavyAttack, EPlayerState::Hit, EPlayerState::Parry})) {
-			if (GetCharacter()->GetStaminaActorComponent()->bCanConsumeStamina(GetCharacter()->RollStaminaCost)) {
+			if (GetCharacter()->GetStaminaActorComponent()->CanConsumeStamina(GetCharacter()->RollStaminaCost)) {
 				GetCharacter()->Roll();
 			}
 		}

@@ -183,7 +183,7 @@ float AMonsterBase::TakeDamage(float DamageAmount, FDamageEvent const& DamageEve
 	if (!MonsterStateMachineComponent)
 		return -1.f;
 
-	if (HPActorComponent->bCanConsumeHP(DamageAmount)) { //생존
+	if (HPActorComponent->CanConsumeHP(DamageAmount)) { //생존
 		HPActorComponent->ConsumeHP(DamageAmount);
 	}
 	else { //사망

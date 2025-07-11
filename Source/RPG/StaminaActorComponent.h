@@ -30,7 +30,7 @@ public:
 	void RecoverStamina(float Amount);
 
 	//»Æ¿Œ
-	bool bCanConsumeStamina(float Consumption) const;
+	bool CanConsumeStamina(float Consumption) const;
 
 	//Getter
 	float GetCurrentStamina() const;

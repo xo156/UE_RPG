@@ -30,7 +30,7 @@ public:
 	void RecoverHP(float Amount);
 
 	//»Æ¿Œ
-	bool bCanConsumeHP(float Consumption) const;
+	bool CanConsumeHP(float Consumption) const;
 
 	//getter
 	float GetCurrentHP() const;

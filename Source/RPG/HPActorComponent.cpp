@@ -53,7 +53,7 @@ void UHPActorComponent::RecoverHP(float Amount)
 	OnHPChanged.Broadcast();
 }
 
-bool UHPActorComponent::bCanConsumeHP(float Consumption) const
+bool UHPActorComponent::CanConsumeHP(float Consumption) const
 {
 	return CurrentHP >= Consumption;
 }

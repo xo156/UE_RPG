@@ -162,11 +162,11 @@ float AMyCharacter::TakeDamage(float DamageAmount, FDamageEvent const& DamageEve
 	if (bIsRoll)
 		return 0.f;
 
-	if (GetHPActorComponent()->bCanConsumeHP(DamageAmount)) {
+	if (GetHPActorComponent()->CanConsumeHP(DamageAmount)) {
 		//아직 살아있음
 		GetHPActorComponent()->ConsumeHP(DamageAmount);
 		if (bIsChargingHeavyAttack) {
-
+			//TODO: 차지 캔슬
 		}
 	}
 	else {
@@ -223,7 +223,7 @@ void AMyCharacter::ChangeMoveSpeed(float DeltaTime)
 	GetCharacterMovement()->MaxWalkSpeed = NewSpeed;
 
 	if (bIsRun) {
-		if (GetStaminaActorComponent()->bCanConsumeStamina(RunStaminaCost)) {
+		if (GetStaminaActorComponent()->CanConsumeStamina(RunStaminaCost)) {
 			//달리기 가능하니까 스테미나 소모하도록
 			GetStaminaActorComponent()->ConsumeStamina(RunStaminaCost);
 		}

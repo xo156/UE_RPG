@@ -51,7 +51,7 @@ void UStaminaActorComponent::RecoverStamina(float Amount)
 	OnStaminaChanged.Broadcast();
 }
 
-bool UStaminaActorComponent::bCanConsumeStamina(float Consumption) const
+bool UStaminaActorComponent::CanConsumeStamina(float Consumption) const
 {
 	return CurrentStamina >= Consumption;
 }

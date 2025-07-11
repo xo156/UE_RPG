@@ -11,11 +11,13 @@ void UComboCheckANS::NotifyBegin(USkeletalMeshComponent* MeshComp, UAnimSequence
 	if (!MeshComp || !MeshComp->GetOwner())
 		return;
 
-	if (auto* PlayerCharacter = Cast<AMyCharacter>(MeshComp->GetOwner())) {
-		UE_LOG(LogTemp, Log, TEXT("ComboCheckANS::NotifyBegin"));
-		PlayerCharacter->bIsEnableCombo = true;
-		PlayerCharacter->SetNextSectionName(NextSection);
-	}
+	auto* PlayerCharacter = Cast<AMyCharacter>(MeshComp->GetOwner());
+	if (!PlayerCharacter)
+		return;
+
+	UE_LOG(LogTemp, Log, TEXT("ComboCheckANS::NotifyBegin"));
+	PlayerCharacter->bIsEnableCombo = true;
+	PlayerCharacter->SetNextSectionName(NextSection);
 }
 
 void UComboCheckANS::NotifyEnd(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation)
@@ -23,8 +25,10 @@ void UComboCheckANS::NotifyEnd(USkeletalMeshComponent* MeshComp, UAnimSequenceBa
 	if (!MeshComp || !MeshComp->GetOwner())
 		return;
 
-	if (auto* PlayerCharacter = Cast<AMyCharacter>(MeshComp->GetOwner())) {
-		UE_LOG(LogTemp, Log, TEXT("ComboCheckANS::NotifyEnd"));
-		PlayerCharacter->bIsEnableCombo = false;
-	}
+	auto* PlayerCharacter = Cast<AMyCharacter>(MeshComp->GetOwner());
+	if (!PlayerCharacter)
+		return;
+
+	UE_LOG(LogTemp, Log, TEXT("ComboCheckANS::NotifyEnd"));
+	PlayerCharacter->bIsEnableCombo = false;
 }
