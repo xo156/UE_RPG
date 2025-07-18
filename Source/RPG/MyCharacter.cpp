@@ -245,6 +245,8 @@ void AMyCharacter::RunStart()
 		TargetSpeed = RunSpeed;
 		ReportNoiseToAI(RunLoudness);
 	}
+
+	UE_LOG(LogTemp, Log, TEXT("RunStart"));
 }
 
 void AMyCharacter::RunEnd()
@@ -256,6 +258,8 @@ void AMyCharacter::RunEnd()
 		bIsRun = false;
 		TargetSpeed = WalkSpeed;
 	}
+
+	UE_LOG(LogTemp, Log, TEXT("RunEnd"));
 }
 
 void AMyCharacter::Jump()
@@ -416,6 +420,8 @@ void AMyCharacter::Roll()
 	AnimInstance->OnMontageEnded.AddDynamic(this, &AMyCharacter::OnRollEnded);
 	AnimInstance->Montage_Play(RollMontage);
 	StaminaActorComponent->ConsumeStamina(RollStaminaCost);
+
+	UE_LOG(LogTemp, Log, TEXT("Roll"));
 }
 
 void AMyCharacter::OnRollEnded(UAnimMontage* Montage, bool bInterrupted)

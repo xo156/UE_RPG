@@ -42,13 +42,11 @@ protected:
 	void TryMove(const FInputActionValue& Value);
 	void TryRunStart();
 	void TryRunEnd();
+	void TryRoll();
 	void TryJump();
 	void TryLook(const FInputActionValue& Value);
 	void TryLightAttackStart(const FInputActionValue& Value);
-	void OnHeavyAttackModifierPressed(const FInputActionValue& Value);
-	void OnHeavyAttackModifierRelesed(const FInputActionValue& Value);
 	void TryHeavyAttakStart(const FInputActionValue& Value);
-	void TryRoll();
 	void TryLockOnTarget();
 	void TryRootItem();
 	void TryOpenInventory();
@@ -56,8 +54,6 @@ protected:
 	void TryClose();
 
 private:
-	bool bIsAttackModifierPressed = false;
-
 	//ÀÎÇ² ¾×¼Ç
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input", meta = (AllowPrivateAccess = "true"))
 	class UInputMappingContext* DefaultMappingContext;
@@ -69,8 +65,6 @@ private:
 	class UInputAction* JumpAction;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input", meta = (AllowPrivateAccess = "true"))
 	class UInputAction* LightAttackAction;
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input", meta = (AllowPrivateAccess = "true"))
-	class UInputAction* HeavyAttackModifierPressedAction;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input", meta = (AllowPrivateAccess = "true"))
 	class UInputAction* HeavyAttackAction;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input", meta = (AllowPrivateAccess = "true"))

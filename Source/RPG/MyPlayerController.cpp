@@ -109,17 +109,15 @@ void AMyPlayerController::SetupInputComponent() {
 		EnHancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &AMyPlayerController::TryMove);
 		EnHancedInputComponent->BindAction(RunAction, ETriggerEvent::Triggered, this, &AMyPlayerController::TryRunStart);
 		EnHancedInputComponent->BindAction(RunAction, ETriggerEvent::Completed, this, &AMyPlayerController::TryRunEnd);
-
+		EnHancedInputComponent->BindAction(RollAction, ETriggerEvent::Completed, this, &AMyPlayerController::TryRoll);
+		
 		EnHancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &AMyPlayerController::TryLook);
 		
 		EnHancedInputComponent->BindAction(JumpAction, ETriggerEvent::Started, this, &AMyPlayerController::TryJump);
 		
 		EnHancedInputComponent->BindAction(LightAttackAction, ETriggerEvent::Started, this, &AMyPlayerController::TryLightAttackStart);
-		EnHancedInputComponent->BindAction(HeavyAttackModifierPressedAction, ETriggerEvent::Triggered, this, &AMyPlayerController::OnHeavyAttackModifierPressed);
-		EnHancedInputComponent->BindAction(HeavyAttackModifierPressedAction, ETriggerEvent::Completed , this, &AMyPlayerController::OnHeavyAttackModifierRelesed);
 		EnHancedInputComponent->BindAction(HeavyAttackAction, ETriggerEvent::Triggered, this, &AMyPlayerController::TryHeavyAttakStart);
 
-		EnHancedInputComponent->BindAction(RollAction, ETriggerEvent::Started, this, &AMyPlayerController::TryRoll);
 
 		EnHancedInputComponent->BindAction(LockOnAction, ETriggerEvent::Started, this, &AMyPlayerController::TryLockOnTarget);
 
@@ -145,7 +143,7 @@ void AMyPlayerController::TryMove(const FInputActionValue& Value)
 void AMyPlayerController::TryRunStart()
 {
 	if (GetCharacter() != nullptr) {
-		if (!GetCharacter()->bIsRoll && 
+		if (!GetCharacter()->bIsRoll && !GetCharacter()->bIsRun &&
 			GetCharacter()->GetPlayerStateMachineComponent()->IsInAnyState({EPlayerState::Move})) {
 			if (GetCharacter()->GetStaminaActorComponent()->CanConsumeStamina(GetCharacter()->RunStaminaCost)) {
 				GetCharacter()->RunStart();
@@ -159,6 +157,18 @@ void AMyPlayerController::TryRunEnd()
 	if (GetCharacter() != nullptr) {
 		if (GetCharacter()->bIsRun) {
 			GetCharacter()->RunEnd();
+		}
+	}
+}
+
+void AMyPlayerController::TryRoll()
+{
+	if (GetCharacter() != nullptr) {
+		if (GetCharacter()->CanJump() && !GetCharacter()->bIsRoll && !GetCharacter()->bIsRun &&
+			!GetCharacter()->GetPlayerStateMachineComponent()->IsInAnyState({EPlayerState::LightAttack, EPlayerState::HeavyAttack, EPlayerState::Hit, EPlayerState::Parry})) {
+			if (GetCharacter()->GetStaminaActorComponent()->CanConsumeStamina(GetCharacter()->RollStaminaCost)) {
+				GetCharacter()->Roll();
+			}
 		}
 	}
 }
@@ -194,41 +204,13 @@ void AMyPlayerController::TryLightAttackStart(const FInputActionValue& Value)
 	}
 }
 
-void AMyPlayerController::OnHeavyAttackModifierPressed(const FInputActionValue& Value)
-{
-	bIsAttackModifierPressed = true;
-}
-
-void AMyPlayerController::OnHeavyAttackModifierRelesed(const FInputActionValue& Value)
-{
-	bIsAttackModifierPressed = false;
-}
-
 void AMyPlayerController::TryHeavyAttakStart(const FInputActionValue& Value)
 {
-	//TODO: 구현하자
-	if (!bIsAttackModifierPressed)
-		return;
-
 	if (GetCharacter() != nullptr) {
 		if (!GetCharacter()->bIsRoll && !GetCharacter()->bIsGuard &&
 			GetCharacter()->GetPlayerStateMachineComponent()->IsInAnyState({EPlayerState::Guard, EPlayerState::Idle, EPlayerState::Move, EPlayerState::HeavyAttack, EPlayerState::LightAttack})) {
 			if (GetCharacter()->GetStaminaActorComponent()->CanConsumeStamina(GetCharacter()->AttackStaminaCost)) {
-				if (bIsAttackModifierPressed) {
-					GetCharacter()->HeavyAttackChargeStart();
-				}
-			}
-		}
-	}
-}
-
-void AMyPlayerController::TryRoll()
-{
-	if (GetCharacter() != nullptr) {
-		if (GetCharacter()->CanJump() && !GetCharacter()->bIsRoll && 
-			!GetCharacter()->GetPlayerStateMachineComponent()->IsInAnyState({EPlayerState::LightAttack, EPlayerState::HeavyAttack, EPlayerState::Hit, EPlayerState::Parry})) {
-			if (GetCharacter()->GetStaminaActorComponent()->CanConsumeStamina(GetCharacter()->RollStaminaCost)) {
-				GetCharacter()->Roll();
+				GetCharacter()->HeavyAttackChargeStart();
 			}
 		}
 	}
