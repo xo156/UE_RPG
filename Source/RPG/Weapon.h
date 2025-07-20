@@ -3,11 +3,11 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "ItemBase.h"
+#include "GameFramework/Actor.h"
 #include "Weapon.generated.h"
 
 UCLASS()
-class RPG_API AWeapon : public AItemBase
+class RPG_API AWeapon : public AActor
 {
 	GENERATED_BODY()
 	
@@ -32,7 +32,7 @@ public:
 	
 	void SetOwnerCharacter(class AMyCharacter* NewOwnerCharacter);
 
-	virtual void Use() override;
+	void Equip();
 
 	class USkeletalMeshComponent* GetWeaponMesh() const;
 	class UBoxComponent* GetWeaponCollision() const;

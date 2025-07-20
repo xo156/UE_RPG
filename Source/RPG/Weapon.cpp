@@ -84,7 +84,7 @@ void AWeapon::SetOwnerCharacter(AMyCharacter* NewOwnerCharacter)
 	}
 }
 
-void AWeapon::Use()
+void AWeapon::Equip()
 {
 	if (auto* Player = Cast<AMyCharacter>(GetWorld()->GetFirstPlayerController()->GetPawn())) {
 		Player->EquipWeapon(ThisWeaponComponent);
