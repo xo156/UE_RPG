@@ -10,7 +10,8 @@ UENUM()
 enum class EItemType : uint8
 {
     Weapon UMETA(DisplayName = "Weapon"),
-    Consumable UMETA(DisplayName = "Consumable")
+    Consumable UMETA(DisplayName = "Consumable"),
+    Quest UMETA(DisplayName = "Quest")
 };
 
 USTRUCT(BlueprintType)

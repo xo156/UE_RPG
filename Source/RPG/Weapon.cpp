@@ -8,7 +8,6 @@
 #include "HPActorComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Engine/DamageEvents.h"
-#include "WeaponBaseComponent.h"
 #include "MyPlayerController.h"
 
 // Sets default values
@@ -76,21 +75,6 @@ void AWeapon::ApplyDamageToActor(AActor* ActorToDamage)
 	}
 }
 
-void AWeapon::SetOwnerCharacter(AMyCharacter* NewOwnerCharacter)
-{
-	if (NewOwnerCharacter) {
-		OwnerCharacter = NewOwnerCharacter;
-		SetInstigator(NewOwnerCharacter->GetController()->GetPawn());
-	}
-}
-
-void AWeapon::Equip()
-{
-	if (auto* Player = Cast<AMyCharacter>(GetWorld()->GetFirstPlayerController()->GetPawn())) {
-		Player->EquipWeapon(ThisWeaponComponent);
-	}
-}
-
 USkeletalMeshComponent* AWeapon::GetWeaponMesh() const
 {
 	return WeaponMesh ? WeaponMesh : nullptr;
@@ -104,4 +88,14 @@ UBoxComponent* AWeapon::GetWeaponCollision() const
 TArray<AActor*>& AWeapon::GetOverlapActors()
 {
 	return OverlapActors;
+}
+
+UAnimMontage* AWeapon::GetLightAttackMontage() const
+{
+	return LightAttackMontage ? LightAttackMontage : nullptr;
+}
+
+UAnimMontage* AWeapon::GetHeavyAttackMontage() const
+{
+	return HeavyAttackMontage ? HeavyAttackMontage : nullptr;
 }

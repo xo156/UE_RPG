@@ -7,7 +7,8 @@
 #include "Camera/CameraComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/SpringArmComponent.h"
-#include "WeaponBaseComponent.h"
+#include "EquipableItem.h"
+#include "EquipSlot.h"
 #include "Weapon.h"
 #include "MyPlayerController.h"
 #include "Components/BoxComponent.h"
@@ -15,6 +16,7 @@
 #include "Perception/AISense_Sight.h"
 #include "Perception/AISense_Hearing.h"
 #include "DropItem.h"
+#include "InventoryComponent.h"
 #include "InventoryWidget.h"
 #include "InventoryItemAction.h"
 #include "Kismet/KismetMathLibrary.h"
@@ -84,14 +86,20 @@ void AMyCharacter::BeginPlay() {
 		SetPlayerInfo();
 	}
 
-	if (WeaponComponent) {
-		EquipWeapon(WeaponComponent);
+	//기본 무기 장착
+	if (DefaultRightHandWeaponClass) {
+		AWeapon* RightWeapon = GetWorld()->SpawnActor<AWeapon>(DefaultRightHandWeaponClass);
+		if (RightWeapon) {
+			//RightWeapon->InitializeWithData(DefaultRightWeaponData);
+			EquipItem(RightWeapon, EEquipSlot::RightHand);
+		}
 	}
-
-	SetupWidget();
-
-	if (InventoryComponent) {
-		InventoryComponent->CreateInventoryWidget();
+	if (DefaultLeftHandWeaponClass) {
+		AWeapon* LeftWeapon = GetWorld()->SpawnActor<AWeapon>(DefaultLeftHandWeaponClass);
+		if (LeftWeapon) {
+			//LeftWeapon->InitializeWithData(DefaultLeftWeaponData);
+			EquipItem(LeftWeapon, EEquipSlot::LeftHand);
+		}
 	}
 }
 
@@ -331,7 +339,7 @@ void AMyCharacter::HeavyAttackChargeStart()
 
 void AMyCharacter::SetAttackMontageSection()
 {
-	if (!CurrentWeaponComponent || !GetMesh() || !GetMesh()->GetAnimInstance())
+	if (!GetEquipedRightHandItem() || !GetMesh() || !GetMesh()->GetAnimInstance())
 		return;
 
 	auto* AnimInstance = GetMesh()->GetAnimInstance();
@@ -350,7 +358,7 @@ void AMyCharacter::SetAttackMontageSection()
 
 void AMyCharacter::AttackExecute()
 {
-	if (!CurrentWeaponComponent || !GetMesh() || !HPActorComponent) 
+	if (!GetEquipedRightHandItem() || !GetMesh() || !HPActorComponent)
 		return;
 
 	UE_LOG(LogTemp, Log, TEXT("void AMyCharacter::AttackExecute"));
@@ -360,19 +368,18 @@ void AMyCharacter::AttackExecute()
 		return;
 
 	if (bIsChargingHeavyAttack) {
-		if (AnimInstance->Montage_IsPlaying(CurrentWeaponComponent->HeavyAttackMontage))
+		if (AnimInstance->Montage_IsPlaying(GetEquipedRightHandItem()->GetHeavyAttackMontage()))
 			return;
 		AnimInstance->OnMontageEnded.RemoveDynamic(this, &AMyCharacter::OnAttackEnded);
 		AnimInstance->OnMontageEnded.AddDynamic(this, &AMyCharacter::OnAttackEnded);
-		AnimInstance->Montage_Play(CurrentWeaponComponent->HeavyAttackMontage);
+		AnimInstance->Montage_Play(GetEquipedRightHandItem()->GetHeavyAttackMontage());
 	}
 	else {
-		if (AnimInstance->Montage_IsPlaying(CurrentWeaponComponent->LightAttackMontage))
+		if (AnimInstance->Montage_IsPlaying(GetEquipedRightHandItem()->GetLightAttackMontage()))
 			return;
-
 		AnimInstance->OnMontageEnded.RemoveDynamic(this, &AMyCharacter::OnAttackEnded);
 		AnimInstance->OnMontageEnded.AddDynamic(this, &AMyCharacter::OnAttackEnded);
-		AnimInstance->Montage_Play(CurrentWeaponComponent->LightAttackMontage);
+		AnimInstance->Montage_Play(GetEquipedRightHandItem()->GetLightAttackMontage());
 	}
 	ReportNoiseToAI(AttackLoudness);
 }
@@ -608,22 +615,7 @@ void AMyCharacter::RootItem()
 	}
 }
 
-void AMyCharacter::OpenInventory()
-{
-	if (InventoryComponent) {
-		if (InventoryComponent->bIsOpen) {
-			InventoryComponent->CloseInventoryWidget();
-			if (auto* PlayerController = Cast<AMyPlayerController>(GetController())) {
-				PlayerController->HideItemAction();
-			}
-		}
-		else {
-			InventoryComponent->OpenInventoryWidget();
-		}
-	}
-}
-
-UInventoryComponent* AMyCharacter::GetInventory()
+UInventoryComponent* AMyCharacter::GetInventoryComponent()
 {
 	return InventoryComponent ? InventoryComponent : nullptr;
 }
@@ -652,7 +644,7 @@ void AMyCharacter::OnRootItemBoxOverlapEnd(UPrimitiveComponent* OverlappedCompon
 
 void AMyCharacter::QuickSlot()
 {
-	if (QuickSlotItem && InventoryComponent && QuickSlotItemAmount > 0) {
+	/*if (QuickSlotItem && InventoryComponent && QuickSlotItemAmount > 0) {
 		QuickSlotItem->Use();
 		InventoryComponent->RemoveItem(QuickSlotItemID, 1);
 		SetQuickSlotItemAmount(--QuickSlotItemAmount);
@@ -663,73 +655,53 @@ void AMyCharacter::QuickSlot()
 				QuickSlotItem = nullptr;
 			}
 			else {
-				InventoryComponent->InventoryWidget->UpdateInventoryWidget(InventoryComponent);
+				InventoryComponent->InventoryWidget->UpdateInventorySlotWidget(InventoryComponent);
 				InventoryQuickSlotWidgetInstance->UpdateQuickSlotItemAmount(QuickSlotItemAmount);
 			}
 		}
-	}
+	}*/
 }
 
 void AMyCharacter::Close()
 {
-	if (InventoryComponent->InventoryWidget) {
-		InventoryComponent->InventoryWidget->SetVisibility(ESlateVisibility::Hidden);
-	}
-
+	//TODO: 열러있는 모든 UI 닫기?
 }
 
-void AMyCharacter::EquipWeapon(TSubclassOf<class UWeaponBaseComponent> WeaponBaseComponentClass)
+void AMyCharacter::EquipItem(AEquipableItem* EquipableItem, EEquipSlot Slot)
 {
-	if (WeaponBaseComponentClass) {
-		if (CurrentWeaponComponent) {
-			if (InventoryComponent) {
-				if (auto* GameInstance = Cast<UDataTableGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()))) {
-					const TMap<int32, FItemData*>& ItemCache = GameInstance->GetItemCache();
-					for (const auto& ItemPair : ItemCache) {
-						FItemData* ItemData = ItemPair.Value;
-						if (ItemData) {
-							for (const auto& ItemClass : ItemData->ItemClass) {
-								if (ItemClass && CurrentWeaponComponent->GetRightHandWeaponInstance()->IsA(ItemClass)) {
-									if (auto NowEquipWeapon = GetWorld()->SpawnActor<ADropItem>(ADropItem::StaticClass())) {
-										FDropItemData NowEquipWeaponData;
-										NowEquipWeaponData.Amount = 1;
-										NowEquipWeaponData.bCounterble = false;
-										NowEquipWeaponData.ItemID = ItemData->ItemID;
-										NowEquipWeapon->SetDropItem(NowEquipWeaponData);
-										InventoryComponent->TryAddItem(NowEquipWeapon);
-									}
-									break;
-								}
-							}
-						}
-					}
-				}
-			}
-			CurrentWeaponComponent->GetRightHandWeaponInstance()->Destroy();
-			CurrentWeaponComponent->GetLeftHandWeaponInstance()->Destroy();
-			CurrentWeaponComponent = nullptr;
-		}
-		CurrentWeaponComponent = NewObject<UWeaponBaseComponent>(this, WeaponBaseComponentClass);
-		if (CurrentWeaponComponent) {
-			CurrentWeaponComponent->SetOwnerCharacter(this);
-		}
+	if (!EquipableItem)
+		return;
+
+	FName SocketName;
+	switch (Slot)
+	{
+	case EEquipSlot::RightHand:
+		SocketName = TEXT("Socket_R");
+		break;
+	case EEquipSlot::LeftHand:
+		SocketName = TEXT("Socket_L");
+		break;
+	default:
+		break;
 	}
+
+	if (AEquipableItem* Existing = EquippedItems.FindRef(Slot)) {
+		UnQuipItem(Slot);
+	}
+
+	EquipableItem->SetOwnerCharacter(this);
+	EquipableItem->EquipToCharacter(GetMesh(), SocketName);
+	EquippedItems.Add(Slot, EquipableItem);
 }
 
-void AMyCharacter::SetupWidget()
+void AMyCharacter::UnQuipItem(EEquipSlot Slot)
 {
-	//TODO: 위젯을 다른곳으로 옮기는게 좋을것같다
-
-	if (InventoryQuickSlotWidgetClass) {
-		InventoryQuickSlotWidgetInstance = CreateWidget<UInventoryQuickSlotWidget>(GetWorld(), InventoryQuickSlotWidgetClass);
-		if (InventoryQuickSlotWidgetInstance) {
-			InventoryQuickSlotWidgetInstance->AddToViewport();
-			InventoryQuickSlotWidgetInstance->SetVisibility(ESlateVisibility::Hidden);
-		}
+	if (AEquipableItem* Existing = EquippedItems.FindRef(Slot)) {
+		Existing->UnEquip();
+		Existing->Destroy();
+		EquippedItems.Remove(Slot);
 	}
 }
-
-
 
 void AMyCharacter::CheckStaminaRecovery(float DeltaTime)
 {
@@ -767,19 +739,19 @@ AItemBase* AMyCharacter::GetQuickSlotItem()
 	return QuickSlotItem ? QuickSlotItem : nullptr;
 }
 
-UWeaponBaseComponent* AMyCharacter::GetCurrentWeaponComponent()
+AWeapon* AMyCharacter::GetEquipedRightHandItem() const
 {
-	return CurrentWeaponComponent ? CurrentWeaponComponent : nullptr;
+	return Cast<AWeapon>(EquippedItems.FindRef(EEquipSlot::RightHand));
+}
+
+AWeapon* AMyCharacter::GEtEquipedLeftHandItem() const
+{
+	return Cast<AWeapon>(EquippedItems.FindRef(EEquipSlot::LeftHand));
 }
 
 UUserWidget* AMyCharacter::GetLockonWidgetInstance()
 {
 	return LockonWidgetInstance ? LockonWidgetInstance : nullptr;
-}
-
-UInventoryQuickSlotWidget* AMyCharacter::GetInventoryQuickSlotWidgetInstance()
-{
-	return InventoryQuickSlotWidgetInstance ? InventoryQuickSlotWidgetInstance : nullptr;
 }
 
 UHPActorComponent* AMyCharacter::GetHPActorComponent()

@@ -28,6 +28,7 @@ public:
 	class UDataTable* GetDropItemTable();
 	class UDataTable* GetMonsterDataTable();
 	class UDataTable* GetCharacterDataTable();
+	struct FItemData* FindItemData(int32 ItemID);
 
 	const TMap<int32, struct FDropRate*>& GetItemDropCache() const { return ItemDropCache; }
 	const TMap<int32, struct FItemData*>& GetItemCache() const { return ItemCache; }

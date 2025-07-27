@@ -7,11 +7,13 @@
 #include "InventoryWidget.h"
 #include "MyCharacter.h"
 #include "MyPlayerController.h"
+#include "PlayerHUD.h"
 #include "DropItem.h"
 #include "DataTableGameInstance.h"
 #include "Kismet/GameplayStatics.h"
 #include "InventoryQuickSlotWidget.h"
 #include "InventoryItemData.h"
+#include "InventoryComponent.h"
 
 void UInventoryItemAction::NativeConstruct()
 {
@@ -28,10 +30,6 @@ void UInventoryItemAction::NativeConstruct()
 	if (QuickSlot) {
 		QuickSlot->OnClicked.AddDynamic(this, &UInventoryItemAction::OnQuickSlotClicked);
 	}
-
-	if (auto* GameInstance = Cast<UDataTableGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()))) {
-		ItemCache = GameInstance->GetItemCache();
-	}
 }
 
 void UInventoryItemAction::SetItemData(const FInventoryItemData& InItemData)
@@ -39,37 +37,38 @@ void UInventoryItemAction::SetItemData(const FInventoryItemData& InItemData)
 	InventoryItemData = InItemData;
 }
 
+FItemData* UInventoryItemAction::GetItemData() const
+{
+	if (auto* GameInstance = Cast<UDataTableGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()))) {
+		return GameInstance->FindItemData(InventoryItemData.ItemTableID);
+	}
+	return nullptr;
+}
+
 void UInventoryItemAction::OnOnlyUseClicked()
 {
-	if (InventoryItemData.ItemAmount > 0) {
-		auto* ClickedItem = ItemCache.FindRef(InventoryItemData.ItemTableID);
-		if (ClickedItem) {
-			switch (ClickedItem->ItemType) {
-			case EItemType::Consumable:
-				if (auto* ItemInstance = GetWorld()->SpawnActor<AItemBase>(ClickedItem->ItemClass[0])) {
-					ItemInstance->Use();
-					if (auto* PlayerController = Cast<AMyPlayerController>(GetWorld()->GetFirstPlayerController())) {
-						if (auto* PlayerCharacter = Cast<AMyCharacter>(PlayerController->GetPawn())) {
-							PlayerCharacter->GetInventory()->RemoveItem(InventoryItemData.ItemTableID, 1);
-							PlayerCharacter->GetInventory()->InventoryWidget->UpdateInventoryWidget(PlayerCharacter->GetInventory());
-						}
-					}
-				}
-				break;
-			case EItemType::Weapon:
-				if (auto* ItemInstance = GetWorld()->SpawnActor<AItemBase>(ClickedItem->ItemClass[0])) {
-					if (auto* PlayerController = Cast<AMyPlayerController>(GetWorld()->GetFirstPlayerController())) {
-						if (auto* PlayerCharacter = Cast<AMyCharacter>(PlayerController->GetPawn())) {
-							ItemInstance->Use();
-							PlayerCharacter->GetInventory()->RemoveItem(InventoryItemData.ItemTableID, 1);
-							PlayerCharacter->GetInventory()->InventoryWidget->UpdateInventoryWidget(PlayerCharacter->GetInventory());
-							ItemInstance->Destroy();
-						}
-					}
-				}
-				break;
-			default:
-				break;
+	if (InventoryItemData.ItemAmount <= 0) 
+		return;
+
+	auto* PlayerController = Cast<AMyPlayerController>(UGameplayStatics::GetPlayerController(GetWorld(), 0));
+	if (!PlayerController)
+		return;
+
+	auto* PlayerCharacter = Cast<AMyCharacter>(PlayerController->GetPawn());
+	if (!PlayerCharacter)
+		return;
+
+	if (auto* ItemData = GetItemData()) {
+		if (auto* ItemInstance = GetWorld()->SpawnActor<AItemBase>(ItemData->ItemClass[0])) {
+			ItemInstance->Use();
+
+			auto* InventoryComponent = PlayerCharacter->GetInventoryComponent();
+			InventoryComponent->RemoveItem(ItemData->ItemID, 1);
+			InventoryComponent->InventoryWidget->UpdateInventorySlotWidget(InventoryComponent);
+
+			//TODO: 플레이어 캐릭터에서 이 무기를 Equip
+			if (ItemData->ItemType == EItemType::Weapon) {
+				ItemInstance->Destroy();
 			}
 		}
 	}
@@ -77,40 +76,52 @@ void UInventoryItemAction::OnOnlyUseClicked()
 
 void UInventoryItemAction::OnOnlyDestroyClicked()
 {
-	if (InventoryItemData.ItemAmount > 0) {
-		if (auto* PlayerController = Cast<AMyPlayerController>(GetWorld()->GetFirstPlayerController())) {
-			if (auto* PlayerCharacter = Cast<AMyCharacter>(PlayerController->GetPawn())) {
-				PlayerCharacter->GetInventory()->RemoveItem(InventoryItemData.ItemTableID, 1);
-				PlayerCharacter->GetInventory()->InventoryWidget->UpdateInventoryWidget(PlayerCharacter->GetInventory());
-			}
-		}
-	}
+	if (InventoryItemData.ItemAmount <= 0) 
+		return;
+
+	auto* PlayerController = Cast<AMyPlayerController>(UGameplayStatics::GetPlayerController(GetWorld(), 0));
+	if (!PlayerController)
+		return;
+
+	auto* PlayerCharacter = Cast<AMyCharacter>(PlayerController->GetPawn());
+	if (!PlayerCharacter)
+		return;
+
+	auto* InventoryComponent = PlayerCharacter->GetInventoryComponent();
+	InventoryComponent->RemoveItem(InventoryItemData.ItemTableID, 1);
+	InventoryComponent->InventoryWidget->UpdateInventorySlotWidget(InventoryComponent);
 }
 
 void UInventoryItemAction::OnQuickSlotClicked()
 {
-	if (ItemCache.Contains(InventoryItemData.ItemTableID)) {
-		FItemData* ClickedItem = ItemCache.FindRef(InventoryItemData.ItemTableID);
-		if (ClickedItem) {
-			switch (ClickedItem->ItemType) {
-			case EItemType::Consumable:
-				if (auto* ItemInstance = GetWorld()->SpawnActor<AItemBase>(ClickedItem->ItemClass[0])) {
-					if (auto* PlayerController = UGameplayStatics::GetPlayerController(GetWorld(), 0)) {
-						if (auto* PlayerCharacter = Cast<AMyCharacter>(PlayerController->GetPawn())) {
-							PlayerCharacter->SetQuickSlotItem(ItemInstance);
-							int32 ItemAmount = PlayerCharacter->GetInventory()->GetInventoryItemAmount(ClickedItem->ItemID);
-							if (PlayerCharacter->GetInventoryQuickSlotWidgetInstance()) {
-								PlayerCharacter->GetInventoryQuickSlotWidgetInstance()->SetVisibility(ESlateVisibility::Visible);
-								PlayerCharacter->GetInventoryQuickSlotWidgetInstance()->SetQuickSlotConsumable(ClickedItem->ItemIcon, ItemAmount);
-								PlayerCharacter->SetQuickSlotItemID(ClickedItem->ItemID);
-								PlayerCharacter->SetQuickSlotItemAmount(ItemAmount);
-							}
-						}
-					}
-				}
-				break;
-			default:
-				break;
+	if (InventoryItemData.ItemAmount <= 0) 
+		return;
+
+	auto* PlayerController = Cast<AMyPlayerController>(UGameplayStatics::GetPlayerController(GetWorld(), 0));
+	if (!PlayerController)
+		return;
+
+	auto* PlayerCharacter = Cast<AMyCharacter>(PlayerController->GetPawn());
+	if (!PlayerCharacter)
+		return;
+
+	auto* PlayerHUD = Cast<APlayerHUD>(PlayerController->GetHUD());
+	if (!PlayerHUD)
+		return;
+
+	if (auto* ItemData = GetItemData()) {
+		if (ItemData->ItemType != EItemType::Consumable) 
+			return;
+
+		if (auto* ItemInstance = GetWorld()->SpawnActor<AItemBase>(ItemData->ItemClass[0])) {
+			PlayerCharacter->SetQuickSlotItem(ItemInstance);
+			PlayerCharacter->SetQuickSlotItemID(ItemData->ItemID);
+
+			int32 ItemAmount = PlayerCharacter->GetInventoryComponent()->GetInventoryItemAmount(ItemData->ItemID);
+			PlayerCharacter->SetQuickSlotItemAmount(ItemAmount);
+
+			if (auto* QuickSlotWidget = PlayerHUD->GetQuickSlotWidget()) {
+				QuickSlotWidget->SetQuickSlotConsumable(ItemData->ItemIcon, ItemAmount);
 			}
 		}
 	}

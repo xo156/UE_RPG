@@ -2,15 +2,16 @@
 
 
 #include "MyPlayerController.h"
-#include "Camera/CameraShakeBase.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "GameFramework/Pawn.h"
 #include "InputMappingContext.h"
+#include "MyCharacter.h"
+#include "PlayerHUD.h"
+#include "InventoryComponent.h"
 #include "InventoryItemAction.h"
 #include "InventoryTooltip.h"
 #include "ItemBase.h"
-#include "MyCharacter.h"
 #include "StaminaActorComponent.h"
 #include "PlayerStateMachineComponent.h"
 
@@ -27,72 +28,18 @@ AMyCharacter* AMyPlayerController::GetCharacter()
 	return MyCharacter;
 }
 
-void AMyPlayerController::ShowTooltipAtMousePosition(UInventoryTooltip* TooltipWidget)
-{
-	if (!TooltipWidget)
-		return;
-
-	if (CurrentTooltip) {
-		CurrentTooltip->RemoveFromParent();
-		CurrentTooltip = nullptr;
-	}
-
-	CurrentTooltip = TooltipWidget;
-	if (CurrentTooltip) {
-		CurrentTooltip->AddToViewport();
-
-		FVector2D MousePos;
-		GetMousePosition(MousePos.X, MousePos.Y);
-
-		FVector2D TooltipOffset(15.f, 15.f);
-		CurrentTooltip->SetPositionInViewport(MousePos + TooltipOffset);
-	}
-}
-
-void AMyPlayerController::HideTooltip()
-{
-	if (CurrentTooltip) {
-		CurrentTooltip->RemoveFromParent();
-		CurrentTooltip = nullptr;
-	}
-}
-
-void AMyPlayerController::ShotItemActionMousePosition(UInventoryItemAction* ItemActionWidget)
-{
-	if (!ItemActionWidget)
-		return;
-
-	if (InventoryItemAction) {
-		InventoryItemAction->RemoveFromParent();
-		InventoryItemAction = nullptr;
-	}
-
-	InventoryItemAction = ItemActionWidget;
-	if (InventoryItemAction) {
-		InventoryItemAction->AddToViewport();
-
-		FVector2D MousePos;
-		GetMousePosition(MousePos.X, MousePos.Y);
-
-		FVector2D TooltipOffset(15.f, 15.f);
-		InventoryItemAction->SetPositionInViewport(MousePos + TooltipOffset);
-	}
-}
-
-void AMyPlayerController::HideItemAction()
-{
-	if (InventoryItemAction) {
-		InventoryItemAction->RemoveFromParent();
-		InventoryItemAction = nullptr;
-	}
-}
-
 void AMyPlayerController::BeginPlay() {
 	Super::BeginPlay();
 
 	MyCharacter = Cast<AMyCharacter>(GetPawn());
-	if (UEnhancedInputLocalPlayerSubsystem* SubSystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(GetLocalPlayer())) {
-		SubSystem->AddMappingContext(DefaultMappingContext, 0);
+	/*if (UEnhancedInputLocalPlayerSubsystem* SubSystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(GetLocalPlayer())) {
+		SubSystem->AddMappingContext(NormalMappingContext, 0);
+	}*/
+
+	InputSubsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(GetLocalPlayer());
+	if (InputSubsystem && NormalMappingContext) {
+		//기본 IMC는 Normal이어야
+		InputSubsystem->AddMappingContext(NormalMappingContext, 0);
 	}
 }
 
@@ -106,6 +53,7 @@ void AMyPlayerController::SetupInputComponent() {
 	Super::SetupInputComponent();
 
 	if (UEnhancedInputComponent* EnHancedInputComponent = Cast<UEnhancedInputComponent>(InputComponent)) {
+		//노말
 		EnHancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &AMyPlayerController::TryMove);
 		EnHancedInputComponent->BindAction(RunAction, ETriggerEvent::Triggered, this, &AMyPlayerController::TryRunStart);
 		EnHancedInputComponent->BindAction(RunAction, ETriggerEvent::Completed, this, &AMyPlayerController::TryRunEnd);
@@ -126,7 +74,36 @@ void AMyPlayerController::SetupInputComponent() {
 		EnHancedInputComponent->BindAction(InventoryAction, ETriggerEvent::Started, this, &AMyPlayerController::TryOpenInventory);
 
 		EnHancedInputComponent->BindAction(QuickSlotAction, ETriggerEvent::Started, this, &AMyPlayerController::TryQuickSlot);
+	
+		//인벤토리
+		EnHancedInputComponent->BindAction(ConfirmAction, ETriggerEvent::Started, this, &AMyPlayerController::TryConfirm);
+		EnHancedInputComponent->BindAction(NavigateAction, ETriggerEvent::Triggered, this, &AMyPlayerController::TryNavigate);
+		EnHancedInputComponent->BindAction(CloseInventoryAction, ETriggerEvent::Started, this, &AMyPlayerController::TryCloseInventory);
 	}
+}
+
+void AMyPlayerController::ChangeInputMappingContext(EIMCState NewIMC)
+{
+	switch (NewIMC)
+	{
+	case EIMCState::Normal:
+		InputSubsystem->RemoveMappingContext(InventoryMappingContext);
+		InputSubsystem->AddMappingContext(NormalMappingContext, 0);
+		//SetInputMode(FInputModeGameOnly());
+		bShowMouseCursor = false;
+		break;
+
+	case EIMCState::Inventory:
+		InputSubsystem->RemoveMappingContext(NormalMappingContext);
+		InputSubsystem->AddMappingContext(InventoryMappingContext, 0);
+		//SetInputMode(FInputModeUIOnly());
+		bShowMouseCursor = true;
+		break;
+	default:
+		break;
+	}
+
+	CurrentIMC = NewIMC;
 }
 
 void AMyPlayerController::TryMove(const FInputActionValue& Value)
@@ -234,9 +211,14 @@ void AMyPlayerController::TryRootItem()
 }
 
 void AMyPlayerController::TryOpenInventory()
-{
+{	
 	if (GetCharacter() != nullptr) {
-		GetCharacter()->OpenInventory();
+		if (auto* InventoryComponent = GetCharacter()->GetInventoryComponent()) {
+			if (auto* PlayerHUD = Cast<APlayerHUD>(GetHUD())) {
+				PlayerHUD->OpenInventory(InventoryComponent);
+				ChangeInputMappingContext(EIMCState::Inventory);
+			}
+		}
 	}
 }
 
@@ -251,5 +233,31 @@ void AMyPlayerController::TryClose()
 {
 	if (GetCharacter() != nullptr){
 		GetCharacter()->Close();
+	}
+}
+
+void AMyPlayerController::TryConfirm()
+{
+
+}
+
+void AMyPlayerController::TryNavigate()
+{
+	if (GetCharacter() != nullptr) {
+		if (auto* InventoryComponent = GetCharacter()->GetInventoryComponent()) {
+
+		}
+	}
+}
+
+void AMyPlayerController::TryCloseInventory()
+{
+	if (GetCharacter() != nullptr) {
+		if (auto* InventoryComponent = GetCharacter()->GetInventoryComponent()) {
+			if (auto* PlayerHUD = Cast<APlayerHUD>(GetHUD())) {
+				PlayerHUD->CloseInventory(InventoryComponent);
+				ChangeInputMappingContext(EIMCState::Normal);
+			}
+		}
 	}
 }

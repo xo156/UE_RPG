@@ -126,33 +126,7 @@ int32 UInventoryComponent::GetInventoryItemAmount(int32 FindItemID)
 	return 0;
 }
 
-void UInventoryComponent::CreateInventoryWidget()
+void UInventoryComponent::SetIsOpen(bool bOpen)
 {
-	if (InventoryWidgetClass) {
-		InventoryWidget = CreateWidget<UInventoryWidget>(UGameplayStatics::GetPlayerController(this, 0), InventoryWidgetClass);
-		if (InventoryWidget) {
-            InventoryWidget->CreateInventoryWidget(this);
-			InventoryWidget->AddToViewport();
-			InventoryWidget->SetVisibility(ESlateVisibility::Hidden);
-		}
-	}
-}
-
-void UInventoryComponent::OpenInventoryWidget()
-{
-	if (InventoryWidget && !bIsOpen) {
-		InventoryWidget->UpdateInventoryWidget(this);
-		InventoryWidget->SetVisibility(ESlateVisibility::Visible);
-		UGameplayStatics::GetPlayerController(this, 0)->bShowMouseCursor = true;
-		bIsOpen = true;
-	}
-}
-
-void UInventoryComponent::CloseInventoryWidget()
-{
-	if (InventoryWidget && bIsOpen) {
-		InventoryWidget->SetVisibility(ESlateVisibility::Hidden);
-		UGameplayStatics::GetPlayerController(this, 0)->bShowMouseCursor = false;
-		bIsOpen = false;
-	}
+	bIsOpen = bOpen;
 }

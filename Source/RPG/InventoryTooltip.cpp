@@ -14,7 +14,7 @@ void UInventoryTooltip::PreConstruct(bool bIsDesignTime)
 	}
 
 	if (ItemValue) {
-		ItemValue->SetText(FText::FromString("Item Value: 0"));
+		ItemValue->SetText(FText::FromString("Item Value: (Default)"));
 	}
 
 	if (ItemDescription) {
@@ -37,6 +37,7 @@ void UInventoryTooltip::InitTooltip(const FItemData& InItemData)
 			break;
 		case EItemType::Weapon:
 			ItemValue->SetText(FText::Format(FText::FromString(TEXT("°ø°Ý·Â: {0}")), FText::AsNumber(InItemData.ItemAttackValue)));
+			break;
 		default:
 			ItemValue->SetText(FText::FromString(TEXT("N/A")));
 			break;

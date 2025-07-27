@@ -4,7 +4,6 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
-#include "InventoryComponent.h"
 #include "CharacterData.h"
 #include "MyCharacter.generated.h"
 
@@ -55,8 +54,7 @@ public:
 
 	//인벤토리
 	void RootItem();
-	void OpenInventory();
-	UInventoryComponent* GetInventory();
+	class UInventoryComponent* GetInventoryComponent();
 	UFUNCTION()
 	void OnRootItemBoxOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComponent, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 	UFUNCTION()
@@ -65,14 +63,12 @@ public:
 
 	void Close();
 
-	//무기
+	//장비
 	UFUNCTION()
-	void EquipWeapon(TSubclassOf<class UWeaponBaseComponent> WeaponBaseComponentClass);
+	void EquipItem(class AEquipableItem* EquipableItem, EEquipSlot Slot);
+	void UnQuipItem(EEquipSlot Slot);
 
-	//위젯
-	void SetupWidget();
-
-	//Resource
+	//자원
 	void CheckStaminaRecovery(float DeltaTime);
 
 	//AI
@@ -104,9 +100,9 @@ public:
 
 	//getter
 	class AItemBase* GetQuickSlotItem();
-	class UWeaponBaseComponent* GetCurrentWeaponComponent();
+	class AWeapon* GetEquipedRightHandItem() const;
+	class AWeapon* GEtEquipedLeftHandItem() const;
 	class UUserWidget* GetLockonWidgetInstance();
-	class UInventoryQuickSlotWidget* GetInventoryQuickSlotWidgetInstance();
 	class UHPActorComponent* GetHPActorComponent();
 	class UStaminaActorComponent* GetStaminaActorComponent();
 	class UPlayerStateMachineComponent* GetPlayerStateMachineComponent();
@@ -128,10 +124,11 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AI")
 	float AttackLoudness;
 
-	//위젯
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UI")
-	TSubclassOf<class UInventoryQuickSlotWidget> InventoryQuickSlotWidgetClass;
-	class UInventoryQuickSlotWidget* InventoryQuickSlotWidgetInstance;
+	//디폴트
+	UPROPERTY(EditDefaultsOnly, Category = "Default Equipment")
+	TSubclassOf<AWeapon> DefaultRightHandWeaponClass;
+	UPROPERTY(EditDefaultsOnly, Category = "Default Equipment")
+	TSubclassOf<AWeapon> DefaultLeftHandWeaponClass;
 
 	//몽타주
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Montage")
@@ -165,12 +162,12 @@ private:
 	class UPlayerStateMachineComponent* PlayerStateMachineComponent;
 
 	//공격
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon", meta = (AllowPrivateAccess = "true"))
-	TSubclassOf<class UWeaponBaseComponent> WeaponComponent;
-	class UWeaponBaseComponent* CurrentWeaponComponent;
 	FName NextSectionName;
-	float HeavyAttackChargeStartTime = 0.f;
-	float HeavyAttackThreshold = 0.5;
+
+	//장비
+	class AWeapon* CurrentRightWeapon;
+	class AWeapon* CurrentLeftWeapon;
+	TMap<EEquipSlot, class AEquipableItem*> EquippedItems;
 
 	//AI
 	class UAIPerceptionStimuliSourceComponent* StimulusSource; //Monster가 탐지할 수 있도록
@@ -193,7 +190,7 @@ private:
 	TSubclassOf<class UUserWidget> LockonWidgetClass;
 	class UUserWidget* LockonWidgetInstance;
 
-	//아이템
+	//인벤토리 및 아이템
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Inventory", meta = (AllowPrivateAccess = "true"))
 	UInventoryComponent* InventoryComponent;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Inventory", meta = (AllowPrivateAccess = "true"))
@@ -202,5 +199,4 @@ private:
 	class AItemBase* QuickSlotItem;
 	int32 QuickSlotItemAmount = 0;
 	int32 QuickSlotItemID;
-
 };

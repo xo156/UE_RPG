@@ -62,6 +62,16 @@ UDataTable* UDataTableGameInstance::GetCharacterDataTable()
 	return CharacterDataTable ? CharacterDataTable : nullptr;
 }
 
+FItemData* UDataTableGameInstance::FindItemData(int32 ItemID)
+{
+	if (FItemData** FoundData = ItemCache.Find(ItemID)) {
+		return *FoundData;
+	}
+
+	UE_LOG(LogTemp, Warning, TEXT("FindItemData: ItemID %d not found in ItemCache."), ItemID);
+	return nullptr;
+}
+
 void UDataTableGameInstance::LoadItemCache()
 {
 	if (ItemTable) {

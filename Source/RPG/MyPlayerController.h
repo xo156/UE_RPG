@@ -11,6 +11,14 @@
  * 
  */
 
+UENUM(BlueprintType)
+enum class EIMCState : uint8
+{
+	Normal UMETA(DisplayName = "Normal"),
+	Inventory UMETA(DisplayName = "Inventory"),
+	Dialogue UMETA(DisplayName = "Dialogue"),
+};
+
 UCLASS()
 class RPG_API AMyPlayerController : public APlayerController
 {
@@ -22,12 +30,6 @@ public:
 	//getter
 	class AMyCharacter* GetCharacter();
 
-	//UI
-	void ShowTooltipAtMousePosition(class UInventoryTooltip* TooltipWidget);
-	void HideTooltip();
-	void ShotItemActionMousePosition(class UInventoryItemAction* ItemActionWidget);
-	void HideItemAction();
-
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -38,7 +40,10 @@ protected:
 	//인풋
 	virtual void SetupInputComponent() override;
 
-	//액션
+	//IMC 전환
+	void ChangeInputMappingContext(EIMCState NewIMC);
+
+	//Normal 액션
 	void TryMove(const FInputActionValue& Value);
 	void TryRunStart();
 	void TryRunEnd();
@@ -53,10 +58,18 @@ protected:
 	void TryQuickSlot();
 	void TryClose();
 
+public:
+	//인벤토리 액션
+	void TryConfirm();
+	void TryNavigate();
+	void TryCloseInventory();
+
 private:
-	//인풋 액션
+	TObjectPtr<class UEnhancedInputLocalPlayerSubsystem> InputSubsystem;
+
+	//Normal 인풋 액션
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input", meta = (AllowPrivateAccess = "true"))
-	class UInputMappingContext* DefaultMappingContext;
+	class UInputMappingContext* NormalMappingContext;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input", meta = (AllowPrivateAccess = "true"))
 	class UInputAction* MoveAction;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input", meta = (AllowPrivateAccess = "true"))
@@ -82,10 +95,22 @@ private:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input", meta = (AllowPrivateAccess = "true"))
 	class UInputAction* CloseAction;
 
+	//Inventory 인풋 액션
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input", meta = (AllowPrivateAccess = "true"))
+	class UInputMappingContext* InventoryMappingContext;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input", meta = (AllowPrivateAccess = "true"))
+	class UInputAction* ConfirmAction;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input", meta = (AllowPrivateAccess = "true"))
+	class UInputAction* NavigateAction;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input", meta = (AllowPrivateAccess = "true"))
+	class UInputAction* CloseInventoryAction;
+
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UI", meta = (AllowPrivateAccess = "true"))
 	class UInventoryTooltip* CurrentTooltip;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UI", meta = (AllowPrivateAccess = "true"))
 	class UInventoryItemAction* InventoryItemAction;
 
 	class AMyCharacter* MyCharacter;
+	EIMCState CurrentIMC;
 };

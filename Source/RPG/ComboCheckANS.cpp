@@ -3,7 +3,6 @@
 
 #include "ComboCheckANS.h"
 #include "MyCharacter.h"
-#include "WeaponBaseComponent.h"
 #include "StateMachineComponent.h"
 
 void UComboCheckANS::NotifyBegin(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, float TotalDuration)

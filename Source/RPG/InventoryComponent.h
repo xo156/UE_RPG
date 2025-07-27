@@ -33,9 +33,8 @@ public:
 	int32 MakeUID();
 	int32 GetInventoryItemAmount(int32 FindItemID);
 
-	void CreateInventoryWidget();
-	void OpenInventoryWidget();
-	void CloseInventoryWidget();
+	bool IsOpen() const { return bIsOpen; }
+	void SetIsOpen(bool bOpen);
 
 	TArray<FInventoryItemData> InventoryItems;
 

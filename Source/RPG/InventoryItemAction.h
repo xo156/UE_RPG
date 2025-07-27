@@ -37,13 +37,11 @@ public:
 	class UTextBlock* QuickSlotText;
 	
 	void SetItemData(const FInventoryItemData& InItemData);
+
+protected:
 	FInventoryItemData InventoryItemData;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "QuickSlot")
-	TSubclassOf<class UInventoryQuickSlotWidget> InventoryQuickSlotWidgetClass;
-	class UInventoryQuickSlotWidget* InventoryQuickSlotWidgetInstance;
-
-	TMap<int32, struct FItemData*> ItemCache;
+	struct FItemData* GetItemData() const;
 
 	UFUNCTION()
 	void OnOnlyUseClicked();

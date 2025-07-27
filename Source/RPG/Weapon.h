@@ -3,11 +3,11 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "GameFramework/Actor.h"
+#include "EquipableItem.h"
 #include "Weapon.generated.h"
 
 UCLASS()
-class RPG_API AWeapon : public AActor
+class RPG_API AWeapon : public AEquipableItem
 {
 	GENERATED_BODY()
 	
@@ -29,14 +29,12 @@ public:
 						bool bFromSweep, const FHitResult& SweepResult);
 
 	void ApplyDamageToActor(AActor* ActorToDamage);
-	
-	void SetOwnerCharacter(class AMyCharacter* NewOwnerCharacter);
-
-	void Equip();
 
 	class USkeletalMeshComponent* GetWeaponMesh() const;
 	class UBoxComponent* GetWeaponCollision() const;
 	TArray<AActor*>& GetOverlapActors();
+	class UAnimMontage* GetLightAttackMontage() const;
+	class UAnimMontage* GetHeavyAttackMontage() const;
 
 	FTimerHandle DamageUPHandle;
 
@@ -50,6 +48,9 @@ private:
 
 	class AMyCharacter* OwnerCharacter;
 	TArray<AActor*> OverlapActors;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon", meta = (AllowPrivateAccess = "true"))
-	TSubclassOf<class UWeaponBaseComponent> ThisWeaponComponent;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Montage", meta = (AllowPrivateAccess = "true"))
+	class UAnimMontage* LightAttackMontage;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Montage", meta = (AllowPrivateAccess = "true"))
+	class UAnimMontage* HeavyAttackMontage;
 };

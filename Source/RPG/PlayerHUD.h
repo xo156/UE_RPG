@@ -16,12 +16,38 @@ class RPG_API APlayerHUD : public AHUD
 
 public:
     virtual void BeginPlay() override;
+    void InitWidget();
+
+    void OpenInventory(class UInventoryComponent* InventoryComponent);
+    void CloseInventory(class UInventoryComponent* InventoryComponent);
+
+    class UInventorySlotWidget* GetInventorySlotWidget();
+    class UInventoryQuickSlotWidget* GetQuickSlotWidget();
 
 protected:
-    UPROPERTY(EditAnywhere, Category = "UI")
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UI")
     TSubclassOf<class UPlayerWidget> PlayerWidgetClass;
 
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UI")
+    TSubclassOf<class UInventoryQuickSlotWidget> InventoryQuickSlotWidgetClass;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UI")
+    TSubclassOf<class UInventoryWidget> InventoryWidgetClass;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UI")
+    TSubclassOf<class UInventoryTooltip> InventoryTooltipClass;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UI")
+    TSubclassOf<class UInventoryItemAction> InventoryItemActionClass;
+
+    //TODO: 퀵 슬롯도 등록하는데 인벤토리에서 딸깍하면 여기에서 하자
+
 private:
-    UPROPERTY()
     UPlayerWidget* PlayerWidget;
+    class UInventoryWidget* InventoryWidgetInstance;
+    class UInventorySlotWidget* InventorySlotWidgetInstance;
+    class UInventoryTooltip* InventoryTooltipInstance;
+    class UInventoryItemAction* InventoryItemActionInstance;
+    class UInventoryQuickSlotWidget* InventoryQuickSlotWidgetInstance;
+    
 };

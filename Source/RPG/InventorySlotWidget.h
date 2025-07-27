@@ -4,11 +4,9 @@
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
+#include "InventoryItemData.h"
 #include "InventorySlotWidget.generated.h"
 
-/**
- * 
- */
 UCLASS()
 class RPG_API UInventorySlotWidget : public UUserWidget
 {
@@ -16,14 +14,6 @@ class RPG_API UInventorySlotWidget : public UUserWidget
 
 public:
 	virtual void NativeConstruct() override;
-
-	UFUNCTION()
-	void OnThumbnailHovered();
-
-	UFUNCTION()
-	void OnThumbnailUnhovered();
-
-	virtual FReply NativeOnMouseButtonDown(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent) override;
 
 	void RefreshSlot(TArray<FInventoryItemData> InventoryItem, int32 SlotIndex);
 	void ClearSlot();
@@ -35,15 +25,5 @@ public:
 	class UTextBlock* AmountText;
 
 	FInventoryItemData CurrentInventoryItemData;
-	TMap<int32, struct FItemData*> ItemCache;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item")
-	TSubclassOf<class UInventoryTooltip> InventoryTooltipClass;
-	class UInventoryTooltip* InventoryTooltipInstance;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item")
-	TSubclassOf<class UInventoryItemAction> InventoryItemActionClass;
-	class UInventoryItemAction* InventoryItemActionInstance;
-
-	bool bIsHover = false;
+	TMap<int32, FItemData*> ItemCache;
 };

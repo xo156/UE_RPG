@@ -6,55 +6,222 @@
 #include "InventorySlotWidget.h"
 #include "Components/TextBlock.h"
 #include "Components/UniformGridPanel.h"
+#include "Components/Button.h"
+#include "ItemBase.h"
+#include "ItemData.h"
+#include "DropItem.h"
+#include "InventoryItemData.h"
+#include "MyCharacter.h"
+#include "MyPlayerController.h"
+#include "PlayerHUD.h"
+#include "DataTableGameInstance.h"
+#include "Kismet/GameplayStatics.h"
 
 void UInventoryWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
 
-    InventoryName->SetText(FText::FromString(TEXT("Inventory")));    
+    //인벤토리 메인
+    InventoryName->SetText(FText::FromString(TEXT("Inventory")));
+
+    //툴 팁
+    if (ItemName) {
+        ItemName->SetText(FText::FromString("Item Name: (Default)"));
+    }
+
+    if (ItemValue) {
+        ItemValue->SetText(FText::FromString("Item Value: (Default)"));
+    }
+
+    if (ItemDescription) {
+        ItemDescription->SetText(FText::FromString("Item Description: (Default)"));
+    }
+
+    //아이템 액션
+    if (UseButton) {
+        UseButton->OnClicked.AddDynamic(this, &UInventoryWidget::OnUseClicked);
+    }
+
+    if (DestroyButton) {
+        DestroyButton->OnClicked.AddDynamic(this, &UInventoryWidget::OnDestroyClicked);
+    }
+
+    if (QuickSlot) {
+        QuickSlot->OnClicked.AddDynamic(this, &UInventoryWidget::OnQuickSlotClicked);
+    }
 }
 
-void UInventoryWidget::CreateInventoryWidget(UInventoryComponent* InventoryComponent)
+void UInventoryWidget::CreateInventorySlotWidget(UInventoryComponent* InventoryComponent)
 {
     if (!InventoryComponent || !InventorySlots || !InventorySlotWidgetClass) {
         return;
     }
 
-    UE_LOG(LogTemp, Log, TEXT("Starting to create inventory with %d slots"), InventoryComponent->MaxSlotCounter);
+    InventorySlotWidgets.Empty();
 
     for (int32 Index = 0; Index < InventoryComponent->MaxSlotCounter; Index++) {
-        InventorySlotWidgetInstance = CreateWidget<UInventorySlotWidget>(this, InventorySlotWidgetClass);
-
-        if (InventorySlotWidgetInstance) {
-            InventorySlots->AddChildToUniformGrid(InventorySlotWidgetInstance, Index / 6, Index % 6);
+        auto* NewSlot = CreateWidget<UInventorySlotWidget>(this, InventorySlotWidgetClass);
+        if (NewSlot) {
+            InventorySlots->AddChildToUniformGrid(NewSlot, Index / 6, Index % 6);
+            InventorySlotWidgets.Add(NewSlot);
         }
     }
-
-    UE_LOG(LogTemp, Log, TEXT("Inventory Widget creation completed."));
 }
 
-void UInventoryWidget::UpdateInventoryWidget(UInventoryComponent* InventoryComponent)
+void UInventoryWidget::UpdateInventorySlotWidget(UInventoryComponent* InventoryComponent)
 {
-    if (!InventoryComponent || !InventorySlots || !InventorySlotWidgetClass) {
+    if (!InventoryComponent || InventorySlotWidgets.Num() == 0) {
         return;
     }
 
-    UE_LOG(LogTemp, Log, TEXT("Starting to update inventory with %d slots"), InventoryComponent->MaxSlotCounter);
-
-    for (int32 Index = 0; Index < InventoryComponent->MaxSlotCounter; Index++) {
-        InventorySlotWidgetInstance = Cast<UInventorySlotWidget>(InventorySlots->GetChildAt(Index));
-
-        if (InventorySlotWidgetInstance) {
+    for (int32 Index = 0; Index < InventorySlotWidgets.Num(); Index++) {
+        if (InventorySlotWidgets[Index]) {
             if (Index < InventoryComponent->InventoryItems.Num()) {
-                InventorySlotWidgetInstance->RefreshSlot(InventoryComponent->InventoryItems, Index);
+                InventorySlotWidgets[Index]->RefreshSlot(InventoryComponent->InventoryItems, Index);
             }
             else {
-                InventorySlotWidgetInstance->ClearSlot();
+                InventorySlotWidgets[Index]->ClearSlot();
             }
-        }
-        else {
-            UE_LOG(LogTemp, Error, TEXT("Failed to create widget instance at index %d"), Index);
         }
     }
 }
 
+void UInventoryWidget::InitTooltip(const FItemData& InItemData)
+{
+    if (ItemName) {
+        ItemName->SetText(FText::FromString(InItemData.ItemName.ToString()));
+    }
+
+    if (ItemValue) {
+        switch (InItemData.ItemType) {
+        case EItemType::Consumable:
+            ItemValue->SetText(FText::Format(FText::FromString(TEXT("회복량: {0}")), FText::AsNumber(InItemData.ItemRecoverValue)));
+            break;
+        case EItemType::Weapon:
+            ItemValue->SetText(FText::Format(FText::FromString(TEXT("공격력: {0}")), FText::AsNumber(InItemData.ItemAttackValue)));
+            break;
+        default:
+            ItemValue->SetText(FText::FromString(TEXT("N/A")));
+            break;
+        }
+    }
+
+    if (ItemDescription) {
+        ItemDescription->SetText(FText::FromString(InItemData.ItemDescription));
+    }
+}
+
+void UInventoryWidget::ClearToolTip()
+{
+    if (ItemName) {
+        ItemName->SetText(FText::FromString(""));
+    }
+
+    if (ItemValue) {
+        ItemValue->SetText(FText::FromString(""));
+    }
+
+    if (ItemDescription) {
+        ItemDescription->SetText(FText::FromString(""));
+    }
+}
+
+void UInventoryWidget::InitItemAction(const FInventoryItemData& InItemData)
+{
+    InventoryItemData = InItemData;
+}
+
+void UInventoryWidget::ClearItemAction()
+{
+    InventoryItemData = FInventoryItemData();
+}
+
+FItemData* UInventoryWidget::GetItemData() const
+{
+    if (auto* GameInstance = Cast<UDataTableGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()))) {
+        return GameInstance->FindItemData(InventoryItemData.ItemTableID);
+    }
+    return nullptr;
+}
+
+void UInventoryWidget::OnUseClicked()
+{
+    if (InventoryItemData.ItemAmount <= 0)
+        return;
+
+    auto* PlayerController = Cast<AMyPlayerController>(UGameplayStatics::GetPlayerController(GetWorld(), 0));
+    if (!PlayerController)
+        return;
+
+    auto* PlayerCharacter = Cast<AMyCharacter>(PlayerController->GetPawn());
+    if (!PlayerCharacter)
+        return;
+
+    if (auto* ItemData = GetItemData()) {
+        if (auto* ItemInstance = GetWorld()->SpawnActor<AItemBase>(ItemData->ItemClass[0])) {
+            ItemInstance->Use();
+
+            auto* InventoryComponent = PlayerCharacter->GetInventoryComponent();
+            InventoryComponent->RemoveItem(ItemData->ItemID, 1);
+            InventoryComponent->InventoryWidget->UpdateInventorySlotWidget(InventoryComponent);
+
+            //TODO: 플레이어 캐릭터에서 이 무기를 Equip
+            if (ItemData->ItemType == EItemType::Weapon) {
+                ItemInstance->Destroy();
+            }
+        }
+    }
+}
+
+void UInventoryWidget::OnDestroyClicked()
+{
+    if (InventoryItemData.ItemAmount <= 0)
+        return;
+
+    auto* PlayerController = Cast<AMyPlayerController>(UGameplayStatics::GetPlayerController(GetWorld(), 0));
+    if (!PlayerController)
+        return;
+
+    auto* PlayerCharacter = Cast<AMyCharacter>(PlayerController->GetPawn());
+    if (!PlayerCharacter)
+        return;
+
+    auto* InventoryComponent = PlayerCharacter->GetInventoryComponent();
+    InventoryComponent->RemoveItem(InventoryItemData.ItemTableID, 1);
+    InventoryComponent->InventoryWidget->UpdateInventorySlotWidget(InventoryComponent);
+}
+
+void UInventoryWidget::OnQuickSlotClicked()
+{
+    if (InventoryItemData.ItemAmount <= 0)
+        return;
+
+    auto* PlayerController = Cast<AMyPlayerController>(UGameplayStatics::GetPlayerController(GetWorld(), 0));
+    if (!PlayerController)
+        return;
+
+    auto* PlayerCharacter = Cast<AMyCharacter>(PlayerController->GetPawn());
+    if (!PlayerCharacter)
+        return;
+
+    auto* PlayerHUD = Cast<APlayerHUD>(PlayerController->GetHUD());
+    if (!PlayerHUD)
+        return;
+
+    if (auto* ItemData = GetItemData()) {
+        if (ItemData->ItemType != EItemType::Consumable)
+            return;
+
+        if (auto* ItemInstance = GetWorld()->SpawnActor<AItemBase>(ItemData->ItemClass[0])) {
+            PlayerCharacter->SetQuickSlotItem(ItemInstance);
+            PlayerCharacter->SetQuickSlotItemID(ItemData->ItemID);
+
+            int32 ItemAmount = PlayerCharacter->GetInventoryComponent()->GetInventoryItemAmount(ItemData->ItemID);
+            PlayerCharacter->SetQuickSlotItemAmount(ItemAmount);
+
+            /*if (auto* QuickSlotWidget = PlayerHUD->GetQuickSlotWidget()) {
+                QuickSlotWidget->SetQuickSlotConsumable(ItemData->ItemIcon, ItemAmount);
+            }*/
+        }
+    }
+}
