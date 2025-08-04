@@ -3,17 +3,14 @@
 
 #include "DataTableGameInstance.h"
 #include "Engine/DataTable.h"
-#include "Camera/CameraShakeBase.h"
-#include "DropRate.h"
-#include "ItemData.h"
+#include "ItemFactory.h"
 #include "InventoryItemData.h"
-#include "MonsterData.h"
-#include "CharacterData.h"
 
 void UDataTableGameInstance::Init()
 {
 	Super::Init();
 	LoadAllTableAndCache();
+
 }
 
 void UDataTableGameInstance::LoadAllTableAndCache()
@@ -21,12 +18,11 @@ void UDataTableGameInstance::LoadAllTableAndCache()
 	LoadItemCache();
 	LoadItemDropCache();
 	LoadMonsterDataCache();
-	LoadCharacterDataCache();
 }
 
-FDropRate* UDataTableGameInstance::GetDropRate(int32 ItemID)
+FDropRate* UDataTableGameInstance::GetDropRate(int32 ItemTableID)
 {
-	FDropRate** FoundItem = ItemDropCache.Find(ItemID);
+	FDropRate** FoundItem = ItemDropCache.Find(ItemTableID);
 	return FoundItem ? *FoundItem : nullptr;
 }
 
@@ -36,39 +32,28 @@ FMonsterData* UDataTableGameInstance::GetMonsterInfo(int32 MonsterID)
 	return FoundMonster ? *FoundMonster : nullptr;
 }
 
-FCharacterData* UDataTableGameInstance::GetCharacterInfo(int32 CharacterID)
-{
-	FCharacterData** FoundCharacter = CharacterDataCache.Find(CharacterID);
-	return FoundCharacter ? *FoundCharacter : nullptr;
-}
-
-UDataTable* UDataTableGameInstance::GetItemTable()
+UDataTable* UDataTableGameInstance::GetItemTable()const 
 {
 	return ItemTable ? ItemTable : nullptr;
 }
 
-UDataTable* UDataTableGameInstance::GetDropItemTable()
+UDataTable* UDataTableGameInstance::GetDropItemTable()const 
 {
 	return DropItemTable ? DropItemTable : nullptr;
 }
 
-UDataTable* UDataTableGameInstance::GetMonsterDataTable()
+UDataTable* UDataTableGameInstance::GetMonsterDataTable() const
 {
 	return MonsterDataTable ? MonsterDataTable : nullptr;
 }
 
-UDataTable* UDataTableGameInstance::GetCharacterDataTable()
+FItemData* UDataTableGameInstance::FindItemData(int32 ItemTableID)
 {
-	return CharacterDataTable ? CharacterDataTable : nullptr;
-}
-
-FItemData* UDataTableGameInstance::FindItemData(int32 ItemID)
-{
-	if (FItemData** FoundData = ItemCache.Find(ItemID)) {
+	if (FItemData** FoundData = ItemCache.Find(ItemTableID)) {
 		return *FoundData;
 	}
 
-	UE_LOG(LogTemp, Warning, TEXT("FindItemData: ItemID %d not found in ItemCache."), ItemID);
+	UE_LOG(LogTemp, Warning, TEXT("FindItemData: ItemTableID %d not found in ItemCache."), ItemTableID);
 	return nullptr;
 }
 
@@ -79,7 +64,7 @@ void UDataTableGameInstance::LoadItemCache()
 		TArray<FItemData*> ItemRows;
 		ItemTable->GetAllRows<FItemData>(ContextString, ItemRows);
 		for (FItemData* Item : ItemRows) {
-			ItemCache.Add(Item->ItemID, Item);
+			ItemCache.Add(Item->ItemTableID, Item);
 		}
 	}
 }
@@ -91,7 +76,7 @@ void UDataTableGameInstance::LoadItemDropCache()
 		TArray<FDropRate*> ItemDropRows;
 		DropItemTable->GetAllRows<FDropRate>(ContextString, ItemDropRows);
 		for (FDropRate* ItemDrop : ItemDropRows) {
-			ItemDropCache.Add(ItemDrop->ItemID, ItemDrop);
+			ItemDropCache.Add(ItemDrop->ItemTableID, ItemDrop);
 		}
 	}
 }
@@ -104,18 +89,6 @@ void UDataTableGameInstance::LoadMonsterDataCache()
 		MonsterDataTable->GetAllRows<FMonsterData>(ContextString, MonsterDataRows);
 		for (FMonsterData* MonsterData : MonsterDataRows) {
 			MonsterDataCache.Add(MonsterData->MonsterID, MonsterData);
-		}
-	}
-}
-
-void UDataTableGameInstance::LoadCharacterDataCache()
-{
-	if (CharacterDataTable) {
-		static const FString ContextString(TEXT("Character Data Cache Context"));
-		TArray<FCharacterData*> CharacterDataRows;
-		CharacterDataTable->GetAllRows<FCharacterData>(ContextString, CharacterDataRows);
-		for (FCharacterData* CharacterData : CharacterDataRows) {
-			CharacterDataCache.Add(CharacterData->PlayerCharacterID, CharacterData);
 		}
 	}
 }

@@ -16,22 +16,19 @@ public:
 	// Sets default values for this actor's properties
 	ADropItem();
 
+	void SetDropItemData(const TArray<FDropItemData>& NewDropItemDatas);
+	TArray<FDropItemData> GetDropItemDatas() { return DropItemDatas; }
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
-
-public:	
-	// Called every frame
-	virtual void Tick(float DeltaTime) override;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item")
 	class UBoxComponent* DropItemCollision;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item")
 	class UStaticMeshComponent* DropItemMesh;
-	
-	void SetDropItem(const FDropItemData& NewDropItemData);
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item")
-	FDropItemData DropItemData;
+	TArray<FDropItemData> DropItemDatas;
 };

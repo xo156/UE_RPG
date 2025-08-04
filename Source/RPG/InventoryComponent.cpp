@@ -5,7 +5,7 @@
 #include "DropItem.h"
 #include "InventoryWidget.h"
 #include "Kismet/GameplayStatics.h"
-#include "InventoryItemAction.h"
+#include "DataTableGameInstance.h"
 
 // Sets default values for this component's properties
 UInventoryComponent::UInventoryComponent()
@@ -40,63 +40,84 @@ void UInventoryComponent::TickComponent(float DeltaTime, ELevelTick TickType, FA
 	// ...
 }
 
-bool UInventoryComponent::TryAddItem(ADropItem* AddedItem)
+bool UInventoryComponent::TryAddItem( FDropItemData& AddedItem)
 {
-	if (AddedItem) {
+	int32 SlotIndex = FindSlotIndex(AddedItem.ItemTableID);
+	if (SlotIndex != INDEX_NONE) {
+		//이미 있는 아이템이면
+		StackItem(AddedItem, SlotIndex);
+	}
+	else {
 		if (CurrentSlotCounter >= MaxSlotCounter) {
 			UE_LOG(LogTemp, Error, TEXT("Inventory Full"));
 			return false;
 		}
-		if (AddedItem->DropItemData.bCounterble) {
-			int32 SlotIndex = FindSlotIndex(AddedItem);
-			if (SlotIndex != INDEX_NONE) {
-				StackItem(AddedItem, SlotIndex);
-				return true;
-			}
-			else {
-				AddItem(AddedItem);
-				return true;
-			}
-		}
 		else {
+			//없는 아이템이면
 			AddItem(AddedItem);
-			return true;
 		}
 	}
-	return false;
+	return true;
 }
 
-int32 UInventoryComponent::FindSlotIndex(ADropItem* AddItem)
+int32 UInventoryComponent::FindSlotIndex(int32 ItemTableID)
 {
-	int32 Index = -1;
 	for (int32 i = 0; i < InventoryItems.Num(); i++) {
-		if (AddItem->DropItemData.ItemID == InventoryItems[i].ItemTableID) {
+		if (InventoryItems[i].ItemTableID == ItemTableID) {
 			return i;
 		}
 	}
 	return INDEX_NONE;
 }
 
-void UInventoryComponent::StackItem(ADropItem* AddedItem, int32 SlotIndex)
+void UInventoryComponent::StackItem(FDropItemData& AddedItem, int32 SlotIndex)
 {
-	if (InventoryItems.IsValidIndex(SlotIndex) && AddedItem) {
-		FInventoryItemData& SlotItemData = InventoryItems[SlotIndex];
-		SlotItemData.ItemAmount += AddedItem->DropItemData.Amount;
+	auto* GameInstance = Cast<UDataTableGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
+	if (!GameInstance || !InventoryItems.IsValidIndex(SlotIndex))
+		return;
+
+	const FItemData* ItemData = GameInstance->FindItemData(AddedItem.ItemTableID);
+	if (!ItemData)
+		return;
+
+	FInventoryItemData& SlotItemData = InventoryItems[SlotIndex];
+	int32 MaxStackCount = ItemData->MaxStackCount;
+	int32 AvailableStackCount = MaxStackCount - SlotItemData.ItemAmount;
+
+	int32 StackableAmount = FMath::Min(AvailableStackCount, AddedItem.Amount);
+	SlotItemData.ItemAmount += StackableAmount;
+	if (AddedItem.Amount - StackableAmount > 0) {
+		if (CurrentSlotCounter < MaxSlotCounter) {
+			AddedItem.Amount -= StackableAmount;
+			AddItem(AddedItem);
+		}
+		else {
+			UE_LOG(LogTemp, Error, TEXT("Inventory Full"));
+		}
 	}
+	/*FInventoryItemData& SlotItemData = InventoryItems[SlotIndex];
+	int32 MaxStackCount = GameInstance->FindItemData(AddedItem.ItemTableID)->MaxStackCount;
+	if (MaxStackCount + SlotItemData.ItemAmount > MaxStackCount) {
+		int32 AvailableStackCount = MaxStackCount - SlotItemData.ItemAmount;
+		SlotItemData.ItemAmount += AvailableStackCount;
+		AddedItem.Amount -= AvailableStackCount;
+		if (AddedItem.Amount > 0)
+			AddItem(AddedItem);
+	}
+	else {
+		SlotItemData.ItemAmount += AddedItem.Amount;
+	}*/
 }
 
-void UInventoryComponent::AddItem(ADropItem* AddedItem)
+void UInventoryComponent::AddItem(const FDropItemData& AddedItem)
 {
-	if (AddedItem) {
-		FInventoryItemData NewInventoryItemData;
-		NewInventoryItemData.ItemUID = MakeUID();
-		NewInventoryItemData.ItemAmount = AddedItem->DropItemData.Amount;
-		NewInventoryItemData.ItemTableID = AddedItem->DropItemData.ItemID;
-		NewInventoryItemData.bCounterble = AddedItem->DropItemData.bCounterble;
+	FInventoryItemData NewInventoryItemData;
+	NewInventoryItemData.ItemUID = MakeUID();
+	NewInventoryItemData.ItemAmount = AddedItem.Amount;
+	NewInventoryItemData.ItemTableID = AddedItem.ItemTableID;
 
-		InventoryItems.Add(NewInventoryItemData);
-		CurrentSlotCounter++;
-	}
+	InventoryItems.Add(NewInventoryItemData);
+	CurrentSlotCounter++;
 }
 
 void UInventoryComponent::RemoveItem(int32 ItemTableID, int32 Amount)
@@ -124,6 +145,22 @@ int32 UInventoryComponent::GetInventoryItemAmount(int32 FindItemID)
 			return InventoryItem.ItemAmount;
 	}
 	return 0;
+}
+
+void UInventoryComponent::OverFlowAddedItem(const FDropItemData& OverFlowItem)
+{
+	UE_LOG(LogTemp, Warning, TEXT("Inventory full. Dropping remaining item (ID: %d, Amount: %d)"),
+		   OverFlowItem.ItemTableID, OverFlowItem.Amount);
+
+	//남은거는 필드에 아이템 드랍 처리
+	FVector DropLocation = GetOwner()->GetActorLocation();
+	FActorSpawnParameters Params;
+	auto* DropActor = GetWorld()->SpawnActor<ADropItem>(ADropItem::StaticClass(), DropLocation, FRotator::ZeroRotator, Params);
+	if (DropActor) {
+		TArray<FDropItemData> DropItems;
+		DropItems.Add(OverFlowItem);
+		DropActor->SetDropItemData(DropItems);
+	}
 }
 
 void UInventoryComponent::SetIsOpen(bool bOpen)

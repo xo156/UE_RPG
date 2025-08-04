@@ -32,6 +32,7 @@ public:
 
 	class USkeletalMeshComponent* GetWeaponMesh() const;
 	class UBoxComponent* GetWeaponCollision() const;
+	FTransform GetHandOffsetTransform(EEquipSlot Slot) const;
 	TArray<AActor*>& GetOverlapActors();
 	class UAnimMontage* GetLightAttackMontage() const;
 	class UAnimMontage* GetHeavyAttackMontage() const;
@@ -45,6 +46,18 @@ private:
 	class USkeletalMeshComponent* WeaponMesh;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon", meta = (AllowPrivateAccess = "true"))
 	class UBoxComponent* WeaponCollision;
+
+	// 오른손 오프셋
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Offset", meta = (AllowPrivateAccess = "true"))
+	FVector RightHandLocationOffset = FVector::ZeroVector;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Offset", meta = (AllowPrivateAccess = "true"))
+	FRotator RightHandRotationOffset = FRotator::ZeroRotator;
+
+	// 왼손 오프셋
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Offset", meta = (AllowPrivateAccess = "true"))
+	FVector LeftHandLocationOffset = FVector::ZeroVector;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Offset", meta = (AllowPrivateAccess = "true"))
+	FRotator LeftHandRotationOffset = FRotator::ZeroRotator;
 
 	class AMyCharacter* OwnerCharacter;
 	TArray<AActor*> OverlapActors;

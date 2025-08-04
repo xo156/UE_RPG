@@ -10,6 +10,7 @@ UENUM()
 enum class EItemType : uint8
 {
     Weapon UMETA(DisplayName = "Weapon"),
+    Armor UMETA(DisplayName = "Armor"),
     Consumable UMETA(DisplayName = "Consumable"),
     Quest UMETA(DisplayName = "Quest")
 };
@@ -26,7 +27,7 @@ public:
 
     //아이템 ID
     UPROPERTY(EditAnywhere)
-    int32 ItemID;
+    int32 ItemTableID;
 
     //아이템 아이콘
     UPROPERTY(EditAnywhere)
@@ -36,20 +37,15 @@ public:
     UPROPERTY(EditAnywhere)
     EItemType ItemType;
 
+    //아이템 최대 누적 수량
+    UPROPERTY(EditAnywhere)
+    int32 MaxStackCount = 99;
+
     //아이템 설명
     UPROPERTY(EditAnywhere)
     FString ItemDescription;
 
-    //아이템 공격력
+    //아이템 클래스 경로
     UPROPERTY(EditAnywhere)
-    int32 ItemAttackValue;
-
-    //아이템 회복량
-    UPROPERTY(EditAnywhere)
-    float ItemRecoverValue;
-
-    //아이템 클래스
-    UPROPERTY(EditAnywhere)
-    TArray<TSubclassOf<class AItemBase>> ItemClass;
-
+    FSoftClassPath ItemClassPath;
 };

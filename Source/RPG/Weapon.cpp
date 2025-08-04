@@ -23,7 +23,7 @@ AWeapon::AWeapon()
 	WeaponMesh->SetupAttachment(RootComponent);
 
 	WeaponCollision = CreateDefaultSubobject<UBoxComponent>(TEXT("WeaponCollision"));
-	WeaponCollision->SetupAttachment(RootComponent);
+	WeaponCollision->SetupAttachment(WeaponMesh);
 	WeaponCollision->SetHiddenInGame(false);
 	WeaponCollision->SetVisibility(true);
 	WeaponCollision->SetCollisionProfileName("NoCollision");
@@ -83,6 +83,16 @@ USkeletalMeshComponent* AWeapon::GetWeaponMesh() const
 UBoxComponent* AWeapon::GetWeaponCollision() const
 {
 	return WeaponCollision ? WeaponCollision : nullptr;
+}
+
+FTransform AWeapon::GetHandOffsetTransform(EEquipSlot Slot) const
+{
+	if (Slot == EEquipSlot::LeftHand) {
+		return FTransform(LeftHandRotationOffset, LeftHandLocationOffset);
+	}
+	else {
+		return FTransform(RightHandRotationOffset, RightHandLocationOffset);
+	}
 }
 
 TArray<AActor*>& AWeapon::GetOverlapActors()

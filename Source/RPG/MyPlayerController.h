@@ -61,7 +61,7 @@ protected:
 public:
 	//인벤토리 액션
 	void TryConfirm();
-	void TryNavigate();
+	void TryNavigate(const FInputActionValue& Value);
 	void TryCloseInventory();
 
 private:
@@ -104,12 +104,6 @@ private:
 	class UInputAction* NavigateAction;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input", meta = (AllowPrivateAccess = "true"))
 	class UInputAction* CloseInventoryAction;
-
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UI", meta = (AllowPrivateAccess = "true"))
-	class UInventoryTooltip* CurrentTooltip;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UI", meta = (AllowPrivateAccess = "true"))
-	class UInventoryItemAction* InventoryItemAction;
 
 	class AMyCharacter* MyCharacter;
 	EIMCState CurrentIMC;

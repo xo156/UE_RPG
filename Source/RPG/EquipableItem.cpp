@@ -2,21 +2,19 @@
 
 
 #include "EquipableItem.h"
+#include "EquipSlot.h"
 
 // Sets default values
 AEquipableItem::AEquipableItem()
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
-	PrimaryActorTick.bCanEverTick = true;
-
+	PrimaryActorTick.bCanEverTick = false;
 }
 
 void AEquipableItem::SetOwnerCharacter(ACharacter* NewOwner)
 {
-	if (!NewOwner)
-		return;
-
-	OwnerCharacter = NewOwner;
+	if (NewOwner)
+		OwnerCharacter = NewOwner;
 }
 
 void AEquipableItem::EquipToCharacter(USkeletalMeshComponent* TargetMesh, FName SocketName)

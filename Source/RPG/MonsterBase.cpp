@@ -78,7 +78,7 @@ void AMonsterBase::InitMonsterInfo(const FMonsterData& MonsterData)
 	MonsterID = MonsterData.MonsterID;
 	MonsterName = MonsterData.MonsterName;
 	MonsterDamage = MonsterData.Damage;
-	MonsterDropItemIDs = MonsterData.DropItemIDS;
+	DropTables = MonsterData.DropTables;
 	MonsterAttackPatterns = MonsterData.MonsterAttackPatterns;
 
 	UE_LOG(LogTemp, Log, TEXT("Monster [%s] Initialized | HP: %f | Damage: %f"), *MonsterName.ToString(), MonsterData.MaxMonsterHP, MonsterData.Damage);
@@ -196,22 +196,31 @@ float AMonsterBase::TakeDamage(float DamageAmount, FDamageEvent const& DamageEve
 
 void AMonsterBase::DroppedItem()
 {
-	for (const int32& DropItemID : MonsterDropItemIDs) {
-		FDropRate* FoundItem = ItemCache.FindRef(DropItemID);
-		if (FoundItem) {
-			float RandomNumber = FMath::FRandRange(0.f, 100.f);
-			if (RandomNumber <= FoundItem->Rate) {
-				int32 DropAmount = FMath::RandRange(FoundItem->MinAmount, FoundItem->MaxAmount);
-				FVector SpawnLocation = GetActorLocation();
-				FRotator SpawnRotation = GetActorRotation();
-				if (auto* DropItemActor = GetWorld()->SpawnActor<ADropItem>(DropItemClass, SpawnLocation, SpawnRotation)) {
-					FDropItemData DropItemData;
-					DropItemData.ItemID = FoundItem->ItemID;
-					DropItemData.Amount = DropAmount;
-					DropItemData.bCounterble = FoundItem->bCounterble;
-					DropItemActor->SetDropItem(DropItemData);
-				}
-			}
+	if (DropTables.Num() == 0)
+		return;
+
+	TArray<FDropItemData> FinalDrops;
+
+	//아이템 드랍할 거 리스트업
+	for (const FDropRate& DropRate : DropTables) {
+		if (FMath::FRand() <= DropRate.DropRate) {
+			int32 Amount = FMath::RandRange(DropRate.MinAmount, DropRate.MaxAmount);
+
+			FDropItemData DropItem;
+			DropItem.ItemTableID = DropRate.ItemTableID;
+			DropItem.Amount = Amount;
+
+			FinalDrops.Add(DropItem);
+		}
+	}
+	//리스트대로 추가하기
+	if (FinalDrops.Num() > 0) {
+		FVector SpawnLocation = GetActorLocation();
+		FActorSpawnParameters Params;
+
+		auto* DropActor = GetWorld()->SpawnActor<ADropItem>(DropItemClass, SpawnLocation, FRotator::ZeroRotator, Params);
+		if (DropActor) {
+			DropActor->SetDropItemData(FinalDrops);
 		}
 	}
 }

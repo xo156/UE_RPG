@@ -25,21 +25,27 @@ public:
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
-	bool TryAddItem(class ADropItem* AddedItem);
-	int32 FindSlotIndex(class ADropItem* AddedItem);
-	void StackItem(class ADropItem* AddedItem, int32 SlotIndex);
-	void AddItem(class ADropItem* AddedItem);
+	//bool TryAddItem(class ADropItem* AddedItem);
+	bool TryAddItem(FDropItemData& AddedItem);
+	//int32 FindSlotIndex(class ADropItem* AddedItem);
+	int32 FindSlotIndex(int32 ItemTableID);
+	//void StackItem(class ADropItem* AddedItem, int32 SlotIndex);
+	void StackItem(FDropItemData& AddedItem, int32 SlotIndex);
+	//void AddItem(class ADropItem* AddedItem);
+	void AddItem(const FDropItemData& AddedItem);
 	void RemoveItem(int32 ItemTableID, int32 Amount);
 	int32 MakeUID();
 	int32 GetInventoryItemAmount(int32 FindItemID);
+	void OverFlowAddedItem(const FDropItemData& OverFlowItem);
 
 	bool IsOpen() const { return bIsOpen; }
 	void SetIsOpen(bool bOpen);
 
-	TArray<FInventoryItemData> InventoryItems;
+	class UInventoryWidget* GetInventoryWidget() const { return InventoryWidget; }
+	int32 GetMaxSlotCounter() const { return MaxSlotCounter; }
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UI")
-	TSubclassOf<class UInventoryWidget> InventoryWidgetClass;
+	TArray<FInventoryItemData> InventoryItems;
+private:
 	class UInventoryWidget* InventoryWidget;
 
 	int32 MaxSlotCounter;

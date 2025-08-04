@@ -27,7 +27,7 @@ public:
 	UPROPERTY(EditAnywhere)
 	int32 ItemAmount;
 
-	//아이템 누적 여부
+	//아이템 잔류 여부
 	UPROPERTY(EditAnywhere)
-	bool bCounterble;
+	bool bRemainInInventoryWhenAmountZero;
 };

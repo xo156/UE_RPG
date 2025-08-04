@@ -9,8 +9,7 @@
 #include "MyCharacter.h"
 #include "PlayerHUD.h"
 #include "InventoryComponent.h"
-#include "InventoryItemAction.h"
-#include "InventoryTooltip.h"
+#include "InventoryWidget.h"
 #include "ItemBase.h"
 #include "StaminaActorComponent.h"
 #include "PlayerStateMachineComponent.h"
@@ -32,9 +31,6 @@ void AMyPlayerController::BeginPlay() {
 	Super::BeginPlay();
 
 	MyCharacter = Cast<AMyCharacter>(GetPawn());
-	/*if (UEnhancedInputLocalPlayerSubsystem* SubSystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(GetLocalPlayer())) {
-		SubSystem->AddMappingContext(NormalMappingContext, 0);
-	}*/
 
 	InputSubsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(GetLocalPlayer());
 	if (InputSubsystem && NormalMappingContext) {
@@ -66,7 +62,6 @@ void AMyPlayerController::SetupInputComponent() {
 		EnHancedInputComponent->BindAction(LightAttackAction, ETriggerEvent::Started, this, &AMyPlayerController::TryLightAttackStart);
 		EnHancedInputComponent->BindAction(HeavyAttackAction, ETriggerEvent::Triggered, this, &AMyPlayerController::TryHeavyAttakStart);
 
-
 		EnHancedInputComponent->BindAction(LockOnAction, ETriggerEvent::Started, this, &AMyPlayerController::TryLockOnTarget);
 
 		EnHancedInputComponent->BindAction(RootItemAction, ETriggerEvent::Started, this, &AMyPlayerController::TryRootItem);
@@ -77,7 +72,7 @@ void AMyPlayerController::SetupInputComponent() {
 	
 		//인벤토리
 		EnHancedInputComponent->BindAction(ConfirmAction, ETriggerEvent::Started, this, &AMyPlayerController::TryConfirm);
-		EnHancedInputComponent->BindAction(NavigateAction, ETriggerEvent::Triggered, this, &AMyPlayerController::TryNavigate);
+		EnHancedInputComponent->BindAction(NavigateAction, ETriggerEvent::Started, this, &AMyPlayerController::TryNavigate);
 		EnHancedInputComponent->BindAction(CloseInventoryAction, ETriggerEvent::Started, this, &AMyPlayerController::TryCloseInventory);
 	}
 }
@@ -89,14 +84,12 @@ void AMyPlayerController::ChangeInputMappingContext(EIMCState NewIMC)
 	case EIMCState::Normal:
 		InputSubsystem->RemoveMappingContext(InventoryMappingContext);
 		InputSubsystem->AddMappingContext(NormalMappingContext, 0);
-		//SetInputMode(FInputModeGameOnly());
 		bShowMouseCursor = false;
 		break;
 
 	case EIMCState::Inventory:
 		InputSubsystem->RemoveMappingContext(NormalMappingContext);
 		InputSubsystem->AddMappingContext(InventoryMappingContext, 0);
-		//SetInputMode(FInputModeUIOnly());
 		bShowMouseCursor = true;
 		break;
 	default:
@@ -238,14 +231,27 @@ void AMyPlayerController::TryClose()
 
 void AMyPlayerController::TryConfirm()
 {
-
-}
-
-void AMyPlayerController::TryNavigate()
-{
 	if (GetCharacter() != nullptr) {
 		if (auto* InventoryComponent = GetCharacter()->GetInventoryComponent()) {
+			if (auto* HUD = Cast<APlayerHUD>(GetHUD())) {
+				if (auto* InventoryWidget = HUD->GetInventoryWidget()) {
+					InventoryWidget->ConfirmFocusSlot();
+				}
+			}
+		}
+	}
+}
 
+void AMyPlayerController::TryNavigate(const FInputActionValue& Value)
+{
+	const FVector2D InputValue = Value.Get<FVector2D>();
+	if (GetCharacter() != nullptr) {
+		if (auto* InventoryComponent = GetCharacter()->GetInventoryComponent()) {
+			if (auto* HUD = Cast<APlayerHUD>(GetHUD())) {
+				if (auto* InventoryWidget = HUD->GetInventoryWidget()) {
+					InventoryWidget->MoveFocus(InputValue);
+				}
+			}
 		}
 	}
 }

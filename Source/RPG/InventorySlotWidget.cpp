@@ -2,23 +2,72 @@
 
 
 #include "InventorySlotWidget.h"
+#include "InventoryWidget.h"
 #include "DataTableGameInstance.h"
 #include "ItemData.h"
 #include "Components/Button.h"
 #include "Components/TextBlock.h"
-#include "InventoryTooltip.h"
-#include "MyPlayerController.h"
+#include "Components/Border.h"
 #include "PlayerHUD.h"
-#include "InventoryItemAction.h"
 #include "Kismet/GameplayStatics.h"
 
 void UInventorySlotWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
 
+	if (SlotThumbnail) {
+		SlotThumbnail->OnHovered.AddDynamic(this, &UInventorySlotWidget::OnThumbnailHovered);
+		SlotThumbnail->OnUnhovered.AddDynamic(this, &UInventorySlotWidget::OnUnThumbnailHovered);
+		SlotThumbnail->OnClicked.AddDynamic(this, &UInventorySlotWidget::OnThumbnailClicked);
+	}
+
 	if (auto* GameInstance = Cast<UDataTableGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()))) {
 		ItemCache = GameInstance->GetItemCache();
 	}
+}
+
+void UInventorySlotWidget::OnThumbnailHovered()
+{
+	FGeometry DummyGeometry;
+	FPointerEvent DummyEvent;
+	NativeOnMouseEnter(DummyGeometry, DummyEvent);
+}
+
+void UInventorySlotWidget::NativeOnMouseEnter(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent)
+{
+	Super::NativeOnMouseEnter(InGeometry, InMouseEvent);
+	if (ParentInventoryWidget)
+		ParentInventoryWidget->RequestFocus(this);
+}
+
+void UInventorySlotWidget::OnUnThumbnailHovered()
+{
+	FPointerEvent DummyEvent;
+	NativeOnMouseLeave(DummyEvent);
+}
+
+void UInventorySlotWidget::NativeOnMouseLeave(const FPointerEvent& InMouseEvent)
+{
+	Super::NativeOnMouseLeave(InMouseEvent);
+	if (ParentInventoryWidget)
+		ParentInventoryWidget->RequestFocus(nullptr);
+}
+
+void UInventorySlotWidget::OnThumbnailClicked()
+{
+	FGeometry DummyGeometry;
+	FPointerEvent DummyEvent;
+	NativeOnMouseButtonDown(DummyGeometry, DummyEvent);
+}
+
+FReply UInventorySlotWidget::NativeOnMouseButtonDown(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent)
+{
+	Super::NativeOnMouseButtonDown(InGeometry, InMouseEvent);
+	if (ParentInventoryWidget) {
+		ParentInventoryWidget->RequestFocus(this);
+		ParentInventoryWidget->ConfirmFocusSlot();
+	}
+	return FReply::Handled();
 }
 
 void UInventorySlotWidget::RefreshSlot(TArray<FInventoryItemData> InventoryItem, int32 SlotIndex)
@@ -27,18 +76,18 @@ void UInventorySlotWidget::RefreshSlot(TArray<FInventoryItemData> InventoryItem,
 	if (ItemCache.Contains(CurrentInventoryItemData.ItemTableID)) {
 		FItemData* ItemData = ItemCache.FindRef(CurrentInventoryItemData.ItemTableID);
 		if (ItemData) {
-			FButtonStyle ButtonStyle = Thumbnail->GetStyle();
+			FButtonStyle ButtonStyle = SlotThumbnail->GetStyle();
 			FSlateBrush NewBrush;
 			NewBrush.SetResourceObject(ItemData->ItemIcon);
 
 			ButtonStyle.SetNormal(NewBrush);
 			ButtonStyle.SetHovered(NewBrush);
 			ButtonStyle.SetPressed(NewBrush);
-			Thumbnail->SetStyle(ButtonStyle);
+			SlotThumbnail->SetStyle(ButtonStyle);
 
 			AmountText->SetText(FText::AsNumber(CurrentInventoryItemData.ItemAmount));
 
-			Thumbnail->SetVisibility(ESlateVisibility::Visible);
+			SlotThumbnail->SetVisibility(ESlateVisibility::Visible);
 			AmountText->SetVisibility(ESlateVisibility::Visible);
 		}
 	}
@@ -49,17 +98,38 @@ void UInventorySlotWidget::RefreshSlot(TArray<FInventoryItemData> InventoryItem,
 
 void UInventorySlotWidget::ClearSlot()
 {	
-	FButtonStyle ButtonStyle = Thumbnail->GetStyle();
+	FButtonStyle ButtonStyle = SlotThumbnail->GetStyle();
 	FSlateBrush NewBrush;
 	NewBrush.SetResourceObject(nullptr);
 
 	ButtonStyle.SetNormal(NewBrush);
 	ButtonStyle.SetHovered(NewBrush);
 	ButtonStyle.SetPressed(NewBrush);
-	Thumbnail->SetStyle(ButtonStyle);
+	SlotThumbnail->SetStyle(ButtonStyle);
 
 	AmountText->SetText(FText::AsNumber(0));
 
-	Thumbnail->SetVisibility(ESlateVisibility::Hidden);
 	AmountText->SetVisibility(ESlateVisibility::Hidden);
+}
+
+void UInventorySlotWidget::SetParentInventoryWidget(UInventoryWidget* InWidget)
+{
+	if (InWidget) {
+		ParentInventoryWidget = InWidget;
+	}
+}
+
+void UInventorySlotWidget::SetIsFocused(bool bFocused)
+{
+	if (!FocusBorder)
+		return;
+
+	bIsFocused = bFocused;
+
+	if (bIsFocused) {
+		FocusBorder->SetBrushColor(FLinearColor::Yellow);
+	}
+	else {
+		FocusBorder->SetBrushColor(FLinearColor::Green);
+	}
 }

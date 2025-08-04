@@ -4,6 +4,8 @@
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
+#include "ItemData.h"
+#include "InventoryItemData.h"
 #include "InventoryWidget.generated.h"
 
 /**
@@ -20,15 +22,19 @@ public:
 	//½½·Ô
 	void CreateInventorySlotWidget(class UInventoryComponent* InventoryComponent);
 	void UpdateInventorySlotWidget(class UInventoryComponent* InventoryComponent);
+	void RequestFocus(class UInventorySlotWidget* NewfocusSlot);
+	void MoveFocus(const FVector2D& Direction);
+	void ConfirmFocusSlot();
+	class UInventorySlotWidget* GetCurrentFocusedSlot() const { return CurrentFocusedSlot; }
 
 	//ÅøÆÁ
-	void InitTooltip(const struct FItemData& InItemData);
+	void InitTooltip(const FItemData& InItemData);
 	void ClearToolTip();
 
 	//¾×¼Ç
 	void InitItemAction(const FInventoryItemData& InItemData);
 	void ClearItemAction();
-	struct FItemData* GetItemData() const;
+	FItemData* GetItemDataByID(int32 ItemTableID) const;
 	UFUNCTION()
 	void OnUseClicked();
 
@@ -79,9 +85,12 @@ protected:
 	UPROPERTY(meta = (BindWidget))
 	class UTextBlock* QuickSlotText;
 
-	struct FInventoryItemData InventoryItemData;
+	FInventoryItemData InventoryItemData;
 
 private:
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Inventory", meta = (AllowPrivateAccess="true"))
+	int32 MaxDesiredColumns = 6;
+	int32 InventoryColumnCount;
 	TArray<class UInventorySlotWidget*> InventorySlotWidgets;
-	class UInventorySlotWidget* CurrentFocusedSlot;
+	class UInventorySlotWidget* CurrentFocusedSlot = nullptr;
 };

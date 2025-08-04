@@ -9,8 +9,6 @@
 #include "InventoryComponent.h"
 #include "InventoryWidget.h"
 #include "InventorySlotWidget.h"
-#include "InventoryTooltip.h"
-#include "InventoryItemAction.h"
 #include "InventoryItemData.h"
 #include "InventoryQuickSlotWidget.h"
 #include "MyCharacter.h"
@@ -51,41 +49,12 @@ void APlayerHUD::BeginPlay()
         }
     }
 
-    //아이템 툴 팁 표시
-    if (InventoryTooltipClass) {
-        InventoryTooltipInstance = CreateWidget<UInventoryTooltip>(GetWorld(), InventoryTooltipClass);
-        if (InventoryTooltipInstance) {
-            InventoryTooltipInstance->AddToViewport();
-            InventoryTooltipInstance->SetVisibility(ESlateVisibility::Hidden);
-        }
-    }
-
-    //아이템 액션 표시
-    if (InventoryItemActionClass)  {
-        InventoryItemActionInstance = CreateWidget<UInventoryItemAction>(PlayerController, InventoryItemActionClass);
-        if (InventoryItemActionInstance) {
-            InventoryItemActionInstance->AddToViewport();
-            InventoryItemActionInstance->SetVisibility(ESlateVisibility::Hidden);
-        }
-    }
-
     //퀵 슬롯 표시
     if (InventoryQuickSlotWidgetClass) {
         InventoryQuickSlotWidgetInstance = CreateWidget<UInventoryQuickSlotWidget>(GetWorld(), InventoryQuickSlotWidgetClass);
         if (InventoryQuickSlotWidgetInstance) {
             InventoryQuickSlotWidgetInstance->AddToViewport();
         }
-    }
-}
-
-void APlayerHUD::InitWidget()
-{
-    if (InventoryTooltipClass && !InventoryTooltipInstance) {
-        InventoryTooltipInstance = CreateWidget<UInventoryTooltip>(GetWorld(), InventoryTooltipClass);
-    }
-
-    if (InventoryItemActionClass && !InventoryItemActionInstance) {
-        InventoryItemActionInstance = CreateWidget<UInventoryItemAction>(GetWorld(), InventoryItemActionClass);
     }
 }
 

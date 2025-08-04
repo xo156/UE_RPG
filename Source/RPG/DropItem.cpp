@@ -27,17 +27,10 @@ void ADropItem::BeginPlay()
 {
 	Super::BeginPlay();
 
-	SetDropItem(DropItemData);
+	SetDropItemData(DropItemDatas);
 }
 
-// Called every frame
-void ADropItem::Tick(float DeltaTime)
+void ADropItem::SetDropItemData(const TArray<FDropItemData>& NewDropItemDatas)
 {
-	Super::Tick(DeltaTime);
-
-}
-
-void ADropItem::SetDropItem(const FDropItemData& NewDropItemData)
-{
-	DropItemData = NewDropItemData;
+	DropItemDatas = NewDropItemDatas;
 }

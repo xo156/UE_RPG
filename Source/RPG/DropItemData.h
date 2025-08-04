@@ -6,9 +6,6 @@
 #include "Engine/DataTable.h"
 #include "DropItemData.generated.h"
 
-/**
- * 
- */
 USTRUCT(BlueprintType)
 struct RPG_API FDropItemData : public FTableRowBase
 {
@@ -17,11 +14,7 @@ struct RPG_API FDropItemData : public FTableRowBase
 public:
     //아이템 ID
     UPROPERTY(EditAnywhere)
-    int32 ItemID;
-
-    //아이템 누적 여부
-    UPROPERTY(EditAnywhere)
-    bool bCounterble;
+    int32 ItemTableID;
 
     //드랍 갯수
     UPROPERTY(EditAnywhere)

@@ -4,7 +4,6 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
-#include "CharacterData.h"
 #include "MyCharacter.generated.h"
 
 UCLASS()
@@ -148,9 +147,6 @@ private:
 	class USpringArmComponent* CameraBoom;
 
 	//ÀÚ¿ø
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Data", meta = (AllowPrivateAccess = "true"))
-	int32 PlayerCharacterID;
-	struct FCharacterData* CharacterData;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Resource", meta = (AllowPrivateAccess))
 	class UHPActorComponent* HPActorComponent;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Resource", meta = (AllowPrivateAccess))

@@ -12,17 +12,12 @@ class RPG_API AItemBase : public AActor
 {
 	GENERATED_BODY()
 	
-public:	
-	// Sets default values for this actor's properties
-	AItemBase();
+public:
+	void SetItemData(FItemData* InItemData);
 
-protected:
-	// Called when the game starts or when spawned
-	virtual void BeginPlay() override;
+	int32 GetItemTableID() const { return ItemData->ItemTableID; }
+	EItemType GetItemType() const { return ItemData->ItemType; }
 
-public:	
-	// Called every frame
-	virtual void Tick(float DeltaTime) override;
-
-	virtual void Use();
+private:
+	FItemData* ItemData;
 };

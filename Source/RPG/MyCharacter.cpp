@@ -18,7 +18,6 @@
 #include "DropItem.h"
 #include "InventoryComponent.h"
 #include "InventoryWidget.h"
-#include "InventoryItemAction.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "MonsterBase.h"
 #include "DataTableGameInstance.h"
@@ -80,11 +79,6 @@ AMyCharacter::AMyCharacter() {
 // Called when the game starts or when spawned
 void AMyCharacter::BeginPlay() {
 	Super::BeginPlay();
-
-	if (auto* GameInstance = Cast<UDataTableGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()))) {
-		CharacterData = GameInstance->GetCharacterInfo(PlayerCharacterID);
-		SetPlayerInfo();
-	}
 
 	//기본 무기 장착
 	if (DefaultRightHandWeaponClass) {
@@ -283,7 +277,7 @@ void AMyCharacter::Jump()
 
 void AMyCharacter::Look(FVector2D InputValue)
 {
-	if (!InventoryComponent->bIsOpen) {
+	if (!InventoryComponent->IsOpen()) {
 		AddControllerPitchInput(InputValue.Y);
 		AddControllerYawInput(InputValue.X);
 	}
@@ -413,7 +407,7 @@ void AMyCharacter::Roll()
 		return;
 
 	auto* AnimInstance = GetMesh()->GetAnimInstance();
-	if (!AnimInstance || InventoryComponent->bIsOpen)
+	if (!AnimInstance)
 		return;
 
 	bIsRoll = true;
@@ -598,20 +592,25 @@ void AMyCharacter::UpdateLockOnCameraPosition()
 
 void AMyCharacter::RootItem()
 {
-	if (InventoryComponent) {
-		TArray<ADropItem*> ItemsToRemove;
-		if (OverlapItems.Num() > 0) {
-			for (ADropItem* Item : OverlapItems) {
-				if (Item) {
-					bool bAdded = InventoryComponent->TryAddItem(Item);
-					ItemsToRemove.Add(Item);
-				}
+	if (!InventoryComponent || OverlapItems.Num() == 0)
+		return;
+
+	TArray<ADropItem*> ItemsToRemove; //다 먹은거
+	for (auto* Item : OverlapItems) {
+		if (Item) {
+			//ADropItem이 여러 개의 아이템을 포함하고 있을 수 있음
+			TArray<FDropItemData> DropDatas = Item->GetDropItemDatas();
+			for (FDropItemData& DropData : DropDatas) {
+				//아이템 종류별로 하나씩 넘겨주기
+				InventoryComponent->TryAddItem(DropData);
 			}
-			for (ADropItem* DestroyItem : ItemsToRemove) {
-				ItemsToRemove.Remove(DestroyItem);
-				DestroyItem->Destroy();
-			}
+			ItemsToRemove.Add(Item);
 		}
+	}
+	//인벤토리에 다 옮겼으면 치우기
+	for (auto* ItemToRemove : ItemsToRemove) {
+		ItemsToRemove.Remove(ItemToRemove);
+		ItemToRemove->Destroy();
 	}
 }
 
@@ -691,6 +690,11 @@ void AMyCharacter::EquipItem(AEquipableItem* EquipableItem, EEquipSlot Slot)
 
 	EquipableItem->SetOwnerCharacter(this);
 	EquipableItem->EquipToCharacter(GetMesh(), SocketName);
+	if (auto* Weapon = Cast<AWeapon>(EquipableItem)) {
+		const FTransform WeaponOffset = Weapon->GetHandOffsetTransform(Slot);
+		Weapon->SetActorRelativeLocation(WeaponOffset.GetLocation());
+		Weapon->SetActorRelativeRotation(WeaponOffset.GetRotation().Rotator());
+	}
 	EquippedItems.Add(Slot, EquipableItem);
 }
 
@@ -771,11 +775,11 @@ UPlayerStateMachineComponent* AMyCharacter::GetPlayerStateMachineComponent()
 
 void AMyCharacter::SetPlayerInfo()
 {
-	if (!CharacterData || !HPActorComponent || !StaminaActorComponent)
+	if (!HPActorComponent || !StaminaActorComponent)
 		return;
 
-	HPActorComponent->InitHP(CharacterData->MaxCharacterHP);
-	StaminaActorComponent->InitStamina(CharacterData->MaxCharacterStamina);
+	HPActorComponent->InitHP(100);
+	StaminaActorComponent->InitStamina(100);
 }
 
 void AMyCharacter::SetNextSectionName(FName ChangeSectionName)

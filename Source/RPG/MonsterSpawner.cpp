@@ -34,7 +34,7 @@ void AMonsterSpawner::SpawnMonsterByID()
 		return;
 	}
 
-	static const FString ContextString(TEXT("MonsterDataContext"));
+	/*static const FString ContextString(TEXT("MonsterDataContext"));
 	FMonsterData* MonsterData = MonsterDataTable->FindRow<FMonsterData>(FName(*FString::FromInt(MonsterIDToSpawn)), ContextString);
 
 	if (MonsterData && MonsterData->MonsterClass) {
@@ -55,6 +55,6 @@ void AMonsterSpawner::SpawnMonsterByID()
 	}
 	else {
 		UE_LOG(LogTemp, Warning, TEXT("Invalid MonsterID or MonsterClass is null: ID %d"), MonsterIDToSpawn);
-	}
+	}*/
 }
 

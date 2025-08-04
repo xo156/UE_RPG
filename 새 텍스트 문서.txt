@@ -2,8 +2,6 @@
 몬스터 스포너
 몬스터 공격 패턴은 데이터 에셋
 
-원거리무기 만들기
-
 절차적 맵, 콘텐츠 생성
 컨트롤ik
 Advanced Locomotion
@@ -30,10 +28,11 @@ Advanced Locomotion
 
 InventoryInputMappingContext - 인벤토리를 조작할 때 사용할 InputMappingContext로 IA_Navigate, IA_Confirm, IA_CloseInventory가 있음
 NormalInputMappingContext - 평상시에 조작할 때 사용할 InputMappingContext로 현재 기능과 관련있는 IA는 IA_OpenInventory뿐
-
+각 IA들은 플레이어 컨트롤러에서 Enhaned Input를 통해 바인딩 해서 사용
 IA_Navigate - 인벤토리 슬롯을 오가며 현재 탐색중인 슬롯에 포커스를 주는 역할, 게임패드의 D패드와 마우스의 움직임으로 작동
 IA_Confirm - 인벤토리 슬롯에 아이템이 있다면 그 아이템의 정보 표시와 사용을 가능하게 하는 역할, 게임패드의 전면 아래 버튼과 마우스 좌 클릭으로 작동
 IA_CloseInventory - 활성화된 인벤토리 UI를 비활성화 하는 역할로 이때 IMC를 NormalInputMappingContext로 변경, 게임패드의 특수 오른쪽 버튼과 키보드의 I키로 작동
 IA_OpelnInventory - 비활성화된 인벤토리 UI를 활성화 하는 역할로 이때 IMC를 InventoryInputMappingContext로 변경, 게임패드의 특수 오른쪽 버튼과 키보드의 I키로 작동
 
-각 IA들은 플레이어 컨트롤러에서 Enhaned Input를 통해 바인딩 해서 사용
+grid panel안에 제대로 형성 되기는 하지만 빈 공간이 남는다
+포커스 전과 이후 시각적 변화를 주어야 한다

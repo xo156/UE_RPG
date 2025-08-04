@@ -4,7 +4,6 @@
 
 #include "CoreMinimal.h"
 #include "Engine/DataTable.h"
-#include "MonsterBase.h"
 #include "MonsterAttackPatternDataAsset.h"
 #include "MonsterData.generated.h"
 
@@ -21,16 +20,13 @@ public:
 	FName MonsterName;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Data")
-	TSubclassOf<AMonsterBase> MonsterClass;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Data")
 	float MaxMonsterHP;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Data")
 	float Damage;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Data")
-	TArray<int32> DropItemIDS;
+	TArray<FDropRate> DropTables;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Data")
 	TArray<UMonsterAttackPatternDataAsset*> MonsterAttackPatterns;

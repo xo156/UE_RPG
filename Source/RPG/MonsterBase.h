@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
+#include "DropRate.h"
 #include "MonsterBase.generated.h"
 
 UCLASS()
@@ -72,7 +73,7 @@ private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Data", meta = (AllowPrivateAccess = "true"))
 	float MonsterDamage;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Data", meta = (AllowPrivateAccess = "true"))
-	TArray<int32> MonsterDropItemIDs;
+	TArray<FDropRate> DropTables;
 
 	//공격
 	TArray<AActor*> OverlapActors; //몬스터가 때릴 때 콜리전 검출하기
@@ -96,5 +97,4 @@ private:
 	//아이템 드랍
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item", meta = (AllowPrivateAccess="true"))
 	TSubclassOf<class ADropItem> DropItemClass;
-	TMap<int32, struct FDropRate*> ItemCache;
 };
