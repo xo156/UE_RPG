@@ -19,6 +19,8 @@ class RPG_API UInventoryWidget : public UUserWidget
 public:
 	virtual void NativeConstruct() override;
 
+	void InitInventoryWidget(class UInventoryComponent* InventoryComponent);
+
 	//½½·Ô
 	void CreateInventorySlotWidget(class UInventoryComponent* InventoryComponent);
 	void UpdateInventorySlotWidget(class UInventoryComponent* InventoryComponent);
@@ -34,7 +36,6 @@ public:
 	//¾×¼Ç
 	void InitItemAction(const FInventoryItemData& InItemData);
 	void ClearItemAction();
-	FItemData* GetItemDataByID(int32 ItemTableID) const;
 	UFUNCTION()
 	void OnUseClicked();
 
@@ -61,7 +62,10 @@ protected:
 	class UTextBlock* ItemName;
 
 	UPROPERTY(meta = (BindWidget))
-	class UTextBlock* ItemValue;
+	class UTextBlock* AttackPowerValue;
+
+	UPROPERTY(meta = (BindWidget))
+	class UTextBlock* DefensePowerValue;
 
 	UPROPERTY(meta = (BindWidget))
 	class UTextBlock* ItemDescription;

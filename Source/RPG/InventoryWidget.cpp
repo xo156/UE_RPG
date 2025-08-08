@@ -16,6 +16,8 @@
 #include "DataTableGameInstance.h"
 #include "ItemFactory.h"
 #include "Kismet/GameplayStatics.h"
+#include "EquipableItem.h"
+#include "NonEquipableItem.h"
 
 void UInventoryWidget::NativeConstruct()
 {
@@ -26,15 +28,19 @@ void UInventoryWidget::NativeConstruct()
 
     //툴 팁
     if (ItemName) {
-        ItemName->SetText(FText::FromString("Item Name: (Default)"));
+        ItemName->SetText(FText::FromString(""));
     }
 
-    if (ItemValue) {
-        ItemValue->SetText(FText::FromString("Item Value: (Default)"));
+    if (AttackPowerValue) {
+        AttackPowerValue->SetText(FText::FromString(""));
+    }
+
+    if (DefensePowerValue) {
+        DefensePowerValue->SetText(FText::FromString(""));
     }
 
     if (ItemDescription) {
-        ItemDescription->SetText(FText::FromString("Item Description: (Default)"));
+        ItemDescription->SetText(FText::FromString(""));
     }
 
     //아이템 액션
@@ -49,6 +55,15 @@ void UInventoryWidget::NativeConstruct()
     if (QuickSlot) {
         QuickSlot->OnClicked.AddDynamic(this, &UInventoryWidget::OnQuickSlotClicked);
     }
+}
+
+void UInventoryWidget::InitInventoryWidget(UInventoryComponent* InventoryComponent)
+{
+    if (!InventoryComponent)
+        return;
+
+    CreateInventorySlotWidget(InventoryComponent);
+    UpdateInventorySlotWidget(InventoryComponent);
 }
 
 void UInventoryWidget::CreateInventorySlotWidget(UInventoryComponent* InventoryComponent)
@@ -70,6 +85,7 @@ void UInventoryWidget::CreateInventorySlotWidget(UInventoryComponent* InventoryC
             InventorySlots->AddChildToUniformGrid(NewSlot, Row, Column);
             NewSlot->SetParentInventoryWidget(this);
             InventorySlotWidgets.Add(NewSlot);
+            UE_LOG(LogTemp, Log, TEXT("Slot Created No: %d"), Index);
         }
     }
 }
@@ -140,11 +156,15 @@ void UInventoryWidget::ConfirmFocusSlot()
     if (!CurrentFocusedSlot) 
         return;
 
+    auto* ItemFactory = GetGameInstance()->GetSubsystem<UItemFactory>();
+    if (!ItemFactory)
+        return;
+
     const FInventoryItemData& FocusedData = CurrentFocusedSlot->GetCurrentInventoryItemData();
 
     bool bValidItem = FocusedData.ItemAmount > 0 || FocusedData.bRemainInInventoryWhenAmountZero;
     if (bValidItem) {
-        const FItemData* ItemData = GetItemDataByID(FocusedData.ItemTableID);
+        const FItemData* ItemData = ItemFactory->FindItemData(FocusedData.ItemTableID);
         if (ItemData) {
             InitItemAction(FocusedData);
             InitTooltip(*ItemData);
@@ -162,16 +182,25 @@ void UInventoryWidget::InitTooltip(const FItemData& InItemData)
         ItemName->SetText(FText::FromString(InItemData.ItemName.ToString()));
     }
 
-    if (ItemValue) {
+    //TODO: FItemData에 없는 정보를 캐스팅해서 가져오도록 할 것
+    if (AttackPowerValue && DefensePowerValue) {
         switch (InItemData.ItemType) {
         case EItemType::Consumable:
-            //ItemValue->SetText(FText::Format(FText::FromString(TEXT("회복량: {0}")), FText::AsNumber(InItemData.ItemRecoverValue)));
+            //AttackPowerValue->SetText(FText::FromString("회복량: {0}"), FText::AsNumber(InItemData.ItemAttackValue));
             break;
         case EItemType::Weapon:
-            //ItemValue->SetText(FText::Format(FText::FromString(TEXT("공격력: {0}")), FText::AsNumber(InItemData.ItemAttackValue)));
+        case EItemType::Armor:
+        {
+            //AttackPowerValue->SetText(FText::FromString("공격력: {0}"), FText::AsNumber(InItemData.ItemAttackValue));
+            //DefensePowerValue->SetText(FText::FromString("방어력: {0}"), FText::AsNumber(InItemData.ItemAttackValue));
+        }
+        case EItemType::Quest:
+            AttackPowerValue->SetText(FText::FromString(""));
+            DefensePowerValue->SetText(FText::FromString(""));
             break;
         default:
-            ItemValue->SetText(FText::FromString(TEXT("N/A")));
+            AttackPowerValue->SetText(FText::FromString(""));
+            DefensePowerValue->SetText(FText::FromString(""));
             break;
         }
     }
@@ -187,8 +216,12 @@ void UInventoryWidget::ClearToolTip()
         ItemName->SetText(FText::FromString(""));
     }
 
-    if (ItemValue) {
-        ItemValue->SetText(FText::FromString(""));
+    if (AttackPowerValue) {
+        AttackPowerValue->SetText(FText::FromString(""));
+    }
+
+    if (DefensePowerValue) {
+        DefensePowerValue->SetText(FText::FromString(""));
     }
 
     if (ItemDescription) {
@@ -204,14 +237,6 @@ void UInventoryWidget::InitItemAction(const FInventoryItemData& InItemData)
 void UInventoryWidget::ClearItemAction()
 {
     InventoryItemData = FInventoryItemData();
-}
-
-FItemData* UInventoryWidget::GetItemDataByID(int32 ItemTableID) const
-{
-    if (auto* GameInstance = Cast<UDataTableGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()))) {
-        return GameInstance->FindItemData(ItemTableID);
-    }
-    return nullptr;
 }
 
 void UInventoryWidget::OnUseClicked()
@@ -231,28 +256,38 @@ void UInventoryWidget::OnUseClicked()
     if (!ItemFactory)
         return;
 
+    auto* InventoryComponent = PlayerCharacter->GetInventoryComponent();
+    if (!InventoryComponent)
+        return;
+
     auto* SpawnedItem = ItemFactory->SpawnItemFromTableID(GetWorld(), InventoryItemData.ItemTableID);
     if (SpawnedItem) {
         switch (SpawnedItem->GetItemType())
         {
         case EItemType::Weapon:
         case EItemType::Armor:
-            //TODO: 플레이어 캐릭터에서 이 무기를 Equip
-            //기존에 장착하고 있는 무기는 인벤토리로
-            //단 맨손인 인벤토리로 넣지 않는다
-            //근데 이거 맨 몸도 만들어야 하는건가?
+        {
+            auto* EquipableItem = Cast<AEquipableItem>(SpawnedItem);
+            if (!EquipableItem)
+                return;
+            
+            //PlayerCharacter->EquipItem(EquipableItem, 여기에 슬롯 어떻게 넣지?);
             break;
+        }
         case EItemType::Consumable:
         case EItemType::Quest:
-            //TODO: 이거 아이템 사용하는거를 인터페이스로 뺄지 말지 생각
-            //퀘스트 아이템에도 사용하는 기능 만들지 말지 생각
+        {
+            auto* NonEquipableItem = Cast<ANonEquipableItem>(SpawnedItem);
+            if (!NonEquipableItem)
+                return;
+
+            NonEquipableItem->UseItem();
+        }
         default:
             break;
         }
-        auto* InventoryComponent = PlayerCharacter->GetInventoryComponent();
         InventoryComponent->RemoveItem(InventoryItemData.ItemTableID, 1);
-        InventoryComponent->GetInventoryWidget()->UpdateInventorySlotWidget(InventoryComponent);
-
+        UpdateInventorySlotWidget(InventoryComponent);
     }
 }
 
@@ -272,11 +307,8 @@ void UInventoryWidget::OnDestroyClicked()
     auto* InventoryComponent = PlayerCharacter->GetInventoryComponent();
     if (!InventoryComponent)
         return;
-    InventoryComponent->RemoveItem(InventoryItemData.ItemTableID, 1);
 
-    auto* PlayerHUD = Cast<APlayerHUD>(PlayerController->GetHUD());
-    if (!PlayerHUD)
-        return;
+    InventoryComponent->RemoveItem(InventoryItemData.ItemTableID, 1);
 
     UpdateInventorySlotWidget(InventoryComponent);
 }
@@ -298,22 +330,16 @@ void UInventoryWidget::OnQuickSlotClicked()
     if (!PlayerHUD)
         return;
 
-    /*const auto* ItemData = GetItemDataByID(InventoryItemData.ItemTableID);
-    if (!ItemData)
+    auto* ItemFactory = GetGameInstance()->GetSubsystem<UItemFactory>();
+    if (!ItemFactory)
         return;
 
-    if (ItemData->ItemType != EItemType::Consumable)
+    auto* InventoryComponent = PlayerCharacter->GetInventoryComponent();
+    if (!InventoryComponent)
         return;
 
-    if (auto* ItemInstance = GetWorld()->SpawnActor<AItemBase>(ItemData->ItemClass[0])) {
-        PlayerCharacter->SetQuickSlotItem(ItemInstance);
-        PlayerCharacter->SetQuickSlotItemID(ItemData->ItemTableID);
-
-        int32 ItemAmount = PlayerCharacter->GetInventoryComponent()->GetInventoryItemAmount(ItemData->ItemTableID);
-        PlayerCharacter->SetQuickSlotItemAmount(ItemAmount);
-
-        if (auto* QuickSlotWidget = PlayerHUD->GetQuickSlotWidget()) {
-            QuickSlotWidget->SetQuickSlotConsumable(ItemData->ItemIcon, ItemAmount);
-        }
-    }*/
+    const FInventoryItemData& FocusedData = CurrentFocusedSlot->GetCurrentInventoryItemData();
+    if (ItemFactory->FindItemData(FocusedData.ItemTableID)->ItemType == EItemType::Consumable) {
+        PlayerCharacter->AddToQuickSlot(1, FocusedData);
+    }
 }

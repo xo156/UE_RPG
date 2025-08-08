@@ -3,8 +3,8 @@
 
 #include "ItemBase.h"
 
-void AItemBase::SetItemData(FItemData* InItemData)
+void AItemBase::InitItemData(const FItemData* InItemData)
 {
-	if(InItemData)
-		ItemData = ItemData;
+	if (InItemData)
+		ItemData = InItemData;
 }

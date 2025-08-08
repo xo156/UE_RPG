@@ -7,17 +7,17 @@
 #include "ItemData.h"
 #include "ItemBase.generated.h"
 
-UCLASS()
+UCLASS(Abstract)
 class RPG_API AItemBase : public AActor
 {
 	GENERATED_BODY()
 	
 public:
-	void SetItemData(FItemData* InItemData);
+	virtual void InitItemData(const FItemData* InItemData);
 
 	int32 GetItemTableID() const { return ItemData->ItemTableID; }
 	EItemType GetItemType() const { return ItemData->ItemType; }
 
-private:
-	FItemData* ItemData;
+protected:
+	const FItemData* ItemData;
 };

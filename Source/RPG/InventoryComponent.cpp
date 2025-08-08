@@ -12,7 +12,7 @@ UInventoryComponent::UInventoryComponent()
 {
 	// Set this component to be initialized when the game starts, and to be ticked every frame.  You can turn these features
 	// off to improve performance if you don't need them.
-	PrimaryComponentTick.bCanEverTick = true;
+	PrimaryComponentTick.bCanEverTick = false;
 
 	MaxSlotCounter = 36;
 	CurrentSlotCounter = 0;
@@ -95,18 +95,6 @@ void UInventoryComponent::StackItem(FDropItemData& AddedItem, int32 SlotIndex)
 			UE_LOG(LogTemp, Error, TEXT("Inventory Full"));
 		}
 	}
-	/*FInventoryItemData& SlotItemData = InventoryItems[SlotIndex];
-	int32 MaxStackCount = GameInstance->FindItemData(AddedItem.ItemTableID)->MaxStackCount;
-	if (MaxStackCount + SlotItemData.ItemAmount > MaxStackCount) {
-		int32 AvailableStackCount = MaxStackCount - SlotItemData.ItemAmount;
-		SlotItemData.ItemAmount += AvailableStackCount;
-		AddedItem.Amount -= AvailableStackCount;
-		if (AddedItem.Amount > 0)
-			AddItem(AddedItem);
-	}
-	else {
-		SlotItemData.ItemAmount += AddedItem.Amount;
-	}*/
 }
 
 void UInventoryComponent::AddItem(const FDropItemData& AddedItem)

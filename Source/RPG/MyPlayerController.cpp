@@ -64,11 +64,11 @@ void AMyPlayerController::SetupInputComponent() {
 
 		EnHancedInputComponent->BindAction(LockOnAction, ETriggerEvent::Started, this, &AMyPlayerController::TryLockOnTarget);
 
-		EnHancedInputComponent->BindAction(RootItemAction, ETriggerEvent::Started, this, &AMyPlayerController::TryRootItem);
+		EnHancedInputComponent->BindAction(RootItemAction, ETriggerEvent::Started, this, &AMyPlayerController::TryInteract);
 
 		EnHancedInputComponent->BindAction(InventoryAction, ETriggerEvent::Started, this, &AMyPlayerController::TryOpenInventory);
 
-		EnHancedInputComponent->BindAction(QuickSlotAction, ETriggerEvent::Started, this, &AMyPlayerController::TryQuickSlot);
+		EnHancedInputComponent->BindAction(QuickSlotAction, ETriggerEvent::Started, this, &AMyPlayerController::TryUseQuickSlot);
 	
 		//인벤토리
 		EnHancedInputComponent->BindAction(ConfirmAction, ETriggerEvent::Started, this, &AMyPlayerController::TryConfirm);
@@ -186,6 +186,16 @@ void AMyPlayerController::TryHeavyAttakStart(const FInputActionValue& Value)
 	}
 }
 
+void AMyPlayerController::TryGuard()
+{
+	if (GetCharacter() != nullptr) {
+		if (!GetCharacter()->bIsRoll &&
+			GetCharacter()->GetPlayerStateMachineComponent()->IsInAnyState({EPlayerState::Idle, EPlayerState::Move})) {
+			//GetCharacter()->Guard();
+		}
+	}
+}
+
 void AMyPlayerController::TryLockOnTarget()
 {
 	if (GetCharacter() != nullptr) {
@@ -193,12 +203,12 @@ void AMyPlayerController::TryLockOnTarget()
 	}
 }
 
-void AMyPlayerController::TryRootItem()
+void AMyPlayerController::TryInteract()
 {
 	if (GetCharacter() != nullptr) {
 		if (!GetCharacter()->GetPlayerStateMachineComponent()->IsInAnyState({EPlayerState::LightAttack, EPlayerState::HeavyAttack, EPlayerState::Hit, EPlayerState::Dodge}) &&
 			!GetCharacter()->bIsRoll) {
-			GetCharacter()->RootItem();
+			GetCharacter()->Interact();
 		}
 	}
 }
@@ -215,17 +225,24 @@ void AMyPlayerController::TryOpenInventory()
 	}
 }
 
-void AMyPlayerController::TryQuickSlot()
+void AMyPlayerController::TryUseQuickSlot()
 {
 	if (GetCharacter() != nullptr) {
-		GetCharacter()->QuickSlot();
+		//GetCharacter()->UseQuickSlot();
 	}
 }
 
-void AMyPlayerController::TryClose()
+void AMyPlayerController::TrySelectQuickSlot()
 {
-	if (GetCharacter() != nullptr){
-		GetCharacter()->Close();
+	if (GetCharacter() != nullptr) {
+		//GetCharacter()->SelectQuickSlot();
+	}
+}
+
+void AMyPlayerController::TryOpenMainMenu()
+{
+	if (auto* PlayerHUD = Cast<APlayerHUD>(GetHUD())) {
+		//TODO: PlayerHUD에서 메인 메뉴 위젯 열기
 	}
 }
 

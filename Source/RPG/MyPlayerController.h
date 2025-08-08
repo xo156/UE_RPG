@@ -43,6 +43,7 @@ protected:
 	//IMC 전환
 	void ChangeInputMappingContext(EIMCState NewIMC);
 
+public:
 	//Normal 액션
 	void TryMove(const FInputActionValue& Value);
 	void TryRunStart();
@@ -52,13 +53,14 @@ protected:
 	void TryLook(const FInputActionValue& Value);
 	void TryLightAttackStart(const FInputActionValue& Value);
 	void TryHeavyAttakStart(const FInputActionValue& Value);
+	void TryGuard();
 	void TryLockOnTarget();
-	void TryRootItem();
+	void TryInteract();
 	void TryOpenInventory();
-	void TryQuickSlot();
-	void TryClose();
+	void TryUseQuickSlot();
+	void TrySelectQuickSlot();
+	void TryOpenMainMenu();
 
-public:
 	//인벤토리 액션
 	void TryConfirm();
 	void TryNavigate(const FInputActionValue& Value);

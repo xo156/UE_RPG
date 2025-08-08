@@ -2,29 +2,32 @@
 
 
 #include "MyCharacter.h"
-#include "Kismet/GameplayStatics.h"
-#include "Components/CapsuleComponent.h"
-#include "Camera/CameraComponent.h"
+#include "PlayerStateMachineComponent.h"
+#include "HPActorComponent.h"
+#include "StaminaActorComponent.h"
+#include "MyPlayerController.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/SpringArmComponent.h"
+#include "Kismet/GameplayStatics.h"
+#include "Components/CapsuleComponent.h"
+#include "Components/BoxComponent.h"
+#include "Camera/CameraComponent.h"
+#include "DataTableGameInstance.h"
+#include "ItemFactory.h"
+#include "NonEquipableItem.h"
 #include "EquipableItem.h"
 #include "EquipSlot.h"
 #include "Weapon.h"
-#include "MyPlayerController.h"
-#include "Components/BoxComponent.h"
+#include "InventoryComponent.h"
+#include "InventoryWidget.h"
 #include "Perception/AIPerceptionStimuliSourceComponent.h"
 #include "Perception/AISense_Sight.h"
 #include "Perception/AISense_Hearing.h"
-#include "DropItem.h"
-#include "InventoryComponent.h"
-#include "InventoryWidget.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "MonsterBase.h"
-#include "DataTableGameInstance.h"
-#include "InventoryQuickSlotWidget.h"
-#include "HPActorComponent.h"
-#include "StaminaActorComponent.h"
-#include "PlayerStateMachineComponent.h"
+#include "DropItem.h"
+#include "PlayerHUD.h"
+#include "LockonWidget.h"
 
 // Sets default values
 AMyCharacter::AMyCharacter() {
@@ -80,7 +83,9 @@ AMyCharacter::AMyCharacter() {
 void AMyCharacter::BeginPlay() {
 	Super::BeginPlay();
 
-	//기본 무기 장착
+	SetPlayerInfo();
+
+	//기본 장비 장착
 	if (DefaultRightHandWeaponClass) {
 		AWeapon* RightWeapon = GetWorld()->SpawnActor<AWeapon>(DefaultRightHandWeaponClass);
 		if (RightWeapon) {
@@ -127,7 +132,6 @@ void AMyCharacter::Tick(float DeltaTime) {
 		//대상이 유효하지 않거나 멀어지면
 		if (!IsTargetValid(CurrentTarget) || GetDistanceTo(CurrentTarget) > TargetRange) {
 			ChangeTarget(nullptr);
-			UpdateLockonEffect(); //락 온 해제
 			return;
 		}
 		if (!bIsRoll) { 
@@ -140,13 +144,9 @@ void AMyCharacter::Tick(float DeltaTime) {
 				UpdateLockOnCameraPosition();
 			}
 		}
-		if (LockonWidgetInstance) {
-			UpdateLockonEffect();
-		}
 	}
 	else {
 		//락 온 해제
-		UpdateLockonEffect();
 		bUseControllerRotationYaw = false;
 		GetCharacterMovement()->bOrientRotationToMovement = true;
 	}
@@ -283,13 +283,6 @@ void AMyCharacter::Look(FVector2D InputValue)
 	}
 }
 
-void AMyCharacter::PlayAirboneMontage()
-{
-	if (GetCharacterMovement()->IsFalling()) {
-		PlayAnimMontage(AirboneMontage);
-	}
-}
-
 void AMyCharacter::LightAttackStart()
 {
 	if (!PlayerStateMachineComponent)
@@ -302,8 +295,8 @@ void AMyCharacter::LightAttackStart()
 			SetAttackMontageSection();
 		return;
 	}
-	if (auto* PC = Cast<APlayerController>(GetController())) {
-		PC->SetIgnoreMoveInput(true);
+	if (auto* PlayerController = Cast<APlayerController>(GetController())) {
+		PlayerController->SetIgnoreMoveInput(true);
 	}
 	PlayerStateMachineComponent->ChangeState(EPlayerState::LightAttack);
 
@@ -322,8 +315,8 @@ void AMyCharacter::HeavyAttackChargeStart()
 			SetAttackMontageSection();
 		return;
 	}
-	if (auto* PC = Cast<APlayerController>(GetController())) {
-		PC->SetIgnoreMoveInput(true);
+	if (auto* PlayerController = Cast<APlayerController>(GetController())) {
+		PlayerController->SetIgnoreMoveInput(true);
 	}
 	bIsChargingHeavyAttack = true;
 	PlayerStateMachineComponent->ChangeState(EPlayerState::HeavyAttack);
@@ -394,8 +387,8 @@ void AMyCharacter::AttackEnd()
 	UE_LOG(LogTemp, Log, TEXT("void AMyCharacter::AttackEnd"));
 
 	PlayerStateMachineComponent->ChangeState(EPlayerState::Idle);
-	if (auto* PC = Cast<APlayerController>(GetController())) {
-		PC->SetIgnoreMoveInput(false);
+	if (auto* PlayerController = Cast<APlayerController>(GetController())) {
+		PlayerController->SetIgnoreMoveInput(false);
 	}
 	bIsEnableCombo = false;
 	bIsChargingHeavyAttack = false;
@@ -523,43 +516,21 @@ void AMyCharacter::ChangeTarget(AActor* NewTarget)
 	CurrentTarget = NewTarget;
 	bIsLockon = (CurrentTarget != nullptr);
 
-	if (!bIsLockon) {
-		if (LockonWidgetInstance) {
-			LockonWidgetInstance->SetVisibility(ESlateVisibility::Hidden);
-		}
-	}
-	else {
-		CreateLockonEffect();
+	// HUD에서 락온 위젯을 찾아서 타겟을 설정
+	auto* PlayerController = Cast<APlayerController>(GetController());
+	if (!PlayerController) return;
+
+	auto* PlayerHUD = Cast<APlayerHUD>(PlayerController->GetHUD());
+	if (PlayerHUD && PlayerHUD->GetLockonWidget()) {
+		PlayerHUD->GetLockonWidget()->SetTarget(CurrentTarget);
 	}
 }
 
-void AMyCharacter::CreateLockonEffect()
+AActor* AMyCharacter::GetCurrentTarget() const
 {
-	if (LockonWidgetInstance) {
-		UpdateLockonEffect();
-	}
-	else {
-		if (LockonWidgetClass) {
-			LockonWidgetInstance = CreateWidget<UUserWidget>(GetWorld(), LockonWidgetClass);
-			if (LockonWidgetInstance) {
-				LockonWidgetInstance->AddToViewport();
-				UpdateLockonEffect();
-			}
-		}
-	}
+	return CurrentTarget ? CurrentTarget : nullptr;
 }
 
-void AMyCharacter::UpdateLockonEffect()
-{
-	if (LockonWidgetInstance && CurrentTarget) {
-		FVector TargetLocation = CurrentTarget->GetActorLocation();
-		FVector2D ScreenPosition;
-		UGameplayStatics::ProjectWorldToScreen(GetWorld()->GetFirstPlayerController(), TargetLocation, ScreenPosition);
-		LockonWidgetInstance->SetVisibility(ESlateVisibility::Visible);
-
-		LockonWidgetInstance->SetPositionInViewport(ScreenPosition);
-	}
-}
 
 void AMyCharacter::UpdateLockOnCameraRotation()
 {
@@ -590,7 +561,7 @@ void AMyCharacter::UpdateLockOnCameraPosition()
 	}
 }
 
-void AMyCharacter::RootItem()
+void AMyCharacter::Interact()
 {
 	if (!InventoryComponent || OverlapItems.Num() == 0)
 		return;
@@ -608,9 +579,11 @@ void AMyCharacter::RootItem()
 		}
 	}
 	//인벤토리에 다 옮겼으면 치우기
-	for (auto* ItemToRemove : ItemsToRemove) {
-		ItemsToRemove.Remove(ItemToRemove);
-		ItemToRemove->Destroy();
+	for (int32 i = ItemsToRemove.Num() - 1; i >= 0; --i) {
+		if (ItemsToRemove[i]) {
+			ItemsToRemove[i]->Destroy();
+			ItemsToRemove.RemoveAt(i);
+		}
 	}
 }
 
@@ -641,29 +614,70 @@ void AMyCharacter::OnRootItemBoxOverlapEnd(UPrimitiveComponent* OverlappedCompon
 	}
 }
 
-void AMyCharacter::QuickSlot()
+bool AMyCharacter::AddToQuickSlot(int32 SlotIndex, const FInventoryItemData& ItemData)
 {
-	/*if (QuickSlotItem && InventoryComponent && QuickSlotItemAmount > 0) {
-		QuickSlotItem->Use();
-		InventoryComponent->RemoveItem(QuickSlotItemID, 1);
-		SetQuickSlotItemAmount(--QuickSlotItemAmount);
-		if (InventoryQuickSlotWidgetInstance) {
-			if (QuickSlotItemAmount <= 0) {
-				InventoryQuickSlotWidgetInstance->SetVisibility(ESlateVisibility::Hidden);
-				QuickSlotItemAmount = 0;
-				QuickSlotItem = nullptr;
-			}
-			else {
-				InventoryComponent->InventoryWidget->UpdateInventorySlotWidget(InventoryComponent);
-				InventoryQuickSlotWidgetInstance->UpdateQuickSlotItemAmount(QuickSlotItemAmount);
-			}
-		}
-	}*/
+	if (ItemData.ItemAmount <= 0) 
+		return false;
+
+	auto* GameInstance = Cast<UDataTableGameInstance>(GetGameInstance());
+	if (!GameInstance)
+		return false;
+
+	auto* ItemFactory = GetGameInstance()->GetSubsystem<UItemFactory>();
+	if (!ItemFactory) 
+		return false;
+
+	const auto* StaticData = ItemFactory->FindItemData(ItemData.ItemTableID);
+	if (!StaticData || StaticData->ItemType != EItemType::Consumable)
+		return false;
+
+	FQuickSlotData SlotData;
+	SlotData.SlotIndex = SlotIndex;
+	SlotData.ItemData = ItemData;
+
+	QuickSlotMap.Add(SlotIndex, SlotData);
+	return true;
 }
 
-void AMyCharacter::Close()
+bool AMyCharacter::UseQuickSlot(int32 SlotIndex)
 {
-	//TODO: 열러있는 모든 UI 닫기?
+	if (!QuickSlotMap.Contains(SlotIndex)) 
+		return false;
+
+	FQuickSlotData& Slot = QuickSlotMap[SlotIndex];
+	if (Slot.ItemData.ItemAmount <= 0)
+		return false;
+
+	auto* ItemFactory = GetGameInstance()->GetSubsystem<UItemFactory>();
+	if (!ItemFactory) 
+		return false;
+
+	//인덱스에 맞는 퀵슬롯 맵에 아이템을 가져와서 사용해야 하니까 스폰할 필요 없음?
+	const FItemData* StaticData = ItemFactory->FindItemData(Slot.ItemData.ItemTableID);
+	if (!StaticData || StaticData->ItemType != EItemType::Consumable)
+		return false;
+
+	//퀵 슬롯 아이템 사용
+	auto* SpawnedItem = ItemFactory->SpawnItemFromTableID(GetWorld(), StaticData->ItemTableID);
+	if (!SpawnedItem)
+		return false;
+
+	auto* NonEquipableItem = Cast<ANonEquipableItem>(SpawnedItem);
+	if (!NonEquipableItem)
+		return false;
+	NonEquipableItem->UseItem();
+
+	// 수량 감소
+	Slot.ItemData.ItemAmount -= 1;
+	if (Slot.ItemData.ItemAmount <= 0) {
+		QuickSlotMap.Remove(SlotIndex);
+	}
+	return true;
+}
+
+bool AMyCharacter::RemoveQuickSlot(int32 SlotIndex)
+{
+	return QuickSlotMap.Remove(SlotIndex) > 0;
 }
 
 void AMyCharacter::EquipItem(AEquipableItem* EquipableItem, EEquipSlot Slot)
@@ -738,11 +752,6 @@ void AMyCharacter::ReportNoiseToAI(float Loudness)
 	}
 }
 
-AItemBase* AMyCharacter::GetQuickSlotItem()
-{
-	return QuickSlotItem ? QuickSlotItem : nullptr;
-}
-
 AWeapon* AMyCharacter::GetEquipedRightHandItem() const
 {
 	return Cast<AWeapon>(EquippedItems.FindRef(EEquipSlot::RightHand));
@@ -778,28 +787,11 @@ void AMyCharacter::SetPlayerInfo()
 	if (!HPActorComponent || !StaminaActorComponent)
 		return;
 
-	HPActorComponent->InitHP(100);
-	StaminaActorComponent->InitStamina(100);
+	HPActorComponent->InitHP(100.f);
+	StaminaActorComponent->InitStamina(100.f);
 }
 
 void AMyCharacter::SetNextSectionName(FName ChangeSectionName)
 {
 	NextSectionName = ChangeSectionName;
-}
-
-void AMyCharacter::SetQuickSlotItem(AItemBase* NewQuickSlotItem)
-{
-	if (NewQuickSlotItem) {
-		QuickSlotItem = NewQuickSlotItem;
-	}
-}
-
-void AMyCharacter::SetQuickSlotItemAmount(int32 NewAmount)
-{
-	QuickSlotItemAmount = NewAmount;
-}
-
-void AMyCharacter::SetQuickSlotItemID(int32 NewID)
-{
-	QuickSlotItemID = NewID;
 }

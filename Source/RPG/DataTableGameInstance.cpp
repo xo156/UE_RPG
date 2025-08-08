@@ -11,40 +11,23 @@ void UDataTableGameInstance::Init()
 	Super::Init();
 	LoadAllTableAndCache();
 
+	if (auto* ItemFactory = GetSubsystem<UItemFactory>()) {
+		ItemFactory->AutoRegisterItemClasses();
+	}
 }
 
 void UDataTableGameInstance::LoadAllTableAndCache()
 {
 	LoadItemCache();
-	LoadItemDropCache();
 	LoadMonsterDataCache();
-}
-
-FDropRate* UDataTableGameInstance::GetDropRate(int32 ItemTableID)
-{
-	FDropRate** FoundItem = ItemDropCache.Find(ItemTableID);
-	return FoundItem ? *FoundItem : nullptr;
 }
 
 FMonsterData* UDataTableGameInstance::GetMonsterInfo(int32 MonsterID)
 {
-	FMonsterData** FoundMonster = MonsterDataCache.Find(MonsterID);
-	return FoundMonster ? *FoundMonster : nullptr;
-}
-
-UDataTable* UDataTableGameInstance::GetItemTable()const 
-{
-	return ItemTable ? ItemTable : nullptr;
-}
-
-UDataTable* UDataTableGameInstance::GetDropItemTable()const 
-{
-	return DropItemTable ? DropItemTable : nullptr;
-}
-
-UDataTable* UDataTableGameInstance::GetMonsterDataTable() const
-{
-	return MonsterDataTable ? MonsterDataTable : nullptr;
+	if (FMonsterData** FoundMonster = MonsterDataCache.Find(MonsterID)) {
+		return *FoundMonster;
+	}
+	 return nullptr;
 }
 
 FItemData* UDataTableGameInstance::FindItemData(int32 ItemTableID)
@@ -52,8 +35,22 @@ FItemData* UDataTableGameInstance::FindItemData(int32 ItemTableID)
 	if (FItemData** FoundData = ItemCache.Find(ItemTableID)) {
 		return *FoundData;
 	}
+	return nullptr;
+}
 
-	UE_LOG(LogTemp, Warning, TEXT("FindItemData: ItemTableID %d not found in ItemCache."), ItemTableID);
+FEquipableItemData* UDataTableGameInstance::FindEquipableItemData(int32 ItemID)
+{
+	if (FEquipableItemData** FoundData = EquipableItemCache.Find(ItemID)) {
+		return *FoundData;
+	}
+	return nullptr;
+}
+
+FNonEquipableItemData* UDataTableGameInstance::FindNonEquipableItemData(int32 ItemID)
+{
+	if (FNonEquipableItemData** FoundData = NonEquipableItemCache.Find(ItemID)) {
+		return *FoundData;
+	}
 	return nullptr;
 }
 
@@ -67,16 +64,22 @@ void UDataTableGameInstance::LoadItemCache()
 			ItemCache.Add(Item->ItemTableID, Item);
 		}
 	}
-}
 
-void UDataTableGameInstance::LoadItemDropCache()
-{
-	if (DropItemTable) {
-		static const FString ContextString(TEXT("Item Drop Cache Context"));
-		TArray<FDropRate*> ItemDropRows;
-		DropItemTable->GetAllRows<FDropRate>(ContextString, ItemDropRows);
-		for (FDropRate* ItemDrop : ItemDropRows) {
-			ItemDropCache.Add(ItemDrop->ItemTableID, ItemDrop);
+	if (EquipableItemDataTable) {
+		static const FString Context(TEXT("Equipable Cache Context"));
+		TArray<FEquipableItemData*> EquipRows;
+		EquipableItemDataTable->GetAllRows(Context, EquipRows);
+		for (FEquipableItemData* Data : EquipRows) {
+			EquipableItemCache.Add(Data->ItemTableID, Data);
+		}
+	}
+
+	if (NonEquipableItemDataTable) {
+		static const FString Context(TEXT("NonEquipable Cache Context"));
+		TArray<FNonEquipableItemData*> NonEquipRows;
+		NonEquipableItemDataTable->GetAllRows(Context, NonEquipRows);
+		for (FNonEquipableItemData* Data : NonEquipRows) {
+			NonEquipableItemCache.Add(Data->ItemTableID, Data);
 		}
 	}
 }

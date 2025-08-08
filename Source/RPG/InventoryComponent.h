@@ -25,13 +25,9 @@ public:
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
-	//bool TryAddItem(class ADropItem* AddedItem);
 	bool TryAddItem(FDropItemData& AddedItem);
-	//int32 FindSlotIndex(class ADropItem* AddedItem);
 	int32 FindSlotIndex(int32 ItemTableID);
-	//void StackItem(class ADropItem* AddedItem, int32 SlotIndex);
 	void StackItem(FDropItemData& AddedItem, int32 SlotIndex);
-	//void AddItem(class ADropItem* AddedItem);
 	void AddItem(const FDropItemData& AddedItem);
 	void RemoveItem(int32 ItemTableID, int32 Amount);
 	int32 MakeUID();

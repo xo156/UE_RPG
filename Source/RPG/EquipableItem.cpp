@@ -11,10 +11,17 @@ AEquipableItem::AEquipableItem()
 	PrimaryActorTick.bCanEverTick = false;
 }
 
+void AEquipableItem::InitEquipableData(const FEquipableItemData* InItemData)
+{
+	if (InItemData)
+		EquipableItemData = InItemData;
+}
+
 void AEquipableItem::SetOwnerCharacter(ACharacter* NewOwner)
 {
 	if (NewOwner)
 		OwnerCharacter = NewOwner;
+	
 }
 
 void AEquipableItem::EquipToCharacter(USkeletalMeshComponent* TargetMesh, FName SocketName)

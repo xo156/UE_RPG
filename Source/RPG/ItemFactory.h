@@ -21,6 +21,12 @@ public:
 
 	class AItemBase* SpawnItemFromTableID(UWorld* World, int32 ItemTableID);
 
+	void InitializeItem(class AItemBase* Item, const FItemData* BaseData);
+	void InitializeItem(class AEquipableItem* Item, const FEquipableItemData* BaseData);
+	void InitializeItem(class ANonEquipableItem* Item, const FNonEquipableItemData* BaseData);
+
+	FItemData* FindItemData(int32 ItemTableID);
+
 private:
 	TMap<int32, TSubclassOf<class AItemBase>> ItemClassMap;
 };

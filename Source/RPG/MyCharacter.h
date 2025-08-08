@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
+#include "QuickslotData.h"
 #include "MyCharacter.generated.h"
 
 UCLASS()
@@ -15,6 +16,11 @@ public:
 	// Sets default values for this character's properties
 	AMyCharacter();
 
+protected:
+	// Called when the game starts or when spawned
+	virtual void BeginPlay() override;
+
+public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
@@ -28,7 +34,6 @@ public:
 	void RunEnd();
 	void Jump();
 	void Look(FVector2D InputValue);
-	void PlayAirboneMontage();
 	void LightAttackStart();
 	void HeavyAttackChargeStart();
 	void SetAttackMontageSection();
@@ -46,21 +51,24 @@ public:
 	void UpdateTargetVisibility();
 	bool IsTargetValid(AActor* CheckTarget);
 	void ChangeTarget(AActor* NewTarget);
-	void CreateLockonEffect();
-	void UpdateLockonEffect();
+	AActor* GetCurrentTarget() const;
 	void UpdateLockOnCameraRotation();
 	void UpdateLockOnCameraPosition();
 
-	//인벤토리
-	void RootItem();
+	//상호작용
+	void Interact();
+
+	//아이템 줍기
 	class UInventoryComponent* GetInventoryComponent();
 	UFUNCTION()
 	void OnRootItemBoxOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComponent, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 	UFUNCTION()
 	void OnRootItemBoxOverlapEnd(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComponent, int32 OtherBodyIndex);
-	void QuickSlot();
-
-	void Close();
+	
+	//퀵 슬롯
+	bool AddToQuickSlot(int32 SlotIndex, const FInventoryItemData& ItemData);
+	bool UseQuickSlot(int32 SlotIndex);
+	bool RemoveQuickSlot(int32 SlotIndex);
 
 	//장비
 	UFUNCTION()
@@ -73,6 +81,18 @@ public:
 	//AI
 	void SetupStimulusSource();
 	void ReportNoiseToAI(float Loudness);
+
+	//getter
+	class AWeapon* GetEquipedRightHandItem() const;
+	class AWeapon* GEtEquipedLeftHandItem() const;
+	class UUserWidget* GetLockonWidgetInstance();
+	class UHPActorComponent* GetHPActorComponent();
+	class UStaminaActorComponent* GetStaminaActorComponent();
+	class UPlayerStateMachineComponent* GetPlayerStateMachineComponent();
+
+	//setter
+	void SetPlayerInfo();
+	void SetNextSectionName(FName ChangeSectionName);
 
 	//캐릭터 특수 상태
 	bool bIsEnableCombo = false;
@@ -97,33 +117,14 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Player/Stamina")
 	float RollStaminaCost;
 
-	//getter
-	class AItemBase* GetQuickSlotItem();
-	class AWeapon* GetEquipedRightHandItem() const;
-	class AWeapon* GEtEquipedLeftHandItem() const;
-	class UUserWidget* GetLockonWidgetInstance();
-	class UHPActorComponent* GetHPActorComponent();
-	class UStaminaActorComponent* GetStaminaActorComponent();
-	class UPlayerStateMachineComponent* GetPlayerStateMachineComponent();
-
-	//setter
-	void SetPlayerInfo();
-	void SetNextSectionName(FName ChangeSectionName);
-	void SetQuickSlotItem(class AItemBase* NewQuickSlotItem);
-	void SetQuickSlotItemAmount(int32 NewAmount);
-	void SetQuickSlotItemID(int32 NewID);
-
 protected:
-	// Called when the game starts or when spawned
-	virtual void BeginPlay() override;
-
 	//소리
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AI")
 	float RunLoudness;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "AI")
 	float AttackLoudness;
 
-	//디폴트
+	//기본 장비
 	UPROPERTY(EditDefaultsOnly, Category = "Default Equipment")
 	TSubclassOf<AWeapon> DefaultRightHandWeaponClass;
 	UPROPERTY(EditDefaultsOnly, Category = "Default Equipment")
@@ -171,9 +172,9 @@ private:
 	//이동
 	float TargetSpeed;
 	FVector LastInputDirection;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Status", meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "MoveSpeed", meta = (AllowPrivateAccess = "true"))
 	float WalkSpeed = 600.f;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Status", meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "MoveSpeed", meta = (AllowPrivateAccess = "true"))
 	float RunSpeed = 900.f;
 
 	//락온
@@ -192,7 +193,11 @@ private:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Inventory", meta = (AllowPrivateAccess = "true"))
 	class UBoxComponent* RootItemBoxComponent;
 	TArray<class ADropItem*> OverlapItems;
+	
+	//퀵 슬롯
 	class AItemBase* QuickSlotItem;
 	int32 QuickSlotItemAmount = 0;
 	int32 QuickSlotItemID;
+
+	TMap<int32, FQuickSlotData> QuickSlotMap;
 };

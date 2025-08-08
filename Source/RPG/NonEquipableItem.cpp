@@ -2,6 +2,7 @@
 
 
 #include "NonEquipableItem.h"
+#include "ConsumableItem.h"
 
 // Sets default values
 ANonEquipableItem::ANonEquipableItem()
@@ -10,6 +11,13 @@ ANonEquipableItem::ANonEquipableItem()
 	PrimaryActorTick.bCanEverTick = false;
 }
 
+void ANonEquipableItem::InitNonEquipableData(const FNonEquipableItemData* InItemData)
+{
+    if(InItemData)
+        NonEquipableItemData = InItemData;
+}
+
 void ANonEquipableItem::UseItem()
 {
+
 }

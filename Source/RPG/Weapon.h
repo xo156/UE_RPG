@@ -37,9 +37,8 @@ public:
 	class UAnimMontage* GetLightAttackMontage() const;
 	class UAnimMontage* GetHeavyAttackMontage() const;
 
+	//데미지용 델리게이트
 	FTimerHandle DamageUPHandle;
-
-	bool bGuardSuccess;
 
 private:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon", meta = (AllowPrivateAccess = "true"))
@@ -59,9 +58,15 @@ private:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Offset", meta = (AllowPrivateAccess = "true"))
 	FRotator LeftHandRotationOffset = FRotator::ZeroRotator;
 
+	//변수
+	float AttackPower;
+	float DefensePower;
+
+	//공격
 	class AMyCharacter* OwnerCharacter;
 	TArray<AActor*> OverlapActors;
 
+	//몽타주
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Montage", meta = (AllowPrivateAccess = "true"))
 	class UAnimMontage* LightAttackMontage;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Montage", meta = (AllowPrivateAccess = "true"))

@@ -20,15 +20,4 @@ public:
 	virtual void BeginPlay() override;
 
 	virtual void Tick(float DeltaTime) override;
-
-	const TMap<int32, struct FDropRate*>& GetItemDropCache() { return ItemDropCache; }
-	const TMap<int32, struct FItemData*>& GetItemCache() { return ItemCache; }
-	const TMap<int32, struct FMonsterData*>& GetMonsterDataCache() { return MonsterDataCache; }
-	const TMap<int32, struct FCharacterData*>& GetCharacterDataCache() { return CharacterDataCache; }
-
-private:
-	TMap<int32, struct FDropRate*> ItemDropCache;
-	TMap<int32, struct FItemData*> ItemCache;
-	TMap<int32, struct FMonsterData*> MonsterDataCache;
-	TMap<int32, struct FCharacterData*> CharacterDataCache;
 };

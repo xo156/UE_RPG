@@ -14,5 +14,7 @@ enum class EEquipSlot : uint8
 {
 	RightHand UMETA(DisplayName = "RightHand"),
 	LeftHand UMETA(DisplayName = "LeftHand"),
+	Head UMETA(DisplayName = "Head"),
+	Chest UMETA(DisplayName = "Chest")
 	//향후 더 추가 예정
 };

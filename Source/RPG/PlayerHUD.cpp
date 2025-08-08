@@ -9,11 +9,14 @@
 #include "InventoryComponent.h"
 #include "InventoryWidget.h"
 #include "InventorySlotWidget.h"
+#include "EquipWidget.h"
+#include "SettingWidget.h"
 #include "InventoryItemData.h"
 #include "InventoryQuickSlotWidget.h"
 #include "MyCharacter.h"
 #include "HPActorComponent.h"
 #include "StaminaActorComponent.h"
+#include "LockonWidget.h"
 
 void APlayerHUD::BeginPlay()
 {
@@ -43,9 +46,27 @@ void APlayerHUD::BeginPlay()
     if (InventoryWidgetClass) {
         InventoryWidgetInstance = CreateWidget<UInventoryWidget>(PlayerController, InventoryWidgetClass);
         if (InventoryWidgetInstance) {
-            InventoryWidgetInstance->CreateInventorySlotWidget(MyCharacter->GetInventoryComponent());
+            InventoryWidgetInstance->InitInventoryWidget(MyCharacter->GetInventoryComponent());
             InventoryWidgetInstance->AddToViewport();
             InventoryWidgetInstance->SetVisibility(ESlateVisibility::Hidden);
+        }
+    }
+
+    //장비창
+    if (EquipWidgetClass) {
+        EquipWidgetInstance = CreateWidget<UEquipWidget>(GetWorld(), EquipWidgetClass);
+        if (EquipWidgetInstance) {
+            EquipWidgetInstance->AddToViewport();
+            EquipWidgetInstance->SetVisibility(ESlateVisibility::Hidden);
+        }
+    }
+
+    //세팅창
+    if (SettingWidgetClass) {
+        SettingWidgetInstance = CreateWidget<USettingWidget>(GetWorld(), SettingWidgetClass);
+        if (SettingWidgetInstance) {
+            SettingWidgetInstance->AddToViewport();
+            SettingWidgetInstance->SetVisibility(ESlateVisibility::Hidden);
         }
     }
 
@@ -56,6 +77,16 @@ void APlayerHUD::BeginPlay()
             InventoryQuickSlotWidgetInstance->AddToViewport();
         }
     }
+
+    //락 온
+    if (LockonWidgetClass) {
+        LockonWidgetInstance = CreateWidget<ULockonWidget>(GetWorld(), LockonWidgetClass);
+        if (LockonWidgetInstance) {
+            LockonWidgetInstance->AddToViewport();
+            LockonWidgetInstance->SetVisibility(ESlateVisibility::Hidden);
+        }
+    }
+
 }
 
 void APlayerHUD::OpenInventory(UInventoryComponent* InventoryComponent)
@@ -91,6 +122,38 @@ void APlayerHUD::CloseInventory(UInventoryComponent* InventoryComponent)
         PlayerController->bShowMouseCursor = false;
         InventoryComponent->SetIsOpen(false);
     }
+}
+
+void APlayerHUD::OpenEquipWidget()
+{
+    if (!EquipWidgetInstance)
+        return;
+
+
+}
+
+void APlayerHUD::CloseEquipWidget()
+{
+    if (!EquipWidgetInstance)
+        return;
+
+
+}
+
+void APlayerHUD::OpenSettingWidget()
+{
+    if (!SettingWidgetInstance)
+        return;
+
+
+}
+
+void APlayerHUD::CloseSettingWidget()
+{
+    if (!SettingWidgetInstance)
+        return;
+
+
 }
 
 UInventorySlotWidget* APlayerHUD::GetInventorySlotWidget()

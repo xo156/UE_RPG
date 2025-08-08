@@ -80,9 +80,6 @@ void AMonsterBase::InitMonsterInfo(const FMonsterData& MonsterData)
 	MonsterDamage = MonsterData.Damage;
 	DropTables = MonsterData.DropTables;
 	MonsterAttackPatterns = MonsterData.MonsterAttackPatterns;
-
-	UE_LOG(LogTemp, Log, TEXT("Monster [%s] Initialized | HP: %f | Damage: %f"), *MonsterName.ToString(), MonsterData.MaxMonsterHP, MonsterData.Damage);
-
 }
 
 void AMonsterBase::MonsterAttackStart(int32 AttackIndex)
