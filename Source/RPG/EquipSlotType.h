@@ -4,17 +4,20 @@
 
 #include "CoreMinimal.h"
 #include "UObject/ObjectMacros.h"
-#include "EquipSlot.generated.h"
+#include "EquipSlotType.generated.h"
 
 /**
  * 
  */
 UENUM(BlueprintType)
-enum class EEquipSlot : uint8
+enum class EEquipSlotType : uint8
 {
 	RightHand UMETA(DisplayName = "RightHand"),
 	LeftHand UMETA(DisplayName = "LeftHand"),
 	Head UMETA(DisplayName = "Head"),
-	Chest UMETA(DisplayName = "Chest")
+	Chest UMETA(DisplayName = "Chest"),
+	Glove UMETA(DisplayName = "Glove"),
+	Leg UMETA(DisplayName = "Leg"),
+	QuickSlot UMETA(DisplayName = "QuickSlot")
 	//향후 더 추가 예정
 };

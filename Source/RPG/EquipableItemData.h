@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "ItemData.h"
-#include "EquipSlot.h"
+#include "EquipSlotType.h"
 #include "EquipableItemData.generated.h"
 
 USTRUCT(BlueprintType)

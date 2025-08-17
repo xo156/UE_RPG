@@ -16,7 +16,7 @@
 #include "ItemFactory.h"
 #include "NonEquipableItem.h"
 #include "EquipableItem.h"
-#include "EquipSlot.h"
+#include "EquipSlotType.h"
 #include "Weapon.h"
 #include "InventoryComponent.h"
 #include "InventoryWidget.h"
@@ -90,16 +90,22 @@ void AMyCharacter::BeginPlay() {
 		AWeapon* RightWeapon = GetWorld()->SpawnActor<AWeapon>(DefaultRightHandWeaponClass);
 		if (RightWeapon) {
 			//RightWeapon->InitializeWithData(DefaultRightWeaponData);
-			EquipItem(RightWeapon, EEquipSlot::RightHand);
+			EquipItem(RightWeapon, EEquipSlotType::RightHand);
 		}
 	}
 	if (DefaultLeftHandWeaponClass) {
 		AWeapon* LeftWeapon = GetWorld()->SpawnActor<AWeapon>(DefaultLeftHandWeaponClass);
 		if (LeftWeapon) {
 			//LeftWeapon->InitializeWithData(DefaultLeftWeaponData);
-			EquipItem(LeftWeapon, EEquipSlot::LeftHand);
+			EquipItem(LeftWeapon, EEquipSlotType::LeftHand);
 		}
 	}
+
+	//퀵 슬롯
+	//QuickSlotList.SetNum(8);//등록 가능 아이템은 총 8개
+	//for (int32 Index = 0; Index < QuickSlotList.Num(); Index++) {
+	//	QuickSlotList[Index].SlotIndex = Index;
+	//}
 }
 
 // Called every frame
@@ -526,12 +532,6 @@ void AMyCharacter::ChangeTarget(AActor* NewTarget)
 	}
 }
 
-AActor* AMyCharacter::GetCurrentTarget() const
-{
-	return CurrentTarget ? CurrentTarget : nullptr;
-}
-
-
 void AMyCharacter::UpdateLockOnCameraRotation()
 {
 	if (!CurrentTarget) 
@@ -614,75 +614,9 @@ void AMyCharacter::OnRootItemBoxOverlapEnd(UPrimitiveComponent* OverlappedCompon
 	}
 }
 
-bool AMyCharacter::AddToQuickSlot(int32 SlotIndex, const FInventoryItemData& ItemData)
+void AMyCharacter::EquipItem(AEquipableItem* EquipableItem, EEquipSlotType Slot)
 {
-	if (ItemData.ItemAmount <= 0) 
-		return false;
-
-	auto* GameInstance = Cast<UDataTableGameInstance>(GetGameInstance());
-	if (!GameInstance)
-		return false;
-
-	auto* ItemFactory = GetGameInstance()->GetSubsystem<UItemFactory>();
-	if (!ItemFactory) 
-		return false;
-
-	const auto* StaticData = ItemFactory->FindItemData(ItemData.ItemTableID);
-	if (!StaticData || StaticData->ItemType != EItemType::Consumable)
-		return false;
-
-	FQuickSlotData SlotData;
-	SlotData.SlotIndex = SlotIndex;
-	SlotData.ItemData = ItemData;
-
-	QuickSlotMap.Add(SlotIndex, SlotData);
-	return true;
-}
-
-bool AMyCharacter::UseQuickSlot(int32 SlotIndex)
-{
-	if (!QuickSlotMap.Contains(SlotIndex)) 
-		return false;
-
-	FQuickSlotData& Slot = QuickSlotMap[SlotIndex];
-	if (Slot.ItemData.ItemAmount <= 0)
-		return false;
-
-	auto* ItemFactory = GetGameInstance()->GetSubsystem<UItemFactory>();
-	if (!ItemFactory) 
-		return false;
-
-	//인덱스에 맞는 퀵슬롯 맵에 아이템을 가져와서 사용해야 하니까 스폰할 필요 없음?
-	const FItemData* StaticData = ItemFactory->FindItemData(Slot.ItemData.ItemTableID);
-	if (!StaticData || StaticData->ItemType != EItemType::Consumable)
-		return false;
-
-	//퀵 슬롯 아이템 사용
-	auto* SpawnedItem = ItemFactory->SpawnItemFromTableID(GetWorld(), StaticData->ItemTableID);
-	if (!SpawnedItem)
-		return false;
-
-	auto* NonEquipableItem = Cast<ANonEquipableItem>(SpawnedItem);
-	if (!NonEquipableItem)
-		return false;
-	NonEquipableItem->UseItem();
-
-	// 수량 감소
-	Slot.ItemData.ItemAmount -= 1;
-	if (Slot.ItemData.ItemAmount <= 0) {
-		QuickSlotMap.Remove(SlotIndex);
-	}
-	return true;
-}
-
-bool AMyCharacter::RemoveQuickSlot(int32 SlotIndex)
-{
-	return QuickSlotMap.Remove(SlotIndex) > 0;
-}
-
-void AMyCharacter::EquipItem(AEquipableItem* EquipableItem, EEquipSlot Slot)
-{
-	if (!EquipableItem)
+	/*if (!EquipableItem)
 		return;
 
 	FName SocketName;
@@ -709,16 +643,16 @@ void AMyCharacter::EquipItem(AEquipableItem* EquipableItem, EEquipSlot Slot)
 		Weapon->SetActorRelativeLocation(WeaponOffset.GetLocation());
 		Weapon->SetActorRelativeRotation(WeaponOffset.GetRotation().Rotator());
 	}
-	EquippedItems.Add(Slot, EquipableItem);
+	EquippedItems.Add(Slot, EquipableItem);*/
 }
 
-void AMyCharacter::UnQuipItem(EEquipSlot Slot)
+void AMyCharacter::UnQuipItem(EEquipSlotType Slot)
 {
-	if (AEquipableItem* Existing = EquippedItems.FindRef(Slot)) {
+	/*if (AEquipableItem* Existing = EquippedItems.FindRef(Slot)) {
 		Existing->UnEquip();
 		Existing->Destroy();
 		EquippedItems.Remove(Slot);
-	}
+	}*/
 }
 
 void AMyCharacter::CheckStaminaRecovery(float DeltaTime)
@@ -754,12 +688,14 @@ void AMyCharacter::ReportNoiseToAI(float Loudness)
 
 AWeapon* AMyCharacter::GetEquipedRightHandItem() const
 {
-	return Cast<AWeapon>(EquippedItems.FindRef(EEquipSlot::RightHand));
+	//return Cast<AWeapon>(EquippedItems.FindRef(EEquipSlotType::RightHand));
+	return nullptr;
 }
 
 AWeapon* AMyCharacter::GEtEquipedLeftHandItem() const
 {
-	return Cast<AWeapon>(EquippedItems.FindRef(EEquipSlot::LeftHand));
+	//return Cast<AWeapon>(EquippedItems.FindRef(EEquipSlotType::LeftHand));
+	return nullptr;
 }
 
 UUserWidget* AMyCharacter::GetLockonWidgetInstance()

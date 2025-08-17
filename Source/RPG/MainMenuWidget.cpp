@@ -14,7 +14,18 @@
 
 void UMainMenuWidget::NativeConstruct()
 {
+    if (InventoryButton)
+        InventoryButton->OnClicked.AddDynamic(this, &UMainMenuWidget::OpenInventoryWidget);
 
+    if (EquipButton)
+        EquipButton->OnClicked.AddDynamic(this, &UMainMenuWidget::OpenEquipWidget);
+
+    if (SettingButton)
+        SettingButton->OnClicked.AddDynamic(this, &UMainMenuWidget::OpenSettingWidget);
+
+    if (QuitGameButton) {
+        //TODO: 게임 종료
+    }
 }
 
 void UMainMenuWidget::OpenInventoryWidget()
@@ -56,6 +67,7 @@ void UMainMenuWidget::OpenEquipWidget()
 
 	if (EquipButton) {
         //TODO:위젯 만들어지는대로 넣기
+
 	}
 }
 
@@ -75,6 +87,7 @@ void UMainMenuWidget::OpenSettingWidget()
 
 	if (SettingButton) {
         //TODO:위젯 만들어지는대로 넣기
+
 	}
 }
 

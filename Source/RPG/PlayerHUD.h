@@ -26,6 +26,9 @@ public:
     void OpenSettingWidget();
     void CloseSettingWidget();
 
+    void OpenMainMenuWidget();
+    void CloseMainMenuWidget();
+
     class UInventorySlotWidget* GetInventorySlotWidget();
     class UInventoryQuickSlotWidget* GetQuickSlotWidget();
 
@@ -46,12 +49,14 @@ protected:
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UI")
     TSubclassOf<class USettingWidget> SettingWidgetClass;
 
-    //TODO: 퀵 슬롯도 등록하는데 인벤토리에서 딸깍하면 여기에서 하자
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UI")
     TSubclassOf<class UInventoryQuickSlotWidget> InventoryQuickSlotWidgetClass;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UI")
     TSubclassOf<class ULockonWidget> LockonWidgetClass;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UI")
+    TSubclassOf<class UMainMenuWidget> MainMenuWidgetClass;
 
 private:
     UPlayerWidget* PlayerWidget;
@@ -61,4 +66,5 @@ private:
     class USettingWidget* SettingWidgetInstance;
     class UInventoryQuickSlotWidget* InventoryQuickSlotWidgetInstance;
     class ULockonWidget* LockonWidgetInstance;
+    class UMainMenuWidget* MainMenuWidgetInstance;
 };

@@ -48,7 +48,7 @@ protected:
 
 private:
 	FInventoryItemData CurrentInventoryItemData;
-	TMap<int32, FItemData*> ItemCache;
 	bool bIsFocused = false;
-	UInventoryWidget* ParentInventoryWidget = nullptr;
+	class UInventoryWidget* ParentInventoryWidget = nullptr;
+	FLinearColor DefaultBurshColor;
 };

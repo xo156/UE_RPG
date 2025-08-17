@@ -4,22 +4,22 @@
 
 #include "CoreMinimal.h"
 #include "Engine/DataTable.h"
-#include "InventoryItemData.h"
+#include "ConsumableItem.h"
 #include "QuickslotData.generated.h"
 
 USTRUCT(BlueprintType)
-struct FQuickSlotData
+struct FQuickslotData
 {
     GENERATED_BODY()
 
-    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    UPROPERTY(EditAnywhere, BlueprintReadOnly)
     int32 SlotIndex = -1;
 
-    UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    FInventoryItemData ItemData;
+    UPROPERTY(EditAnywhere, BlueprintReadOnly)
+    int32 ItemTableID = -1;
 
-    UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    float CooldownRemaining;
+    UPROPERTY(EditAnywhere, BlueprintReadOnly)
+    AConsumableItem* QuickSlotedItem;
 
     //TODO: 나중에는 UI쪽도
 };

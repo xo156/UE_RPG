@@ -19,4 +19,8 @@ public:
     //드랍 갯수
     UPROPERTY(EditAnywhere)
     int32 Amount;
+
+    //아이템 타입
+    UPROPERTY(EditAnywhere)
+    EItemType ItemType;
 };

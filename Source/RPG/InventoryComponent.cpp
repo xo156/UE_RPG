@@ -155,3 +155,17 @@ void UInventoryComponent::SetIsOpen(bool bOpen)
 {
 	bIsOpen = bOpen;
 }
+
+
+TArray<FInventoryItemData> UInventoryComponent::GetFilteredInventoryItems(TArray<EItemType> Filters)
+{
+	TArray<FInventoryItemData> FilteredItems;
+
+	for (const FInventoryItemData InventoryItem : InventoryItems) {
+		for (const EItemType Filter : Filters) {
+			if (InventoryItem.ItemType == Filter)
+				FilteredItems.Add(InventoryItem);
+		}
+	}
+	return FilteredItems;
+}

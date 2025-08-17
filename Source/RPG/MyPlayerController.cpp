@@ -70,6 +70,8 @@ void AMyPlayerController::SetupInputComponent() {
 
 		EnHancedInputComponent->BindAction(QuickSlotAction, ETriggerEvent::Started, this, &AMyPlayerController::TryUseQuickSlot);
 	
+		EnHancedInputComponent->BindAction(EquipAction, ETriggerEvent::Started, this, &AMyPlayerController::TryOpenEquip);
+
 		//인벤토리
 		EnHancedInputComponent->BindAction(ConfirmAction, ETriggerEvent::Started, this, &AMyPlayerController::TryConfirm);
 		EnHancedInputComponent->BindAction(NavigateAction, ETriggerEvent::Started, this, &AMyPlayerController::TryNavigate);
@@ -242,7 +244,21 @@ void AMyPlayerController::TrySelectQuickSlot()
 void AMyPlayerController::TryOpenMainMenu()
 {
 	if (auto* PlayerHUD = Cast<APlayerHUD>(GetHUD())) {
-		//TODO: PlayerHUD에서 메인 메뉴 위젯 열기
+		PlayerHUD->OpenMainMenuWidget();
+		ChangeInputMappingContext(EIMCState::Inventory);
+	}
+
+}
+
+void AMyPlayerController::TryOpenEquip()
+{
+	if (GetCharacter() != nullptr) {
+		if (auto* InventoryComponent = GetCharacter()->GetInventoryComponent()) {
+			if (auto* PlayerHUD = Cast<APlayerHUD>(GetHUD())) {
+				PlayerHUD->OpenEquipWidget();
+				ChangeInputMappingContext(EIMCState::Inventory);
+			}
+		}
 	}
 }
 

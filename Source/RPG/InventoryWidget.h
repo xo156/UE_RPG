@@ -8,9 +8,7 @@
 #include "InventoryItemData.h"
 #include "InventoryWidget.generated.h"
 
-/**
- * 
- */
+
 UCLASS()
 class RPG_API UInventoryWidget : public UUserWidget
 {
@@ -41,9 +39,6 @@ public:
 
 	UFUNCTION()
 	void OnDestroyClicked();
-
-	UFUNCTION()
-	void OnQuickSlotClicked();
 
 protected:
 	//인벤토리 메인
@@ -83,12 +78,7 @@ protected:
 	UPROPERTY(meta = (BindWidget))
 	class UTextBlock* DestroyText;
 
-	UPROPERTY(meta = (BindWidget))
-	class UButton* QuickSlot;
-
-	UPROPERTY(meta = (BindWidget))
-	class UTextBlock* QuickSlotText;
-
+	//인벤토리 아이템 데이터
 	FInventoryItemData InventoryItemData;
 
 private:

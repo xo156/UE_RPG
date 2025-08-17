@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
 #include "InventoryItemData.h"
+#include "DropItemData.h"
 #include "InventoryComponent.generated.h"
 
 
@@ -40,8 +41,11 @@ public:
 	class UInventoryWidget* GetInventoryWidget() const { return InventoryWidget; }
 	int32 GetMaxSlotCounter() const { return MaxSlotCounter; }
 
-	TArray<FInventoryItemData> InventoryItems;
+	TArray<FInventoryItemData> GetInventoryItems() { return InventoryItems; }
+	TArray<FInventoryItemData> GetFilteredInventoryItems(TArray<EItemType> Filters);
 private:
+	TArray<FInventoryItemData> InventoryItems;
+
 	class UInventoryWidget* InventoryWidget;
 
 	int32 MaxSlotCounter;

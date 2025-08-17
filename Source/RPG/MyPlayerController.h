@@ -60,6 +60,7 @@ public:
 	void TryUseQuickSlot();
 	void TrySelectQuickSlot();
 	void TryOpenMainMenu();
+	void TryOpenEquip();
 
 	//인벤토리 액션
 	void TryConfirm();
@@ -94,6 +95,8 @@ private:
 	class UInputAction* InventoryAction;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input", meta = (AllowPrivateAccess = "true"))
 	class UInputAction* QuickSlotAction;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input", meta = (AllowPrivateAccess = "true"))
+	class UInputAction* EquipAction;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input", meta = (AllowPrivateAccess = "true"))
 	class UInputAction* CloseAction;
 

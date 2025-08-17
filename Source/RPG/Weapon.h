@@ -32,7 +32,7 @@ public:
 
 	class USkeletalMeshComponent* GetWeaponMesh() const;
 	class UBoxComponent* GetWeaponCollision() const;
-	FTransform GetHandOffsetTransform(EEquipSlot Slot) const;
+	FTransform GetHandOffsetTransform(EEquipSlotType Slot) const;
 	TArray<AActor*>& GetOverlapActors();
 	class UAnimMontage* GetLightAttackMontage() const;
 	class UAnimMontage* GetHeavyAttackMontage() const;

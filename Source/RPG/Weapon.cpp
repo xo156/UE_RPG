@@ -85,9 +85,9 @@ UBoxComponent* AWeapon::GetWeaponCollision() const
 	return WeaponCollision ? WeaponCollision : nullptr;
 }
 
-FTransform AWeapon::GetHandOffsetTransform(EEquipSlot Slot) const
+FTransform AWeapon::GetHandOffsetTransform(EEquipSlotType Slot) const
 {
-	if (Slot == EEquipSlot::LeftHand) {
+	if (Slot == EEquipSlotType::LeftHand) {
 		return FTransform(LeftHandRotationOffset, LeftHandLocationOffset);
 	}
 	else {

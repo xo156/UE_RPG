@@ -30,4 +30,8 @@ public:
 	//아이템 잔류 여부
 	UPROPERTY(EditAnywhere)
 	bool bRemainInInventoryWhenAmountZero;
+
+	//아이템 타입
+	UPROPERTY(EditAnywhere)
+	EItemType ItemType;
 };

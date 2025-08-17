@@ -2,7 +2,7 @@
 
 
 #include "EquipableItem.h"
-#include "EquipSlot.h"
+#include "EquipSlotType.h"
 
 // Sets default values
 AEquipableItem::AEquipableItem()

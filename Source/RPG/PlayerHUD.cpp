@@ -17,6 +17,7 @@
 #include "HPActorComponent.h"
 #include "StaminaActorComponent.h"
 #include "LockonWidget.h"
+#include "MainMenuWidget.h"
 
 void APlayerHUD::BeginPlay()
 {
@@ -87,6 +88,15 @@ void APlayerHUD::BeginPlay()
         }
     }
 
+    //메인 메뉴
+    if (MainMenuWidgetClass) {
+        LockonWidgetInstance = CreateWidget<ULockonWidget>(GetWorld(), MainMenuWidgetClass);
+        if (MainMenuWidgetInstance) {
+            MainMenuWidgetInstance->AddToViewport();
+            MainMenuWidgetInstance->SetVisibility(ESlateVisibility::Hidden);
+        }
+    }
+
 }
 
 void APlayerHUD::OpenInventory(UInventoryComponent* InventoryComponent)
@@ -130,6 +140,9 @@ void APlayerHUD::OpenEquipWidget()
         return;
 
 
+
+
+    EquipWidgetInstance->SetVisibility(ESlateVisibility::Visible);
 }
 
 void APlayerHUD::CloseEquipWidget()
@@ -137,7 +150,7 @@ void APlayerHUD::CloseEquipWidget()
     if (!EquipWidgetInstance)
         return;
 
-
+    EquipWidgetInstance->SetVisibility(ESlateVisibility::Hidden);
 }
 
 void APlayerHUD::OpenSettingWidget()
@@ -154,6 +167,28 @@ void APlayerHUD::CloseSettingWidget()
         return;
 
 
+}
+
+void APlayerHUD::OpenMainMenuWidget()
+{
+    if (!MainMenuWidgetInstance /*|| !MainMenuComponent*/ )
+        return;
+
+    //const bool bIsCurrentlyOpen = InventoryComponent->IsOpen();
+    auto* PlayerController = GetOwningPlayerController();
+    if (!PlayerController)
+        return;
+
+    /*if (!bIsCurrentlyOpen) {
+        InventoryWidgetInstance->UpdateInventorySlotWidget(InventoryComponent);
+        InventoryWidgetInstance->SetVisibility(ESlateVisibility::Visible);
+        PlayerController->bShowMouseCursor = true;
+        InventoryComponent->SetIsOpen(true);
+    }*/
+}
+
+void APlayerHUD::CloseMainMenuWidget()
+{
 }
 
 UInventorySlotWidget* APlayerHUD::GetInventorySlotWidget()

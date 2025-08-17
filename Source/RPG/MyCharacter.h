@@ -51,7 +51,6 @@ public:
 	void UpdateTargetVisibility();
 	bool IsTargetValid(AActor* CheckTarget);
 	void ChangeTarget(AActor* NewTarget);
-	AActor* GetCurrentTarget() const;
 	void UpdateLockOnCameraRotation();
 	void UpdateLockOnCameraPosition();
 
@@ -66,14 +65,13 @@ public:
 	void OnRootItemBoxOverlapEnd(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComponent, int32 OtherBodyIndex);
 	
 	//퀵 슬롯
-	bool AddToQuickSlot(int32 SlotIndex, const FInventoryItemData& ItemData);
-	bool UseQuickSlot(int32 SlotIndex);
-	bool RemoveQuickSlot(int32 SlotIndex);
+	//bool AddToQuickSlot(int32 SlotIndex, int32 ItemTableID, class AItemBase* ItemInstance);
+	//bool UseQuickSlot(int32 SlotIndex);
 
 	//장비
 	UFUNCTION()
-	void EquipItem(class AEquipableItem* EquipableItem, EEquipSlot Slot);
-	void UnQuipItem(EEquipSlot Slot);
+	void EquipItem(class AEquipableItem* EquipableItem, EEquipSlotType Slot);
+	void UnQuipItem(EEquipSlotType Slot);
 
 	//자원
 	void CheckStaminaRecovery(float DeltaTime);
@@ -164,7 +162,7 @@ private:
 	//장비
 	class AWeapon* CurrentRightWeapon;
 	class AWeapon* CurrentLeftWeapon;
-	TMap<EEquipSlot, class AEquipableItem*> EquippedItems;
+	TMap<EEquipSlotType, class AEquipableItem*> EquippedItems;
 
 	//AI
 	class UAIPerceptionStimuliSourceComponent* StimulusSource; //Monster가 탐지할 수 있도록
@@ -199,5 +197,5 @@ private:
 	int32 QuickSlotItemAmount = 0;
 	int32 QuickSlotItemID;
 
-	TMap<int32, FQuickSlotData> QuickSlotMap;
+	//TArray<FQuickSlotData> QuickSlotList;
 };

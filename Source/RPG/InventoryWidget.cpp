@@ -18,6 +18,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "EquipableItem.h"
 #include "NonEquipableItem.h"
+#include "FocusableUserWidget.h"
 
 void UInventoryWidget::NativeConstruct()
 {
@@ -52,9 +53,6 @@ void UInventoryWidget::NativeConstruct()
         DestroyButton->OnClicked.AddDynamic(this, &UInventoryWidget::OnDestroyClicked);
     }
 
-    if (QuickSlot) {
-        QuickSlot->OnClicked.AddDynamic(this, &UInventoryWidget::OnQuickSlotClicked);
-    }
 }
 
 void UInventoryWidget::InitInventoryWidget(UInventoryComponent* InventoryComponent)
@@ -98,8 +96,8 @@ void UInventoryWidget::UpdateInventorySlotWidget(UInventoryComponent* InventoryC
 
     for (int32 Index = 0; Index < InventorySlotWidgets.Num(); Index++) {
         if (InventorySlotWidgets[Index]) {
-            if (Index < InventoryComponent->InventoryItems.Num()) {
-                InventorySlotWidgets[Index]->RefreshSlot(InventoryComponent->InventoryItems, Index);
+            if (Index < InventoryComponent->GetInventoryItems().Num()) {
+                InventorySlotWidgets[Index]->RefreshSlot(InventoryComponent->GetInventoryItems(), Index);
             }
             else {
                 InventorySlotWidgets[Index]->ClearSlot();
@@ -183,6 +181,7 @@ void UInventoryWidget::InitTooltip(const FItemData& InItemData)
     }
 
     //TODO: FItemData에 없는 정보를 캐스팅해서 가져오도록 할 것
+    //TODO: 그런데 이거 누를때마다 캐스팅이 맞는건가 싶긴 해
     if (AttackPowerValue && DefensePowerValue) {
         switch (InItemData.ItemType) {
         case EItemType::Consumable:
@@ -264,16 +263,6 @@ void UInventoryWidget::OnUseClicked()
     if (SpawnedItem) {
         switch (SpawnedItem->GetItemType())
         {
-        case EItemType::Weapon:
-        case EItemType::Armor:
-        {
-            auto* EquipableItem = Cast<AEquipableItem>(SpawnedItem);
-            if (!EquipableItem)
-                return;
-            
-            //PlayerCharacter->EquipItem(EquipableItem, 여기에 슬롯 어떻게 넣지?);
-            break;
-        }
         case EItemType::Consumable:
         case EItemType::Quest:
         {
@@ -311,35 +300,4 @@ void UInventoryWidget::OnDestroyClicked()
     InventoryComponent->RemoveItem(InventoryItemData.ItemTableID, 1);
 
     UpdateInventorySlotWidget(InventoryComponent);
-}
-
-void UInventoryWidget::OnQuickSlotClicked()
-{
-    if (InventoryItemData.ItemAmount <= 0)
-        return;
-
-    auto* PlayerController = Cast<AMyPlayerController>(UGameplayStatics::GetPlayerController(GetWorld(), 0));
-    if (!PlayerController)
-        return;
-
-    auto* PlayerCharacter = Cast<AMyCharacter>(PlayerController->GetPawn());
-    if (!PlayerCharacter)
-        return;
-
-    auto* PlayerHUD = Cast<APlayerHUD>(PlayerController->GetHUD());
-    if (!PlayerHUD)
-        return;
-
-    auto* ItemFactory = GetGameInstance()->GetSubsystem<UItemFactory>();
-    if (!ItemFactory)
-        return;
-
-    auto* InventoryComponent = PlayerCharacter->GetInventoryComponent();
-    if (!InventoryComponent)
-        return;
-
-    const FInventoryItemData& FocusedData = CurrentFocusedSlot->GetCurrentInventoryItemData();
-    if (ItemFactory->FindItemData(FocusedData.ItemTableID)->ItemType == EItemType::Consumable) {
-        PlayerCharacter->AddToQuickSlot(1, FocusedData);
-    }
 }
