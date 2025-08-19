@@ -24,7 +24,7 @@ void AEquipableItem::SetOwnerCharacter(ACharacter* NewOwner)
 	
 }
 
-void AEquipableItem::EquipToCharacter(USkeletalMeshComponent* TargetMesh, FName SocketName)
+void AEquipableItem::AttachToSocket(USkeletalMeshComponent* TargetMesh, FName SocketName)
 {
 	if (!TargetMesh)
 		return;
@@ -33,7 +33,7 @@ void AEquipableItem::EquipToCharacter(USkeletalMeshComponent* TargetMesh, FName 
 	AttachedSocketName = SocketName;
 }
 
-void AEquipableItem::UnEquip()
+void AEquipableItem::DetachFromSocket()
 {
 	DetachFromActor(FDetachmentTransformRules::KeepRelativeTransform);
 	AttachedSocketName = NAME_None;

@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "FocusableSlotWidget.h"
 #include "EquipSlotType.h"
+#include "ItemData.h"
 #include "QuickSlotWidget.generated.h"
 
 /**
@@ -19,9 +20,6 @@ public:
 	virtual void NativeConstruct() override;
 
 	void InitQuickSlot(int32 InIndex, EEquipSlotType InEquipSlotType);
-
-	UFUNCTION()
-	virtual void OnSlotConfirmed() override;
 
 	void SetOwnerEquipWidget(class UEquipWidget* InOwner);
 

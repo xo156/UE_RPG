@@ -3,12 +3,12 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Blueprint/UserWidget.h"
+#include "FocusableSlotWidget.h"
 #include "InventoryItemData.h"
 #include "InventorySlotWidget.generated.h"
 
 UCLASS()
-class RPG_API UInventorySlotWidget : public UUserWidget
+class RPG_API UInventorySlotWidget : public UFocusableSlotWidget
 {
 	GENERATED_BODY()
 
@@ -31,24 +31,15 @@ public:
 	void ClearSlot();
 
 	void SetParentInventoryWidget(class UInventoryWidget* InWidget);
-	void SetIsFocused(bool bFocused);
-	bool IsFocused() const { return bIsFocused; }
 
 	FInventoryItemData GetCurrentInventoryItemData() const { return CurrentInventoryItemData ; }
 
 protected:
 	UPROPERTY(meta = (BindWidget))
-	class UBorder* FocusBorder;
-
-	UPROPERTY(meta = (BindWidget))
-	class UButton* SlotThumbnail;
-	
-	UPROPERTY(meta = (BindWidget))
 	class UTextBlock* AmountText;
 
 private:
 	FInventoryItemData CurrentInventoryItemData;
-	bool bIsFocused = false;
 	class UInventoryWidget* ParentInventoryWidget = nullptr;
 	FLinearColor DefaultBurshColor;
 };

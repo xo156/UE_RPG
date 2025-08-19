@@ -4,27 +4,29 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
-#include "EquipSlotType.h"
-#include "EquipComponent.generated.h"
+#include "QuickSlotComponent.generated.h"
 
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
-class RPG_API UEquipComponent : public UActorComponent
+class RPG_API UQuickSlotComponent : public UActorComponent
 {
 	GENERATED_BODY()
 
 public:	
 	// Sets default values for this component's properties
-	UEquipComponent();
+	UQuickSlotComponent();
 
-	class AEquipableItem* GetEquippedItem(EEquipSlotType Slot) const;
+protected:
+	// Called when the game starts
+	virtual void BeginPlay() override;
+
+public:	
+	// Called every frame
+	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
 	void SetIsOpen(bool bOpen);
 	bool IsOpen() { return bIsOpen; }
 
 private:
 	bool bIsOpen;
-
-	//¿Â¬¯ æ∆¿Ã≈€
-	TMap<EEquipSlotType, class AEquipableItem*> EquippedItems;
 };

@@ -20,8 +20,8 @@ public:
     void OpenInventory(class UInventoryComponent* InventoryComponent);
     void CloseInventory(class UInventoryComponent* InventoryComponent);
 
-    void OpenEquipWidget();
-    void CloseEquipWidget();
+    void OpenEquipWidget(class UEquipComponent* EquipComponent);
+    void CloseEquipWidget(class UEquipComponent* EquipComponent);
 
     void OpenSettingWidget();
     void CloseSettingWidget();
@@ -35,6 +35,8 @@ public:
     class UInventoryWidget* GetInventoryWidget() const { return InventoryWidgetInstance; }
 
     class ULockonWidget* GetLockonWidget() const { return LockonWidgetInstance; }
+
+    class UFocusableUserWidget* GetCurrentFocusableWidget() const;
 
 protected:
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UI")

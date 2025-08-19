@@ -15,10 +15,10 @@ void UInventorySlotWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
 
-	if (SlotThumbnail) {
-		SlotThumbnail->OnHovered.AddDynamic(this, &UInventorySlotWidget::OnThumbnailHovered);
-		SlotThumbnail->OnUnhovered.AddDynamic(this, &UInventorySlotWidget::OnUnThumbnailHovered);
-		SlotThumbnail->OnClicked.AddDynamic(this, &UInventorySlotWidget::OnThumbnailClicked);
+	if (SlotButton) {
+		SlotButton->OnHovered.AddDynamic(this, &UInventorySlotWidget::OnThumbnailHovered);
+		SlotButton->OnUnhovered.AddDynamic(this, &UInventorySlotWidget::OnUnThumbnailHovered);
+		SlotButton->OnClicked.AddDynamic(this, &UInventorySlotWidget::OnThumbnailClicked);
 	}
 
 	DefaultBurshColor = FocusBorder->GetBrushColor();
@@ -80,18 +80,18 @@ void UInventorySlotWidget::RefreshSlot(TArray<FInventoryItemData> InventoryItem,
 		return;
 
 	if (auto* ItemData = ItemFactory->FindItemData(CurrentInventoryItemData.ItemTableID)) {
-		FButtonStyle ButtonStyle = SlotThumbnail->GetStyle();
+		FButtonStyle ButtonStyle = SlotButton->GetStyle();
 		FSlateBrush NewBrush;
 		NewBrush.SetResourceObject(ItemData->ItemIcon);
 
 		ButtonStyle.SetNormal(NewBrush);
 		ButtonStyle.SetHovered(NewBrush);
 		ButtonStyle.SetPressed(NewBrush);
-		SlotThumbnail->SetStyle(ButtonStyle);
+		SlotButton->SetStyle(ButtonStyle);
 
 		AmountText->SetText(FText::AsNumber(CurrentInventoryItemData.ItemAmount));
 
-		SlotThumbnail->SetVisibility(ESlateVisibility::Visible);
+		SlotButton->SetVisibility(ESlateVisibility::Visible);
 		AmountText->SetVisibility(ESlateVisibility::Visible);
 	}
 	else {
@@ -101,17 +101,9 @@ void UInventorySlotWidget::RefreshSlot(TArray<FInventoryItemData> InventoryItem,
 
 void UInventorySlotWidget::ClearSlot()
 {	
-	FButtonStyle ButtonStyle = SlotThumbnail->GetStyle();
-	FSlateBrush NewBrush;
-	NewBrush.SetResourceObject(nullptr);
-
-	ButtonStyle.SetNormal(NewBrush);
-	ButtonStyle.SetHovered(NewBrush);
-	ButtonStyle.SetPressed(NewBrush);
-	SlotThumbnail->SetStyle(ButtonStyle);
+	Super::ClearSlot();
 
 	AmountText->SetText(FText::AsNumber(0));
-
 	AmountText->SetVisibility(ESlateVisibility::Hidden);
 }
 
@@ -119,20 +111,5 @@ void UInventorySlotWidget::SetParentInventoryWidget(UInventoryWidget* InWidget)
 {
 	if (InWidget) {
 		ParentInventoryWidget = InWidget;
-	}
-}
-
-void UInventorySlotWidget::SetIsFocused(bool bFocused)
-{
-	if (!FocusBorder)
-		return;
-
-	bIsFocused = bFocused;
-
-	if (bIsFocused) {
-		FocusBorder->SetBrushColor(FLinearColor::Red);
-	}
-	else {
-		FocusBorder->SetBrushColor(DefaultBurshColor);
 	}
 }

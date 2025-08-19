@@ -72,6 +72,7 @@ public:
 	UFUNCTION()
 	void EquipItem(class AEquipableItem* EquipableItem, EEquipSlotType Slot);
 	void UnQuipItem(EEquipSlotType Slot);
+	class UEquipComponent* GetEquipComponent();
 
 	//자원
 	void CheckStaminaRecovery(float DeltaTime);
@@ -187,10 +188,14 @@ private:
 
 	//인벤토리 및 아이템
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Inventory", meta = (AllowPrivateAccess = "true"))
-	UInventoryComponent* InventoryComponent;
+	class UInventoryComponent* InventoryComponent;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Inventory", meta = (AllowPrivateAccess = "true"))
 	class UBoxComponent* RootItemBoxComponent;
 	TArray<class ADropItem*> OverlapItems;
+
+	//장비
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Inventory", meta = (AllowPrivateAccess = "true"))
+	class UEquipComponent* EquipComponent;
 	
 	//퀵 슬롯
 	class AItemBase* QuickSlotItem;

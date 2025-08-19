@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "ItemBase.h"
+#include "EquipSlotType.h"
 #include "EquipableItemData.h"
 #include "EquipableItem.generated.h"
 
@@ -20,17 +21,15 @@ public:
 
 	void SetOwnerCharacter(ACharacter* NewOwner);
 
-	void EquipToCharacter(USkeletalMeshComponent* TargetMesh, FName SocketName);
-	void UnEquip();
+	//장착/해제는 UEquipComponent 호출할 때 사용
+	void AttachToSocket(USkeletalMeshComponent* TargetMesh, FName SocketName);
+	void DetachFromSocket();
 
 	int32 GetAttackPower() const { return EquipableItemData->AttackPower; }
 	int32 GetDefensePower() const { return EquipableItemData->DefensePower; }
-	//EEquipSlot GetEquipSlot() const { return EquipableItemData->EquipSlot; }
-
+	
 protected:
-	ACharacter* OwnerCharacter;
-
-	FName AttachedSocketName;
-
+	ACharacter* OwnerCharacter = nullptr;
+	FName AttachedSocketName = NAME_None;
 	const FEquipableItemData* EquipableItemData;
 };

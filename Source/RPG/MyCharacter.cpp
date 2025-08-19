@@ -28,6 +28,7 @@
 #include "DropItem.h"
 #include "PlayerHUD.h"
 #include "LockonWidget.h"
+#include "EquipComponent.h"
 
 // Sets default values
 AMyCharacter::AMyCharacter() {
@@ -653,6 +654,11 @@ void AMyCharacter::UnQuipItem(EEquipSlotType Slot)
 		Existing->Destroy();
 		EquippedItems.Remove(Slot);
 	}*/
+}
+
+UEquipComponent* AMyCharacter::GetEquipComponent()
+{
+	return EquipComponent ? EquipComponent : nullptr;
 }
 
 void AMyCharacter::CheckStaminaRecovery(float DeltaTime)

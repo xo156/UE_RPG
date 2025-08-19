@@ -12,6 +12,7 @@
 UENUM(BlueprintType)
 enum class EEquipSlotType : uint8
 {
+	None UMETA(DisplayName = "None"),
 	RightHand UMETA(DisplayName = "RightHand"),
 	LeftHand UMETA(DisplayName = "LeftHand"),
 	Head UMETA(DisplayName = "Head"),

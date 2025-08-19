@@ -18,6 +18,8 @@
 #include "StaminaActorComponent.h"
 #include "LockonWidget.h"
 #include "MainMenuWidget.h"
+#include "FocusableUserWidget.h"
+#include "EquipComponent.h"
 
 void APlayerHUD::BeginPlay()
 {
@@ -134,23 +136,39 @@ void APlayerHUD::CloseInventory(UInventoryComponent* InventoryComponent)
     }
 }
 
-void APlayerHUD::OpenEquipWidget()
+void APlayerHUD::OpenEquipWidget(class UEquipComponent* EquipComponent)
 {
     if (!EquipWidgetInstance)
         return;
 
+    const bool bIsCurrentlyOpen = EquipComponent->IsOpen();
+    auto* PlayerController = GetOwningPlayerController();
+    if (!PlayerController)
+        return;
 
-
-
-    EquipWidgetInstance->SetVisibility(ESlateVisibility::Visible);
+    if (!bIsCurrentlyOpen) {
+        //TODO: 전체 패널들 업데이트 하는 함수 제작
+        EquipWidgetInstance->SetVisibility(ESlateVisibility::Visible);
+        PlayerController->bShowMouseCursor = true;
+        EquipComponent->SetIsOpen(true);
+    }
 }
 
-void APlayerHUD::CloseEquipWidget()
+void APlayerHUD::CloseEquipWidget(class UEquipComponent* EquipComponent)
 {
     if (!EquipWidgetInstance)
         return;
 
-    EquipWidgetInstance->SetVisibility(ESlateVisibility::Hidden);
+    const bool bIsCurrentlyOpen = EquipComponent->IsOpen();
+    auto* PlayerController = GetOwningPlayerController();
+    if (!PlayerController)
+        return;
+
+    if (bIsCurrentlyOpen) {
+        EquipWidgetInstance->SetVisibility(ESlateVisibility::Hidden);
+        PlayerController->bShowMouseCursor = false;
+        EquipComponent->SetIsOpen(false);
+    }
 }
 
 void APlayerHUD::OpenSettingWidget()
@@ -199,4 +217,15 @@ UInventorySlotWidget* APlayerHUD::GetInventorySlotWidget()
 UInventoryQuickSlotWidget* APlayerHUD::GetQuickSlotWidget()
 {
     return InventoryQuickSlotWidgetInstance ? InventoryQuickSlotWidgetInstance : nullptr;
+}
+
+UFocusableUserWidget* APlayerHUD::GetCurrentFocusableWidget() const
+{
+    if (InventoryWidgetInstance && InventoryWidgetInstance->IsInViewport())
+        return InventoryWidgetInstance;
+
+    if (EquipWidgetInstance && EquipWidgetInstance->IsInViewport())
+        return EquipWidgetInstance;
+
+    return nullptr;
 }

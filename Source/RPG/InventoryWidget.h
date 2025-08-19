@@ -3,14 +3,14 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Blueprint/UserWidget.h"
+#include "FocusableUserWidget.h"
 #include "ItemData.h"
 #include "InventoryItemData.h"
 #include "InventoryWidget.generated.h"
 
 
 UCLASS()
-class RPG_API UInventoryWidget : public UUserWidget
+class RPG_API UInventoryWidget : public UFocusableUserWidget
 {
 	GENERATED_BODY()
 	
@@ -22,10 +22,9 @@ public:
 	//슬롯
 	void CreateInventorySlotWidget(class UInventoryComponent* InventoryComponent);
 	void UpdateInventorySlotWidget(class UInventoryComponent* InventoryComponent);
-	void RequestFocus(class UInventorySlotWidget* NewfocusSlot);
-	void MoveFocus(const FVector2D& Direction);
+
 	void ConfirmFocusSlot();
-	class UInventorySlotWidget* GetCurrentFocusedSlot() const { return CurrentFocusedSlot; }
+	class UInventorySlotWidget* GetCurrentFocusedSlot() const { return Cast<UInventorySlotWidget>(CurrentFocusedSlot); }
 
 	//툴팁
 	void InitTooltip(const FItemData& InItemData);
@@ -41,12 +40,18 @@ public:
 	void OnDestroyClicked();
 
 protected:
+	//방향에 따른 포커싱 이동
+	virtual void MoveFocusUp() override;
+	virtual void MoveFocusDown() override;
+	virtual void MoveFocusLeft() override;
+	virtual void MoveFocusRight() override;
+
 	//인벤토리 메인
 	UPROPERTY(meta = (BindWidget))
 	class UTextBlock* InventoryName;
 
 	UPROPERTY(meta = (BindWidget))
-	class UUniformGridPanel* InventorySlots;
+	class UUniformGridPanel* InventoryGridPanel;
 
 	//인벤토리 슬롯
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Inventory")
@@ -84,7 +89,6 @@ protected:
 private:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Inventory", meta = (AllowPrivateAccess="true"))
 	int32 MaxDesiredColumns = 6;
-	int32 InventoryColumnCount;
+	int32 InventoryColumnCount = 0;
 	TArray<class UInventorySlotWidget*> InventorySlotWidgets;
-	class UInventorySlotWidget* CurrentFocusedSlot = nullptr;
 };

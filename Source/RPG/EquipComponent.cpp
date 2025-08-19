@@ -2,33 +2,24 @@
 
 
 #include "EquipComponent.h"
+#include "EquipableItem.h"
 
 // Sets default values for this component's properties
 UEquipComponent::UEquipComponent()
 {
 	// Set this component to be initialized when the game starts, and to be ticked every frame.  You can turn these features
 	// off to improve performance if you don't need them.
-	PrimaryComponentTick.bCanEverTick = true;
+	PrimaryComponentTick.bCanEverTick = false;
 
 	// ...
 }
 
-
-// Called when the game starts
-void UEquipComponent::BeginPlay()
+void UEquipComponent::SetIsOpen(bool bOpen)
 {
-	Super::BeginPlay();
-
-	// ...
-	
+	bIsOpen = bOpen;
 }
 
-
-// Called every frame
-void UEquipComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
+AEquipableItem* UEquipComponent::GetEquippedItem(EEquipSlotType Slot) const
 {
-	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
-
-	// ...
+	return EquippedItems.Contains(Slot) ? EquippedItems[Slot] : nullptr;
 }
-

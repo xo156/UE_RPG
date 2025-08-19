@@ -156,7 +156,6 @@ void UInventoryComponent::SetIsOpen(bool bOpen)
 	bIsOpen = bOpen;
 }
 
-
 TArray<FInventoryItemData> UInventoryComponent::GetFilteredInventoryItems(TArray<EItemType> Filters)
 {
 	TArray<FInventoryItemData> FilteredItems;

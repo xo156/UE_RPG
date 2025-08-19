@@ -62,11 +62,12 @@ void UInventoryWidget::InitInventoryWidget(UInventoryComponent* InventoryCompone
 
     CreateInventorySlotWidget(InventoryComponent);
     UpdateInventorySlotWidget(InventoryComponent);
+
 }
 
 void UInventoryWidget::CreateInventorySlotWidget(UInventoryComponent* InventoryComponent)
 {
-    if (!InventoryComponent || !InventorySlots || !InventorySlotWidgetClass) {
+    if (!InventoryComponent || !InventoryGridPanel || !InventorySlotWidgetClass) {
         return;
     }
 
@@ -80,7 +81,7 @@ void UInventoryWidget::CreateInventorySlotWidget(UInventoryComponent* InventoryC
         if (NewSlot) {
             int32 Row = Index / InventoryColumnCount;
             int32 Column = Index % InventoryColumnCount;
-            InventorySlots->AddChildToUniformGrid(NewSlot, Row, Column);
+            InventoryGridPanel->AddChildToUniformGrid(NewSlot, Row, Column);
             NewSlot->SetParentInventoryWidget(this);
             InventorySlotWidgets.Add(NewSlot);
             UE_LOG(LogTemp, Log, TEXT("Slot Created No: %d"), Index);
@@ -106,49 +107,6 @@ void UInventoryWidget::UpdateInventorySlotWidget(UInventoryComponent* InventoryC
     }
 }
 
-void UInventoryWidget::RequestFocus(UInventorySlotWidget* NewfocusSlot)
-{
-    if (CurrentFocusedSlot == NewfocusSlot)
-        return;
-
-    if (CurrentFocusedSlot && CurrentFocusedSlot->IsFocused()) {
-        CurrentFocusedSlot->SetIsFocused(false); //기존 포커스 제거
-    }
-
-    CurrentFocusedSlot = NewfocusSlot;
-
-    if (CurrentFocusedSlot)
-        CurrentFocusedSlot->SetIsFocused(true); //새 포커스 설정
-}
-
-void UInventoryWidget::MoveFocus(const FVector2D& Direction)
-{
-    if (InventorySlotWidgets.Num() == 0)
-        return;
-
-    const int32 Columns = InventoryColumnCount;
-    const int32 TotalSlots = InventorySlotWidgets.Num();
-
-    int32 CurrentIndex = InventorySlotWidgets.IndexOfByKey(CurrentFocusedSlot);
-    if (CurrentIndex == INDEX_NONE) {
-        RequestFocus(InventorySlotWidgets[0]);
-        return;
-    }
-
-    int32 X = CurrentIndex % Columns;
-    int32 Y = CurrentIndex / Columns;
-
-    int32 NewX = FMath::Clamp(X + FMath::RoundToInt(Direction.X), 0, Columns - 1);
-    int32 NewY = FMath::Clamp(Y - FMath::RoundToInt(Direction.Y), 0, (TotalSlots - 1) / Columns);
-
-    int32 NewIndex = NewY * Columns + NewX;
-
-    if (!InventorySlotWidgets.IsValidIndex(NewIndex)) 
-        return;
-
-    RequestFocus(InventorySlotWidgets[NewIndex]);
-}
-
 void UInventoryWidget::ConfirmFocusSlot()
 {
     if (!CurrentFocusedSlot) 
@@ -158,7 +116,7 @@ void UInventoryWidget::ConfirmFocusSlot()
     if (!ItemFactory)
         return;
 
-    const FInventoryItemData& FocusedData = CurrentFocusedSlot->GetCurrentInventoryItemData();
+    const FInventoryItemData& FocusedData = GetCurrentFocusedSlot()->GetCurrentInventoryItemData();
 
     bool bValidItem = FocusedData.ItemAmount > 0 || FocusedData.bRemainInInventoryWhenAmountZero;
     if (bValidItem) {
@@ -300,4 +258,99 @@ void UInventoryWidget::OnDestroyClicked()
     InventoryComponent->RemoveItem(InventoryItemData.ItemTableID, 1);
 
     UpdateInventorySlotWidget(InventoryComponent);
+}
+
+void UInventoryWidget::MoveFocusUp()
+{
+    if (InventorySlotWidgets.Num() == 0 || InventoryColumnCount <= 0) return;
+
+    if (!CurrentFocusedSlot) {
+        RequestFocus(InventorySlotWidgets[0]);
+        return;
+    }
+
+    UInventorySlotWidget* Focused = GetCurrentFocusedSlot();
+    if (!Focused) return;
+
+    const int32 CurrentIndex = InventorySlotWidgets.IndexOfByKey(Focused);
+    if (CurrentIndex == INDEX_NONE) return;
+
+    const int32 NewIndex = CurrentIndex - InventoryColumnCount;
+    if (NewIndex >= 0)
+    {
+        UE_LOG(LogTemp, Log, TEXT("Inventory MoveFocusUp -> %d"), NewIndex);
+        RequestFocus(InventorySlotWidgets[NewIndex]);
+    }
+}
+
+void UInventoryWidget::MoveFocusDown()
+{
+    if (InventorySlotWidgets.Num() == 0 || InventoryColumnCount <= 0) return;
+
+    if (!CurrentFocusedSlot) {
+        RequestFocus(InventorySlotWidgets[0]);
+        return;
+    }
+
+    UInventorySlotWidget* Focused = GetCurrentFocusedSlot();
+    if (!Focused) return;
+
+    const int32 CurrentIndex = InventorySlotWidgets.IndexOfByKey(Focused);
+    if (CurrentIndex == INDEX_NONE) return;
+
+    const int32 NewIndex = CurrentIndex + InventoryColumnCount;
+    if (NewIndex < InventorySlotWidgets.Num())
+    {
+        UE_LOG(LogTemp, Log, TEXT("Inventory MoveFocusDown -> %d"), NewIndex);
+        RequestFocus(InventorySlotWidgets[NewIndex]);
+    }
+}
+
+void UInventoryWidget::MoveFocusLeft()
+{
+    if (InventorySlotWidgets.Num() == 0 || InventoryColumnCount <= 0) return;
+
+    if (!CurrentFocusedSlot) {
+        RequestFocus(InventorySlotWidgets[0]);
+        return;
+    }
+
+    UInventorySlotWidget* Focused = GetCurrentFocusedSlot();
+    if (!Focused) return;
+
+    const int32 CurrentIndex = InventorySlotWidgets.IndexOfByKey(Focused);
+    if (CurrentIndex == INDEX_NONE) return;
+
+    const int32 Col = CurrentIndex % InventoryColumnCount;
+    if (Col > 0)
+    {
+        const int32 NewIndex = CurrentIndex - 1;
+        UE_LOG(LogTemp, Log, TEXT("Inventory MoveFocusLeft -> %d"), NewIndex);
+        RequestFocus(InventorySlotWidgets[NewIndex]);
+    }
+}
+
+void UInventoryWidget::MoveFocusRight()
+{
+    if (InventorySlotWidgets.Num() == 0 || InventoryColumnCount <= 0) return;
+
+    if (!CurrentFocusedSlot) {
+        RequestFocus(InventorySlotWidgets[0]);
+        return;
+    }
+
+    UInventorySlotWidget* Focused = GetCurrentFocusedSlot();
+    if (!Focused) return;
+
+    const int32 CurrentIndex = InventorySlotWidgets.IndexOfByKey(Focused);
+    if (CurrentIndex == INDEX_NONE) return;
+
+    const int32 Col = CurrentIndex % InventoryColumnCount;
+    // 마지막 열이 아니고, 실제 슬롯이 존재할 때만 이동
+    if (Col < InventoryColumnCount - 1 && (CurrentIndex + 1) < InventorySlotWidgets.Num())
+    {
+        const int32 NewIndex = CurrentIndex + 1;
+        UE_LOG(LogTemp, Log, TEXT("Inventory MoveFocusRight -> %d"), NewIndex);
+        RequestFocus(InventorySlotWidgets[NewIndex]);
+    }
 }

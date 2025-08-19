@@ -4,30 +4,46 @@
 #include "EquipSlotWidget.h"
 #include "Components/Button.h"
 #include "EquipWidget.h"
+#include "InventorySlotWidget.h"
 
 void UEquipSlotWidget::NativeConstruct()
 {
     if (SlotButton)
-        SlotButton->OnClicked.AddDynamic(this, &UEquipSlotWidget::OnSlotConfirmed);
+        SlotButton->OnClicked.AddDynamic(this, &UEquipSlotWidget::HandleClicked);
 }
 
-void UEquipSlotWidget::InitEquipSlot(int32 InIndex, EEquipSlotType InEquipSlotType, bool bInAllowWeapon)
+void UEquipSlotWidget::InitSlot(EItemType DefaultType, EArmorType InArmorCategory, bool bAllowWeaponInArmor)
 {
-    SlotIndex = InIndex;
-    EquipSlotType = InEquipSlotType;
-    bAllowWeapon = bInAllowWeapon;
+    AllowedItemTypes.Empty();
+    ArmorCategory = InArmorCategory;
+
+    switch (DefaultType)
+    {
+    case EItemType::Weapon:
+        AllowedItemTypes.Add(EItemType::Weapon);
+        break;
+    case EItemType::Armor:
+        AllowedItemTypes.Add(EItemType::Armor);
+        if (bAllowWeaponInArmor)
+            AllowedItemTypes.Add(EItemType::Weapon); //방어구 슬롯에 무기 허용
+        break;
+    case EItemType::Consumable:
+        AllowedItemTypes.Add(EItemType::Consumable);
+        AllowedItemTypes.Add(EItemType::Quest);
+        break;
+    }
 }
 
-void UEquipSlotWidget::OnSlotConfirmed()
+bool UEquipSlotWidget::CanEquipItem(EItemType ItemType) const
 {
-    Super::OnSlotConfirmed();
-
-    if (OwnerEquipWidget)
-        OwnerEquipWidget->UpdateEquipInventory(EquipSlotType);
+    return AllowedItemTypes.Contains(ItemType);
 }
 
-void UEquipSlotWidget::SetOwnerEquipWidget(UEquipWidget* InOwner)
+void UEquipSlotWidget::EquipItemFromInventory(UInventorySlotWidget* InventorySlot)
 {
-    if (InOwner)
-        OwnerEquipWidget = InOwner;
+    if (!InventorySlot || !CanEquipItem(InventorySlot->GetCurrentInventoryItemData().ItemType))
+        return;
+
+    int32 ItemID = InventorySlot->GetCurrentInventoryItemData().ItemTableID;
+    //OnItemEquipped(InventorySlot->GetCurrentInventoryItemData().ItemType, ItemID);
 }

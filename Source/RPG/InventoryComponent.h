@@ -35,11 +35,11 @@ public:
 	int32 GetInventoryItemAmount(int32 FindItemID);
 	void OverFlowAddedItem(const FDropItemData& OverFlowItem);
 
-	bool IsOpen() const { return bIsOpen; }
-	void SetIsOpen(bool bOpen);
-
 	class UInventoryWidget* GetInventoryWidget() const { return InventoryWidget; }
 	int32 GetMaxSlotCounter() const { return MaxSlotCounter; }
+
+	void SetIsOpen(bool bOpen);
+	bool IsOpen() { return bIsOpen; }
 
 	TArray<FInventoryItemData> GetInventoryItems() { return InventoryItems; }
 	TArray<FInventoryItemData> GetFilteredInventoryItems(TArray<EItemType> Filters);

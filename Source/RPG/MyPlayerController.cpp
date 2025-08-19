@@ -11,6 +11,7 @@
 #include "InventoryComponent.h"
 #include "InventoryWidget.h"
 #include "ItemBase.h"
+#include "EquipComponent.h"
 #include "StaminaActorComponent.h"
 #include "PlayerStateMachineComponent.h"
 
@@ -253,9 +254,9 @@ void AMyPlayerController::TryOpenMainMenu()
 void AMyPlayerController::TryOpenEquip()
 {
 	if (GetCharacter() != nullptr) {
-		if (auto* InventoryComponent = GetCharacter()->GetInventoryComponent()) {
+		if (auto* EquipComponent = GetCharacter()->GetEquipComponent()) {
 			if (auto* PlayerHUD = Cast<APlayerHUD>(GetHUD())) {
-				PlayerHUD->OpenEquipWidget();
+				PlayerHUD->OpenEquipWidget(EquipComponent);
 				ChangeInputMappingContext(EIMCState::Inventory);
 			}
 		}
@@ -265,11 +266,9 @@ void AMyPlayerController::TryOpenEquip()
 void AMyPlayerController::TryConfirm()
 {
 	if (GetCharacter() != nullptr) {
-		if (auto* InventoryComponent = GetCharacter()->GetInventoryComponent()) {
-			if (auto* HUD = Cast<APlayerHUD>(GetHUD())) {
-				if (auto* InventoryWidget = HUD->GetInventoryWidget()) {
-					InventoryWidget->ConfirmFocusSlot();
-				}
+		if (auto* HUD = Cast<APlayerHUD>(GetHUD())) {
+			if (auto* FocusableWidget = HUD->GetCurrentFocusableWidget()) {
+				FocusableWidget->ConfirmFocusSlot();
 			}
 		}
 	}
@@ -279,11 +278,9 @@ void AMyPlayerController::TryNavigate(const FInputActionValue& Value)
 {
 	const FVector2D InputValue = Value.Get<FVector2D>();
 	if (GetCharacter() != nullptr) {
-		if (auto* InventoryComponent = GetCharacter()->GetInventoryComponent()) {
-			if (auto* HUD = Cast<APlayerHUD>(GetHUD())) {
-				if (auto* InventoryWidget = HUD->GetInventoryWidget()) {
-					InventoryWidget->MoveFocus(InputValue);
-				}
+		if (auto* HUD = Cast<APlayerHUD>(GetHUD())) {
+			if (auto* FocusableWidget = HUD->GetCurrentFocusableWidget()) {
+				FocusableWidget->MoveFocus(InputValue);
 			}
 		}
 	}

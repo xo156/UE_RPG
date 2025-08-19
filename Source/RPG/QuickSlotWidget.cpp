@@ -8,21 +8,13 @@
 void UQuickSlotWidget::NativeConstruct()
 {
     if (SlotButton)
-        SlotButton->OnClicked.AddDynamic(this, &UQuickSlotWidget::OnSlotConfirmed);
+        SlotButton->OnClicked.AddDynamic(this, &UQuickSlotWidget::HandleClicked);
 }
 
 void UQuickSlotWidget::InitQuickSlot(int32 InIndex, EEquipSlotType InEquipSlotType)
 {
     SlotIndex = InIndex;
     EquipSlotType = InEquipSlotType;
-}
-
-void UQuickSlotWidget::OnSlotConfirmed()
-{
-    Super::OnSlotConfirmed();
-
-    if (OwnerEquipWidget)
-        OwnerEquipWidget->UpdateEquipInventory(EquipSlotType);
 }
 
 void UQuickSlotWidget::SetOwnerEquipWidget(UEquipWidget* InOwner)

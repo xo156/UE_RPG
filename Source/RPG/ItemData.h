@@ -15,6 +15,15 @@ enum class EItemType : uint8
     Quest UMETA(DisplayName = "Quest")
 };
 
+UENUM(BlueprintType)
+enum class EArmorType : uint8
+{
+    Head UMETA(DisplayName = "Head"),
+    Chest UMETA (DisplayName = "Chest"),
+    Glove UMETA(DisplayName = "Glove"),
+    Leg UMETA(DisplayName = "Leg")
+};
+
 USTRUCT(BlueprintType)
 struct RPG_API FItemData : public FTableRowBase
 {

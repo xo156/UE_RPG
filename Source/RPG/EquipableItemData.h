@@ -17,7 +17,4 @@ struct RPG_API FEquipableItemData : public FItemData
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     float DefensePower = 0.f;
-
-    /*UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    EEquipSlot EquipSlot;*/
 };
