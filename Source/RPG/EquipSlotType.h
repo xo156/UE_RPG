@@ -16,9 +16,8 @@ enum class EEquipSlotType : uint8
 	RightHand UMETA(DisplayName = "RightHand"),
 	LeftHand UMETA(DisplayName = "LeftHand"),
 	Head UMETA(DisplayName = "Head"),
-	Chest UMETA(DisplayName = "Chest"),
-	Glove UMETA(DisplayName = "Glove"),
+	Body UMETA(DisplayName = "Body"),
+	Arm UMETA(DisplayName = "Arm"),
 	Leg UMETA(DisplayName = "Leg"),
 	QuickSlot UMETA(DisplayName = "QuickSlot")
-	//향후 더 추가 예정
 };

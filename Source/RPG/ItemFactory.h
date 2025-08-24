@@ -4,6 +4,8 @@
 
 #include "CoreMinimal.h"
 #include "Subsystems/GameInstanceSubsystem.h"
+#include "EquipableItemData.h"
+#include "NonEquipableItemData.h"
 #include "ItemFactory.generated.h"
 
 /**

@@ -65,6 +65,7 @@ public:
 	void OnRootItemBoxOverlapEnd(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComponent, int32 OtherBodyIndex);
 	
 	//Äü ½½·Ô
+	class UQuickSlotComponent* GetQuickSlotComponent();
 	//bool AddToQuickSlot(int32 SlotIndex, int32 ItemTableID, class AItemBase* ItemInstance);
 	//bool UseQuickSlot(int32 SlotIndex);
 
@@ -198,6 +199,8 @@ private:
 	class UEquipComponent* EquipComponent;
 	
 	//Äü ½½·Ô
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Inventory", meta = (AllowPrivateAccess = "true"))
+	class UQuickSlotComponent* QuickSlotComponent;
 	class AItemBase* QuickSlotItem;
 	int32 QuickSlotItemAmount = 0;
 	int32 QuickSlotItemID;

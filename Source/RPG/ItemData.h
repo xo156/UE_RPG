@@ -9,6 +9,7 @@
 UENUM()
 enum class EItemType : uint8
 {
+    None UMETA(DisplayName = "None"),
     Weapon UMETA(DisplayName = "Weapon"),
     Armor UMETA(DisplayName = "Armor"),
     Consumable UMETA(DisplayName = "Consumable"),
@@ -18,9 +19,10 @@ enum class EItemType : uint8
 UENUM(BlueprintType)
 enum class EArmorType : uint8
 {
+    None UMETA(DisplayName = "None"),
     Head UMETA(DisplayName = "Head"),
-    Chest UMETA (DisplayName = "Chest"),
-    Glove UMETA(DisplayName = "Glove"),
+    Body UMETA (DisplayName = "Body"),
+    Arm UMETA(DisplayName = "Arm"),
     Leg UMETA(DisplayName = "Leg")
 };
 

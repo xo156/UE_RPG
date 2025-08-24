@@ -21,6 +21,7 @@ public:
 
 	void SetOwnerWidget(class UEquipWidget* InOwner);
 
+	void SetItemIcon(UTexture2D* ItemIcon);
 	virtual void ClearSlot();
 
 	UFUNCTION()

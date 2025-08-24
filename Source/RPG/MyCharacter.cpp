@@ -29,6 +29,7 @@
 #include "PlayerHUD.h"
 #include "LockonWidget.h"
 #include "EquipComponent.h"
+#include "QuickSlotComponent.h"
 
 // Sets default values
 AMyCharacter::AMyCharacter() {
@@ -613,6 +614,11 @@ void AMyCharacter::OnRootItemBoxOverlapEnd(UPrimitiveComponent* OverlappedCompon
 			}
 		}
 	}
+}
+
+UQuickSlotComponent* AMyCharacter::GetQuickSlotComponent()
+{
+	return QuickSlotComponent ? QuickSlotComponent : nullptr;
 }
 
 void AMyCharacter::EquipItem(AEquipableItem* EquipableItem, EEquipSlotType Slot)

@@ -12,6 +12,7 @@
 #include "InventoryWidget.h"
 #include "ItemBase.h"
 #include "EquipComponent.h"
+#include "QuickSlotComponent.h"
 #include "StaminaActorComponent.h"
 #include "PlayerStateMachineComponent.h"
 
@@ -90,7 +91,7 @@ void AMyPlayerController::ChangeInputMappingContext(EIMCState NewIMC)
 		bShowMouseCursor = false;
 		break;
 
-	case EIMCState::Inventory:
+	case EIMCState::UI:
 		InputSubsystem->RemoveMappingContext(NormalMappingContext);
 		InputSubsystem->AddMappingContext(InventoryMappingContext, 0);
 		bShowMouseCursor = true;
@@ -222,7 +223,7 @@ void AMyPlayerController::TryOpenInventory()
 		if (auto* InventoryComponent = GetCharacter()->GetInventoryComponent()) {
 			if (auto* PlayerHUD = Cast<APlayerHUD>(GetHUD())) {
 				PlayerHUD->OpenInventory(InventoryComponent);
-				ChangeInputMappingContext(EIMCState::Inventory);
+				ChangeInputMappingContext(EIMCState::UI);
 			}
 		}
 	}
@@ -246,7 +247,7 @@ void AMyPlayerController::TryOpenMainMenu()
 {
 	if (auto* PlayerHUD = Cast<APlayerHUD>(GetHUD())) {
 		PlayerHUD->OpenMainMenuWidget();
-		ChangeInputMappingContext(EIMCState::Inventory);
+		ChangeInputMappingContext(EIMCState::UI);
 	}
 
 }
@@ -255,9 +256,10 @@ void AMyPlayerController::TryOpenEquip()
 {
 	if (GetCharacter() != nullptr) {
 		if (auto* EquipComponent = GetCharacter()->GetEquipComponent()) {
+			if(auto* QuickSlotComponent = GetCharacter()->GetQuickSlotComponent())
 			if (auto* PlayerHUD = Cast<APlayerHUD>(GetHUD())) {
-				PlayerHUD->OpenEquipWidget(EquipComponent);
-				ChangeInputMappingContext(EIMCState::Inventory);
+				PlayerHUD->OpenEquipWidget(EquipComponent, QuickSlotComponent);
+				ChangeInputMappingContext(EIMCState::UI);
 			}
 		}
 	}

@@ -94,11 +94,12 @@ void UInventoryWidget::UpdateInventorySlotWidget(UInventoryComponent* InventoryC
     if (!InventoryComponent || InventorySlotWidgets.Num() == 0) {
         return;
     }
+    const TArray<FInventoryItemData>& InventoryItem = InventoryComponent->GetInventoryItems();
 
     for (int32 Index = 0; Index < InventorySlotWidgets.Num(); Index++) {
         if (InventorySlotWidgets[Index]) {
-            if (Index < InventoryComponent->GetInventoryItems().Num()) {
-                InventorySlotWidgets[Index]->RefreshSlot(InventoryComponent->GetInventoryItems(), Index);
+            if (Index < InventoryItem.Num()) {
+                InventorySlotWidgets[Index]->RefreshSlot(InventoryItem[Index]);
             }
             else {
                 InventorySlotWidgets[Index]->ClearSlot();

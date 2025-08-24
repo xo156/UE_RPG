@@ -15,7 +15,7 @@ UENUM(BlueprintType)
 enum class EIMCState : uint8
 {
 	Normal UMETA(DisplayName = "Normal"),
-	Inventory UMETA(DisplayName = "Inventory"),
+	UI UMETA(DisplayName = "UI"),
 	Dialogue UMETA(DisplayName = "Dialogue"),
 };
 
@@ -100,7 +100,7 @@ private:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input", meta = (AllowPrivateAccess = "true"))
 	class UInputAction* CloseAction;
 
-	//Inventory ÀÎÇ² ¾×¼Ç
+	//UI ÀÎÇ² ¾×¼Ç
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input", meta = (AllowPrivateAccess = "true"))
 	class UInputMappingContext* InventoryMappingContext;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input", meta = (AllowPrivateAccess = "true"))

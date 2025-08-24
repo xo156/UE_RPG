@@ -17,14 +17,21 @@ class RPG_API UEquipSlotWidget : public UFocusableSlotWidget
 public:
 	virtual void NativeConstruct() override;
 
-	void InitSlot(EItemType DefaultType, EArmorType InArmorCategory = EArmorType::Head, bool bAllowWeaponInArmor = false);
+	void InitSlot(EItemType DefaultType, EArmorType InArmorCategory, EEquipSlotType InSlotType, bool bAllowWeaponInArmor);
+	EEquipSlotType GetEquipSlotType() const { return EquipSlotType; }
+
+	void RefreshSlot();
+
+	int32 GetEquippedItemID() { return EquippedItemID; }
 
 	bool CanEquipItem(EItemType ItemType) const;
 
 	void EquipItemFromInventory(class UInventorySlotWidget* InventorySlot); //아이템 장착
 
 private:
-	TArray<EItemType> AllowedItemTypes; // 허용된 아이템 타입
-	EArmorType ArmorCategory; // 방어구 종류
-	FName EquippedItemID; // 장착된 아이템 ID
+	class UEquipComponent* EquipComponent;
+	EEquipSlotType EquipSlotType;
+	TArray<EItemType> AllowedItemTypes; //허용된 아이템 타입
+	EArmorType ArmorCategory; //방어구 종류
+	int32 EquippedItemID; //장착된 아이템 ID
 };

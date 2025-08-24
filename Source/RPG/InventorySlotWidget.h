@@ -27,10 +27,11 @@ public:
 	void OnThumbnailClicked();
 	FReply NativeOnMouseButtonDown(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent) override;
 
-	void RefreshSlot(TArray<FInventoryItemData> InventoryItem, int32 SlotIndex);
-	void ClearSlot();
+	void RefreshSlot(FInventoryItemData InventoryItem);
+	virtual void ClearSlot() override;
 
 	void SetParentInventoryWidget(class UInventoryWidget* InWidget);
+	void SetParentEquipWidget(class UEquipWidget* InWidget);
 
 	FInventoryItemData GetCurrentInventoryItemData() const { return CurrentInventoryItemData ; }
 
@@ -41,5 +42,6 @@ protected:
 private:
 	FInventoryItemData CurrentInventoryItemData;
 	class UInventoryWidget* ParentInventoryWidget = nullptr;
+	class UEquipWidget* ParentEquipWidget = nullptr;
 	FLinearColor DefaultBurshColor;
 };

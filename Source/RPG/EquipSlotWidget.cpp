@@ -5,6 +5,10 @@
 #include "Components/Button.h"
 #include "EquipWidget.h"
 #include "InventorySlotWidget.h"
+#include "ItemFactory.h"
+#include "ItemBase.h"
+#include "EquipableItem.h"
+#include "EquipComponent.h"
 
 void UEquipSlotWidget::NativeConstruct()
 {
@@ -12,10 +16,11 @@ void UEquipSlotWidget::NativeConstruct()
         SlotButton->OnClicked.AddDynamic(this, &UEquipSlotWidget::HandleClicked);
 }
 
-void UEquipSlotWidget::InitSlot(EItemType DefaultType, EArmorType InArmorCategory, bool bAllowWeaponInArmor)
+void UEquipSlotWidget::InitSlot(EItemType DefaultType, EArmorType InArmorCategory, EEquipSlotType InSlotType, bool bAllowWeaponInArmor)
 {
     AllowedItemTypes.Empty();
     ArmorCategory = InArmorCategory;
+    EquipSlotType = InSlotType;
 
     switch (DefaultType)
     {
@@ -34,6 +39,20 @@ void UEquipSlotWidget::InitSlot(EItemType DefaultType, EArmorType InArmorCategor
     }
 }
 
+void UEquipSlotWidget::RefreshSlot()
+{
+    auto* ItemFactory = GetGameInstance()->GetSubsystem<UItemFactory>();
+    if (!ItemFactory)
+        return;
+
+    if (EquippedItemID != 0) {
+        SetItemIcon(ItemFactory->FindItemData(EquippedItemID)->ItemIcon);
+    }
+    else {
+        ClearSlot();
+    }
+}
+
 bool UEquipSlotWidget::CanEquipItem(EItemType ItemType) const
 {
     return AllowedItemTypes.Contains(ItemType);
@@ -41,9 +60,12 @@ bool UEquipSlotWidget::CanEquipItem(EItemType ItemType) const
 
 void UEquipSlotWidget::EquipItemFromInventory(UInventorySlotWidget* InventorySlot)
 {
-    if (!InventorySlot || !CanEquipItem(InventorySlot->GetCurrentInventoryItemData().ItemType))
+    if (!InventorySlot || !EquipComponent)
         return;
 
-    int32 ItemID = InventorySlot->GetCurrentInventoryItemData().ItemTableID;
-    //OnItemEquipped(InventorySlot->GetCurrentInventoryItemData().ItemType, ItemID);
+    if(!CanEquipItem(InventorySlot->GetCurrentInventoryItemData().ItemType))
+       return;
+
+    EquipComponent->EquipItem(InventorySlot->GetCurrentInventoryItemData(), EquipSlotType);
+    EquippedItemID = InventorySlot->GetCurrentInventoryItemData().ItemTableID;
 }

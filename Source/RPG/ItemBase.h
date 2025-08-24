@@ -17,6 +17,7 @@ public:
 
 	int32 GetItemTableID() const { return ItemData->ItemTableID; }
 	EItemType GetItemType() const { return ItemData->ItemType; }
+	class UTexture2D* GetItemIcon() const { return ItemData->ItemIcon; }
 
 protected:
 	const FItemData* ItemData;

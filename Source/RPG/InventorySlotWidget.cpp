@@ -3,6 +3,7 @@
 
 #include "InventorySlotWidget.h"
 #include "InventoryWidget.h"
+#include "EquipWidget.h"
 #include "ItemFactory.h"
 #include "ItemData.h"
 #include "Components/Button.h"
@@ -63,31 +64,25 @@ FReply UInventorySlotWidget::NativeOnMouseButtonDown(const FGeometry& InGeometry
 	Super::NativeOnMouseButtonDown(InGeometry, InMouseEvent);
 	if (ParentInventoryWidget) {
 		ParentInventoryWidget->RequestFocus(this);
-		//TODO: 현재 InventoryWidget뿐만 아니라 UEquipWidget에서도 접근해야 한다
-		//TODO: 그리고 현재 작성된 코드는 InventoryWidget만 유효하다
-		//TODO: 그러니 UEquipWidget에도 유효한 코드를 작성하거나 아예 새로 만들어야 한다
 		ParentInventoryWidget->ConfirmFocusSlot();
+	}
+	else if (ParentEquipWidget) {
+		ParentEquipWidget->RequestFocus(this);
+		ParentEquipWidget->HandleEquipInventorySlotClicked(this);
 	}
 	return FReply::Handled();
 }
 
-void UInventorySlotWidget::RefreshSlot(TArray<FInventoryItemData> InventoryItem, int32 SlotIndex)
+void UInventorySlotWidget::RefreshSlot(FInventoryItemData InventoryItem)
 {
-	CurrentInventoryItemData = InventoryItem[SlotIndex];
+	CurrentInventoryItemData = InventoryItem;
 
 	auto* ItemFactory = GetGameInstance()->GetSubsystem<UItemFactory>();
 	if (!ItemFactory)
 		return;
 
 	if (auto* ItemData = ItemFactory->FindItemData(CurrentInventoryItemData.ItemTableID)) {
-		FButtonStyle ButtonStyle = SlotButton->GetStyle();
-		FSlateBrush NewBrush;
-		NewBrush.SetResourceObject(ItemData->ItemIcon);
-
-		ButtonStyle.SetNormal(NewBrush);
-		ButtonStyle.SetHovered(NewBrush);
-		ButtonStyle.SetPressed(NewBrush);
-		SlotButton->SetStyle(ButtonStyle);
+		SetItemIcon(ItemData->ItemIcon);
 
 		AmountText->SetText(FText::AsNumber(CurrentInventoryItemData.ItemAmount));
 
@@ -112,4 +107,10 @@ void UInventorySlotWidget::SetParentInventoryWidget(UInventoryWidget* InWidget)
 	if (InWidget) {
 		ParentInventoryWidget = InWidget;
 	}
+}
+
+void UInventorySlotWidget::SetParentEquipWidget(UEquipWidget* InWidget)
+{
+	if (InWidget)
+		ParentEquipWidget = InWidget;
 }

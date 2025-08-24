@@ -160,10 +160,11 @@ TArray<FInventoryItemData> UInventoryComponent::GetFilteredInventoryItems(TArray
 {
 	TArray<FInventoryItemData> FilteredItems;
 
-	for (const FInventoryItemData InventoryItem : InventoryItems) {
-		for (const EItemType Filter : Filters) {
-			if (InventoryItem.ItemType == Filter)
-				FilteredItems.Add(InventoryItem);
+	TSet<EItemType> FilterSet(Filters);
+
+	for (const FInventoryItemData& InventoryItem : InventoryItems) {
+		if (FilterSet.Contains(InventoryItem.ItemType)) {
+			FilteredItems.Add(InventoryItem);
 		}
 	}
 	return FilteredItems;

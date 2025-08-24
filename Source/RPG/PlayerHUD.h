@@ -20,7 +20,7 @@ public:
     void OpenInventory(class UInventoryComponent* InventoryComponent);
     void CloseInventory(class UInventoryComponent* InventoryComponent);
 
-    void OpenEquipWidget(class UEquipComponent* EquipComponent);
+    void OpenEquipWidget(class UEquipComponent* EquipComponent , class UQuickSlotComponent* QuickSlotComponent);
     void CloseEquipWidget(class UEquipComponent* EquipComponent);
 
     void OpenSettingWidget();

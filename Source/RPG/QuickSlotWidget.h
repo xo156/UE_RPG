@@ -6,6 +6,7 @@
 #include "FocusableSlotWidget.h"
 #include "EquipSlotType.h"
 #include "ItemData.h"
+#include "InventoryItemData.h"
 #include "QuickSlotWidget.generated.h"
 
 /**
@@ -19,7 +20,9 @@ class RPG_API UQuickSlotWidget : public UFocusableSlotWidget
 public:
 	virtual void NativeConstruct() override;
 
-	void InitQuickSlot(int32 InIndex, EEquipSlotType InEquipSlotType);
+	void InitQuickSlot(int32 InIndex, EEquipSlotType InEquipSlotType, FInventoryItemData InQuickSlotItem);
+
+	void RefreshSlot();
 
 	void SetOwnerEquipWidget(class UEquipWidget* InOwner);
 
@@ -27,4 +30,5 @@ private:
 	class UEquipWidget* OwnerEquipWidget;
 	EEquipSlotType EquipSlotType;
 	int32 SlotIndex;
+	FInventoryItemData QuickSlotItem;
 };

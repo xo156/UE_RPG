@@ -36,6 +36,21 @@ void UFocusableSlotWidget::SetOwnerWidget(UEquipWidget* InOwner)
 		OwnerWidget = InOwner;
 }
 
+void UFocusableSlotWidget::SetItemIcon(UTexture2D* ItemIcon)
+{
+	if (!ItemIcon)
+		return;
+
+	FButtonStyle ButtonStyle = SlotButton->GetStyle();
+	FSlateBrush NewBrush;
+	NewBrush.SetResourceObject(ItemIcon);
+
+	ButtonStyle.SetNormal(NewBrush);
+	ButtonStyle.SetHovered(NewBrush);
+	ButtonStyle.SetPressed(NewBrush);
+	SlotButton->SetStyle(ButtonStyle);
+}
+
 void UFocusableSlotWidget::ClearSlot()
 {
 	FButtonStyle ButtonStyle = SlotButton->GetStyle();

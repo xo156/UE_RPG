@@ -19,15 +19,24 @@ public:
 	void CreateAllSlots();
 	
 	//생성된 슬롯 등록하기
-	void RegisterSlot(UFocusableSlotWidget* FocusableSlot, int32 Row, int32 Col);
-	void UpdateFocus(UFocusableSlotWidget* NewFocusedSlot);
+	void RegisterSlot(bool bIsEquipInventory, UFocusableSlotWidget* FocusableSlot, int32 Row, int32 Col);
 	UFocusableSlotWidget* GetSlotAtOffset(int32 dRow, int32 dCol);
+
+	//업데이트
+	void UpdateAllPanels();
+	void UpdateEquipPanel();
+	void UpdateQuickPanel();
+
+	//전용 인벤토리
+	void UpdateInventoryPanel(class UInventoryComponent* InventoryComponent, EEquipSlotType TargetSlotType);
+	void OpenEquipInventory();
+	void CloseEquipInventory();
 
 	//슬롯이 클릭될 때
 	UFUNCTION()
-	void HandleEquipSlotClicked(UFocusableSlotWidget* ClickedSlot);
+	void HandleEquipSlotClicked(class UFocusableSlotWidget* ClickedSlot);
 	UFUNCTION()
-	void HandleInventorySlotClicked(class UInventorySlotWidget* InventorySlot);
+	void HandleEquipInventorySlotClicked(class UFocusableSlotWidget* ClickedSlot);
 
 protected:
 	//방향에 따른 포커싱 이동
@@ -40,6 +49,9 @@ protected:
 	UPROPERTY(meta = (BindWidget))
 	class UUniformGridPanel* SlotGridPanel; //슬롯 배치 패널
 
+	UPROPERTY(meta = (BindWidget))
+	class UUniformGridPanel* EquipInventorySlotGridPanel; //전용 인벤토리 슬롯 배치 패널
+
 	//슬롯 클래스
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Class")
 	TSubclassOf<class UEquipSlotWidget> EquipSlotWidgetClass;
@@ -51,14 +63,25 @@ protected:
 	TSubclassOf<class UInventorySlotWidget> InventorySlotWidgetClass;
 
 private:
-	TArray<UFocusableSlotWidget*> AllSlots; //전체 슬롯
+	//장비창
+	TArray<UFocusableSlotWidget*> EquipmentSlots; //전체 슬롯
+	TMap<UFocusableSlotWidget*, FIntPoint> EquipSlotPositions;
+	TMap<FIntPoint, UFocusableSlotWidget*> EquipPositionToSlot;
+
+	//전용 인벤토리
+	TArray<UInventorySlotWidget*> EquipInventorySlots; //전체 슬롯
+	TMap<UFocusableSlotWidget*, FIntPoint> EquipInventorySlotPositions;
+	TMap<FIntPoint, UFocusableSlotWidget*> EquipInventoryPositionToSlot;
+
+	//포커싱
 	UFocusableSlotWidget* CurrentFocusedSlot; //현재 포커싱중인 슬롯
 	UEquipSlotWidget* CurrentClickedEquipSlot; //현재 클릭 된 슬롯
 
-	//슬롯 좌표 매핑
-	TMap<UFocusableSlotWidget*, FIntPoint> SlotPositions;
-	TMap<FIntPoint, UFocusableSlotWidget*> PositionToSlot;
+	//현재 활성화된 슬롯 맵
+	TMap<UFocusableSlotWidget*, FIntPoint>* ActiveSlotPositions;
+	TMap<FIntPoint, UFocusableSlotWidget*>* ActivePositionToSlot;
 
-	TArray<UInventorySlotWidget*> EquipInventorySlots; //전용 인벤토리 슬롯들
-	class UInventoryComponent* InventoryComponent;
+	//컴포넌트
+	class UEquipComponent* EquipComponent;
+	class UQuickSlotComponent* QuickSlotComponent;
 };

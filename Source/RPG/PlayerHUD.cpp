@@ -20,6 +20,7 @@
 #include "MainMenuWidget.h"
 #include "FocusableUserWidget.h"
 #include "EquipComponent.h"
+#include "QuickSlotComponent.h"
 
 void APlayerHUD::BeginPlay()
 {
@@ -106,17 +107,17 @@ void APlayerHUD::OpenInventory(UInventoryComponent* InventoryComponent)
     if (!InventoryWidgetInstance || !InventoryComponent)
         return;
 
-    const bool bIsCurrentlyOpen = InventoryComponent->IsOpen();
+    if (InventoryComponent->IsOpen())
+        return;
+
     auto* PlayerController = GetOwningPlayerController();
     if (!PlayerController)
         return;
 
-    if (!bIsCurrentlyOpen) {
-        InventoryWidgetInstance->UpdateInventorySlotWidget(InventoryComponent);
-        InventoryWidgetInstance->SetVisibility(ESlateVisibility::Visible);
-        PlayerController->bShowMouseCursor = true;
-        InventoryComponent->SetIsOpen(true);
-    }
+    InventoryWidgetInstance->UpdateInventorySlotWidget(InventoryComponent);
+    InventoryWidgetInstance->SetVisibility(ESlateVisibility::Visible);
+    PlayerController->bShowMouseCursor = true;
+    InventoryComponent->SetIsOpen(true);
 }
 
 void APlayerHUD::CloseInventory(UInventoryComponent* InventoryComponent)
@@ -124,51 +125,51 @@ void APlayerHUD::CloseInventory(UInventoryComponent* InventoryComponent)
     if (!InventoryWidgetInstance || !InventoryComponent)
         return;
 
-    const bool bIsCurrentlyOpen = InventoryComponent->IsOpen();
+    if (!InventoryComponent->IsOpen())
+        return;
+
     auto* PlayerController = GetOwningPlayerController();
     if (!PlayerController)
         return;
 
-    if (bIsCurrentlyOpen) {
-        InventoryWidgetInstance->SetVisibility(ESlateVisibility::Hidden);
-        PlayerController->bShowMouseCursor = false;
-        InventoryComponent->SetIsOpen(false);
-    }
+    InventoryWidgetInstance->SetVisibility(ESlateVisibility::Hidden);
+    PlayerController->bShowMouseCursor = false;
+    InventoryComponent->SetIsOpen(false);
 }
 
-void APlayerHUD::OpenEquipWidget(class UEquipComponent* EquipComponent)
+void APlayerHUD::OpenEquipWidget(class UEquipComponent* EquipComponent , class UQuickSlotComponent* QuickSlotComponent)
 {
-    if (!EquipWidgetInstance)
+    if (!EquipWidgetInstance || !EquipComponent || !QuickSlotComponent)
         return;
 
-    const bool bIsCurrentlyOpen = EquipComponent->IsOpen();
+    if (EquipComponent->IsOpen())
+        return;
+
     auto* PlayerController = GetOwningPlayerController();
     if (!PlayerController)
         return;
 
-    if (!bIsCurrentlyOpen) {
-        //TODO: 전체 패널들 업데이트 하는 함수 제작
-        EquipWidgetInstance->SetVisibility(ESlateVisibility::Visible);
-        PlayerController->bShowMouseCursor = true;
-        EquipComponent->SetIsOpen(true);
-    }
+    EquipWidgetInstance->UpdateAllPanels();
+    EquipWidgetInstance->SetVisibility(ESlateVisibility::Visible);
+    PlayerController->bShowMouseCursor = true;
+    EquipComponent->SetIsOpen(true);
 }
 
 void APlayerHUD::CloseEquipWidget(class UEquipComponent* EquipComponent)
 {
-    if (!EquipWidgetInstance)
+    if (!EquipWidgetInstance || !EquipComponent)
         return;
 
-    const bool bIsCurrentlyOpen = EquipComponent->IsOpen();
+    if (!EquipComponent->IsOpen())
+        return;
+
     auto* PlayerController = GetOwningPlayerController();
     if (!PlayerController)
         return;
 
-    if (bIsCurrentlyOpen) {
-        EquipWidgetInstance->SetVisibility(ESlateVisibility::Hidden);
-        PlayerController->bShowMouseCursor = false;
-        EquipComponent->SetIsOpen(false);
-    }
+    EquipWidgetInstance->SetVisibility(ESlateVisibility::Hidden);
+    PlayerController->bShowMouseCursor = false;
+    EquipComponent->SetIsOpen(false);
 }
 
 void APlayerHUD::OpenSettingWidget()
@@ -189,20 +190,13 @@ void APlayerHUD::CloseSettingWidget()
 
 void APlayerHUD::OpenMainMenuWidget()
 {
-    if (!MainMenuWidgetInstance /*|| !MainMenuComponent*/ )
+    if (!MainMenuWidgetInstance)
         return;
 
-    //const bool bIsCurrentlyOpen = InventoryComponent->IsOpen();
     auto* PlayerController = GetOwningPlayerController();
     if (!PlayerController)
         return;
 
-    /*if (!bIsCurrentlyOpen) {
-        InventoryWidgetInstance->UpdateInventorySlotWidget(InventoryComponent);
-        InventoryWidgetInstance->SetVisibility(ESlateVisibility::Visible);
-        PlayerController->bShowMouseCursor = true;
-        InventoryComponent->SetIsOpen(true);
-    }*/
 }
 
 void APlayerHUD::CloseMainMenuWidget()
